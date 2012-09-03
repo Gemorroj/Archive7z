@@ -157,6 +157,9 @@ class Archive_7z
     }
 
 
+    /**
+     * @return string
+     */
     private function _getCmdPrefix()
     {
         $cmd = '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
