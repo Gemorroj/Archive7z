@@ -220,7 +220,7 @@ class Archive_7z
 
         $list = array();
         foreach ($this->_parseEntries($out) as $v) {
-            $list[] = new Archive_7z_Entry($v);
+            $list[] = new Archive_7z_Entry($this, $v);
         }
 
         return $list;

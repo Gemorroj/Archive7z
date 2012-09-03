@@ -22,12 +22,19 @@ class Archive_7z_Entry
     private $_method;
     private $_block;
 
+    /**
+     * @var Archive_7z
+     */
+    private $_archive;
+
 
     /**
+     * @param Archive_7z $archive
      * @param array $data
      */
-    public function __construct(array $data)
+    public function __construct(Archive_7z $archive, array $data)
     {
+        $this->_archive = $archive;
         $this->_parseEntry($data);
     }
 
@@ -98,6 +105,16 @@ class Archive_7z_Entry
     public function isDirectory()
     {
         return ($this->_attributes[0] === 'D');
+    }
+
+
+    /**
+     * @throws Archive_7z_Exception
+     * @return string
+     */
+    public function getContent()
+    {
+        return $this->_archive->getContent($this->_path);
     }
 
 
