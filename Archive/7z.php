@@ -10,8 +10,8 @@
  *
  */
 
-require_once '7z/Exception.php';
-require_once '7z/Entry.php';
+require_once 'Archive/7z/Exception.php';
+require_once 'Archive/7z/Entry.php';
 
 class Archive_7z
 {
@@ -157,22 +157,44 @@ class Archive_7z
     }
 
 
-    /**
-     * @throws Archive_7z_Exception
-     * @return array
-     */
-    public function extract()
+    private function _getCmdPrefix()
     {
-        $path = '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
-        $cmd = $path . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDir);
+        $cmd = '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
         if ($this->_password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->_password);
         }
+        return $cmd;
+    }
 
-        exec($cmd, $out, $rv);
+
+    /**
+     * @throws Archive_7z_Exception
+     */
+    public function extract()
+    {
+        $cmd = $this->_getCmdPrefix() . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDir) . ' x ' . escapeshellarg($this->_filename);
+
+        system($cmd, $rv);
 
         if ($rv !== 0) {
             throw new Archive_7z_Exception('Error! Exit code: ' . $rv);
+        }
+    }
+
+
+    /**
+     * @param string $file
+     * @throws Archive_7z_Exception
+     * @return string
+     */
+    public function getContent($file)
+    {
+        $cmd = $this->_getCmdPrefix() . ' -so x ' . escapeshellarg($this->_filename) . ' ' . escapeshellarg($file);
+
+        $out = shell_exec($cmd);
+
+        if ($out === null) {
+            throw new Archive_7z_Exception('Error!');
         }
 
         return $out;
@@ -185,8 +207,7 @@ class Archive_7z
      */
     public function getEntries()
     {
-        $path = '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
-        $cmd = $path . ' l ' . escapeshellarg($this->_filename) . ' -slt';
+        $cmd = $this->_getCmdPrefix() . ' -slt l ' . escapeshellarg($this->_filename);
 
         exec($cmd, $out, $rv);
 

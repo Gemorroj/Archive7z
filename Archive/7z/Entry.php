@@ -92,6 +92,15 @@ class Archive_7z_Entry
     }
 
 
+    /**
+     * @return bool
+     */
+    public function isDirectory()
+    {
+        return ($this->_attributes[0] === 'D');
+    }
+
+
     public function getAttributes()
     {
         return $this->_attributes;
