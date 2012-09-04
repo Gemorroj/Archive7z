@@ -48,7 +48,7 @@ class Archive_7z
     /**
      * @var string
      */
-    private $_outputDir = './';
+    private $_outputDirectory = './';
 
     /**
      * @var string
@@ -105,15 +105,15 @@ class Archive_7z
 
 
     /**
-     * @param string $dir
+     * @param string $directory
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
-    public function setOutputDir($dir = './')
+    public function setOutputDirectory($directory = './')
     {
-        $this->_outputDir = realpath($dir);
+        $this->_outputDirectory = realpath($directory);
 
-        if (is_writable($this->_outputDir) === false) {
+        if (is_writable($this->_outputDirectory) === false) {
             throw new Archive_7z_Exception('Output directory is not available');
         }
 
@@ -160,9 +160,63 @@ class Archive_7z
     /**
      * @return string
      */
+    public function getCmdPath()
+    {
+        return $this->_cmdPath;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getFilename()
+    {
+        return $this->_filename;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getOutputDirectory()
+    {
+        return $this->_outputDirectory;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getPassword()
+    {
+        return $this->_password;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getOverwriteMode()
+    {
+        return $this->_overwriteMode;
+    }
+
+
+    /**
+     * @return string
+     */
     private function _getCmdPrefix()
     {
-        $cmd = '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
+        return '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
+    }
+
+
+    /**
+     * @return string
+     */
+    private function _getCmdPostfix()
+    {
+        $cmd = '';
         if ($this->_password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->_password);
         }
@@ -175,9 +229,25 @@ class Archive_7z
      */
     public function extract()
     {
-        $cmd = $this->_getCmdPrefix() . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDir) . ' x ' . escapeshellarg($this->_filename);
+        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix();
 
-        system($cmd, $rv);
+        exec($cmd, $out, $rv);
+
+        if ($rv !== 0) {
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv);
+        }
+    }
+
+
+    /**
+     * @param string $file
+     * @throws Archive_7z_Exception
+     */
+    public function extractEntry($file)
+    {
+        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix() . ' ' . escapeshellarg($file);
+
+        exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
             throw new Archive_7z_Exception('Error! Exit code: ' . $rv);
@@ -192,7 +262,7 @@ class Archive_7z
      */
     public function getContent($file)
     {
-        $cmd = $this->_getCmdPrefix() . ' -so x ' . escapeshellarg($this->_filename) . ' ' . escapeshellarg($file);
+        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' -so ' . escapeshellarg($file) . ' ' . $this->_getCmdPostfix();
 
         $out = shell_exec($cmd);
 
@@ -210,7 +280,7 @@ class Archive_7z
      */
     public function getEntries()
     {
-        $cmd = $this->_getCmdPrefix() . ' -slt l ' . escapeshellarg($this->_filename);
+        $cmd = $this->_getCmdPrefix() . ' l ' . escapeshellarg($this->_filename) . ' -slt ' . $this->_getCmdPostfix();
 
         exec($cmd, $out, $rv);
 

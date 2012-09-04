@@ -118,6 +118,28 @@ class Archive_7z_Entry
     }
 
 
+    /**
+     * @throws Archive_7z_Exception
+     */
+    public function extract()
+    {
+        $this->_archive->extractEntry($this->_path);
+    }
+
+
+    /**
+     * @param string $directory
+     * @throws Archive_7z_Exception
+     */
+    public function extractTo($directory = './')
+    {
+        $oldDirectory = $this->_archive->getOutputDirectory();
+        $this->_archive->setOutputDirectory($directory);
+        $this->_archive->extractEntry($this->_path);
+        $this->_archive->setOutputDirectory($oldDirectory);
+    }
+
+
     public function getAttributes()
     {
         return $this->_attributes;
