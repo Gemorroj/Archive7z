@@ -12,14 +12,41 @@
 
 class Archive_7z_Entry
 {
+    /**
+     * @var string
+     */
     private $_path;
+    /**
+     * @var string
+     */
     private $_size;
+    /**
+     * @var string
+     */
     private $_packedSize;
+    /**
+     * @var string
+     */
     private $_modified;
+    /**
+     * @var string
+     */
     private $_attributes;
+    /**
+     * @var string
+     */
     private $_crc;
+    /**
+     * @var string
+     */
     private $_encrypted;
+    /**
+     * @var string
+     */
     private $_method;
+    /**
+     * @var string
+     */
     private $_block;
 
     /**
@@ -140,46 +167,73 @@ class Archive_7z_Entry
     }
 
 
+    /**
+     * @return string
+     */
     public function getAttributes()
     {
         return $this->_attributes;
     }
 
+    /**
+     * @return string
+     */
     public function getBlock()
     {
         return $this->_block;
     }
 
+    /**
+     * @return string
+     */
     public function getCrc()
     {
         return $this->_crc;
     }
 
+    /**
+     * @return string
+     */
     public function getEncrypted()
     {
         return $this->_encrypted;
     }
 
+    /**
+     * @return string
+     */
     public function getMethod()
     {
         return $this->_method;
     }
 
+    /**
+     * @return string
+     */
     public function getModified()
     {
         return $this->_modified;
     }
 
+    /**
+     * @return string
+     */
     public function getPackedSize()
     {
         return $this->_packedSize;
     }
 
+    /**
+     * @return string
+     */
     public function getPath()
     {
         return $this->_path;
     }
 
+    /**
+     * @return string
+     */
     public function getSize()
     {
         return $this->_size;
