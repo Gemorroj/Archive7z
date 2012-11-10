@@ -2,11 +2,12 @@
 /**
  *
  * This software is distributed under the GNU GPL v3.0 license.
- * @author Gemorroj
+ *
+ * @author    Gemorroj
  * @copyright 2012 http://wapinet.ru
- * @license http://www.gnu.org/licenses/gpl-3.0.txt
- * @link http://wapinet.ru/gmanager/
- * @version 0.1 alpha
+ * @license   http://www.gnu.org/licenses/gpl-3.0.txt
+ * @link      http://wapinet.ru/gmanager/
+ * @version   0.1 alpha
  *
  */
 
@@ -57,7 +58,7 @@ class Archive_7z_Entry
 
     /**
      * @param Archive_7z $archive
-     * @param array $data
+     * @param array      $data
      */
     public function __construct(Archive_7z $archive, array $data)
     {
@@ -87,41 +88,41 @@ class Archive_7z_Entry
     private function _setData($key, $value)
     {
         switch ($key) {
-            case 'Path':
-                $this->_path = $value;
-                break;
+        case 'Path':
+            $this->_path = $value;
+            break;
 
-            case 'Size':
-                $this->_size = $value;
-                break;
+        case 'Size':
+            $this->_size = $value;
+            break;
 
-            case 'Packed Size':
-                $this->_packedSize = $value;
-                break;
+        case 'Packed Size':
+            $this->_packedSize = $value;
+            break;
 
-            case 'Modified':
-                $this->_modified = $value;
-                break;
+        case 'Modified':
+            $this->_modified = $value;
+            break;
 
-            case 'Attributes':
-                $this->_attributes = $value;
-                break;
+        case 'Attributes':
+            $this->_attributes = $value;
+            break;
 
-            case 'CRC':
-                $this->_crc = $value;
-                break;
+        case 'CRC':
+            $this->_crc = $value;
+            break;
 
-            case 'Encrypted':
-                $this->_encrypted = $value;
-                break;
+        case 'Encrypted':
+            $this->_encrypted = $value;
+            break;
 
-            case 'Method':
-                $this->_method = $value;
-                break;
+        case 'Method':
+            $this->_method = $value;
+            break;
 
-            case 'Block':
-                $this->_block = $value;
-                break;
+        case 'Block':
+            $this->_block = $value;
+            break;
         }
     }
 
@@ -156,6 +157,7 @@ class Archive_7z_Entry
 
     /**
      * @param string $directory
+     *
      * @throws Archive_7z_Exception
      */
     public function extractTo($directory = './')

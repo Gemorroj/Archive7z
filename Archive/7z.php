@@ -2,11 +2,12 @@
 /**
  *
  * This software is distributed under the GNU GPL v3.0 license.
- * @author Gemorroj
+ *
+ * @author    Gemorroj
  * @copyright 2012 http://wapinet.ru
- * @license http://www.gnu.org/licenses/gpl-3.0.txt
- * @link http://wapinet.ru/gmanager/
- * @version 0.1 alpha
+ * @license   http://www.gnu.org/licenses/gpl-3.0.txt
+ * @link      http://wapinet.ru/gmanager/
+ * @version   0.1 alpha
  *
  */
 
@@ -62,16 +63,20 @@ class Archive_7z
 
     /**
      * @param string $filename 7z archive filename
+     *
      * @throws Archive_7z_Exception
      */
     public function __construct($filename)
     {
-        $this->setFilename($filename)->setCmdPath(substr(PHP_OS, 0, 3) === 'WIN' ? self::CMD_PATH_WIN : self::CMD_PATH_NIX);
+        $this->setFilename($filename)->setCmdPath(
+            substr(PHP_OS, 0, 3) === 'WIN' ? self::CMD_PATH_WIN : self::CMD_PATH_NIX
+        );
     }
 
 
     /**
      * @param string $path
+     *
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
@@ -89,6 +94,7 @@ class Archive_7z
 
     /**
      * @param string $filename
+     *
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
@@ -106,6 +112,7 @@ class Archive_7z
 
     /**
      * @param string $directory
+     *
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
@@ -123,6 +130,7 @@ class Archive_7z
 
     /**
      * @param string $password
+     *
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
@@ -136,6 +144,7 @@ class Archive_7z
 
     /**
      * @param string $mode
+     *
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
@@ -143,12 +152,14 @@ class Archive_7z
     {
         $this->_overwriteMode = $mode;
 
-        if (in_array($this->_overwriteMode, array(
-            self::OVERWRITE_MODE_A,
-            self::OVERWRITE_MODE_S,
-            self::OVERWRITE_MODE_T,
-            self::OVERWRITE_MODE_U
-        )) === false
+        if (in_array(
+            $this->_overwriteMode, array(
+                self::OVERWRITE_MODE_A,
+                self::OVERWRITE_MODE_S,
+                self::OVERWRITE_MODE_T,
+                self::OVERWRITE_MODE_U
+            )
+        ) === false
         ) {
             throw new Archive_7z_Exception('Overwrite mode is not available');
         }
@@ -220,6 +231,7 @@ class Archive_7z
         if ($this->_password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->_password);
         }
+
         return $cmd;
     }
 
@@ -229,7 +241,9 @@ class Archive_7z
      */
     public function extract()
     {
-        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix();
+        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd(
+            $this->_overwriteMode
+        ) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix();
 
         exec($cmd, $out, $rv);
 
@@ -241,11 +255,16 @@ class Archive_7z
 
     /**
      * @param string $file
+     *
      * @throws Archive_7z_Exception
      */
     public function extractEntry($file)
     {
-        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd($this->_overwriteMode) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix() . ' ' . escapeshellarg($file);
+        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd(
+            $this->_overwriteMode
+        ) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix() . ' ' . escapeshellarg(
+            $file
+        );
 
         exec($cmd, $out, $rv);
 
@@ -257,12 +276,14 @@ class Archive_7z
 
     /**
      * @param string $file
+     *
      * @throws Archive_7z_Exception
      * @return string
      */
     public function getContent($file)
     {
-        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' -so ' . escapeshellarg($file) . ' ' . $this->_getCmdPostfix();
+        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' -so ' . escapeshellarg($file) . ' '
+            . $this->_getCmdPostfix();
 
         $out = shell_exec($cmd);
 
@@ -299,6 +320,7 @@ class Archive_7z
 
     /**
      * @param array $output
+     *
      * @return array
      */
     private function _parseEntries(array $output)
