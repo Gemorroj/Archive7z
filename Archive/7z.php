@@ -17,20 +17,37 @@ require_once 'Archive/7z/Entry.php';
 class Archive_7z
 {
     /**
+     * Overwrite All existing files
+     *
      * @const string
      */
-    const OVERWRITE_MODE_A = '-aoa'; // Overwrite All existing files
-    const OVERWRITE_MODE_S = '-aos'; // Skip extracting of existing files
-    const OVERWRITE_MODE_U = '-aou'; // aUto rename extracting file (for example, name.txt will be renamed to name_1.txt)
-    const OVERWRITE_MODE_T = '-aot'; // auto rename existing file (for example, name.txt will be renamed to name_1.txt)
+    const OVERWRITE_MODE_A = '-aoa';
+    /**
+     * Skip extracting of existing files
+     *
+     * @const string
+     */
+    const OVERWRITE_MODE_S = '-aos';
+    /**
+     * aUto rename extracting file (for example, name.txt will be renamed to name_1.txt)
+     *
+     * @const string
+     */
+    const OVERWRITE_MODE_U = '-aou';
+    /**
+     * auto rename existing file (for example, name.txt will be renamed to name_1.txt)
+     *
+     * @const string
+     */
+    const OVERWRITE_MODE_T = '-aot';
 
 
     /**
-     * @const string
+     * @var string
      */
     protected $cliNix = '/usr/local/bin/7z';
     /**
-     * @const string
+     * @var string
      */
     protected $cliWin = 'C:\Program Files\7-Zip\7z.exe'; // %ProgramFiles%\7-Zip\7z.exe
 
