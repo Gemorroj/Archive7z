@@ -19,46 +19,50 @@ class Archive_7z
     /**
      * @const string
      */
-    const CMD_PATH_NIX = '/usr/local/bin/7z';
-    const CMD_PATH_WIN = 'C:\Program Files\7-Zip\7z.exe';
-    //const CMD_PATH_WIN = '%ProgramFiles%\7-Zip\7z.exe';
-
-    /**
-     * @const string
-     */
     const OVERWRITE_MODE_A = '-aoa'; // Overwrite All existing files
     const OVERWRITE_MODE_S = '-aos'; // Skip extracting of existing files
     const OVERWRITE_MODE_U = '-aou'; // aUto rename extracting file (for example, name.txt will be renamed to name_1.txt)
     const OVERWRITE_MODE_T = '-aot'; // auto rename existing file (for example, name.txt will be renamed to name_1.txt)
 
-    /**
-     * @var string
-     */
-    private $_cmdPath;
 
     /**
-     * @var string
+     * @const string
      */
-    private $_filename;
-
+    protected $cliNix = '/usr/local/bin/7z';
     /**
-     * @var string
+     * @const string
      */
-    private $_password;
+    protected $cliWin = 'C:\Program Files\7-Zip\7z.exe'; // %ProgramFiles%\7-Zip\7z.exe
+
 
     /**
      * @var string
      */
-    private $_outputDirectory = './';
+    private $cli;
 
     /**
      * @var string
      */
-    private $_overwriteMode = self::OVERWRITE_MODE_A;
+    private $filename;
+
+    /**
+     * @var string
+     */
+    private $password;
+
+    /**
+     * @var string
+     */
+    private $outputDirectory = './';
+
+    /**
+     * @var string
+     */
+    private $overwriteMode = self::OVERWRITE_MODE_A;
 
 
-    private $_headToken = '----------';
-    private $_listToken = '';
+    private $headToken = '----------';
+    private $listToken = '';
 
 
     /**
@@ -68,8 +72,8 @@ class Archive_7z
      */
     public function __construct($filename)
     {
-        $this->setFilename($filename)->setCmdPath(
-            substr(PHP_OS, 0, 3) === 'WIN' ? self::CMD_PATH_WIN : self::CMD_PATH_NIX
+        $this->setFilename($filename)->setCli(
+            substr(PHP_OS, 0, 3) === 'WIN' ? $this->cliWin : $this->cliNix
         );
     }
 
@@ -80,12 +84,12 @@ class Archive_7z
      * @throws Archive_7z_Exception
      * @return Archive_7z
      */
-    public function setCmdPath($path)
+    public function setCli($path)
     {
-        $this->_cmdPath = str_replace('\\', '/', realpath($path));
+        $this->cli = str_replace('\\', '/', realpath($path));
 
-        if (is_executable($this->_cmdPath) === false) {
-            throw new Archive_7z_Exception('Cmd path is not available');
+        if (is_executable($this->cli) === false) {
+            throw new Archive_7z_Exception('Cli is not available');
         }
 
         return $this;
@@ -100,9 +104,9 @@ class Archive_7z
      */
     public function setFilename($filename)
     {
-        $this->_filename = realpath($filename);
+        $this->filename = realpath($filename);
 
-        if (is_readable($this->_filename) === false) {
+        if (is_readable($this->filename) === false) {
             throw new Archive_7z_Exception('Filename is not available');
         }
 
@@ -118,9 +122,9 @@ class Archive_7z
      */
     public function setOutputDirectory($directory = './')
     {
-        $this->_outputDirectory = realpath($directory);
+        $this->outputDirectory = realpath($directory);
 
-        if (is_writable($this->_outputDirectory) === false) {
+        if (is_writable($this->outputDirectory) === false) {
             throw new Archive_7z_Exception('Output directory is not available');
         }
 
@@ -136,7 +140,7 @@ class Archive_7z
      */
     public function setPassword($password)
     {
-        $this->_password = $password;
+        $this->password = $password;
 
         return $this;
     }
@@ -150,10 +154,10 @@ class Archive_7z
      */
     public function setOverwriteMode($mode = Archive_7z::OVERWRITE_MODE_A)
     {
-        $this->_overwriteMode = $mode;
+        $this->overwriteMode = $mode;
 
         if (in_array(
-            $this->_overwriteMode, array(
+            $this->overwriteMode, array(
                 self::OVERWRITE_MODE_A,
                 self::OVERWRITE_MODE_S,
                 self::OVERWRITE_MODE_T,
@@ -171,9 +175,9 @@ class Archive_7z
     /**
      * @return string
      */
-    public function getCmdPath()
+    public function getCli()
     {
-        return $this->_cmdPath;
+        return $this->cli;
     }
 
 
@@ -182,7 +186,7 @@ class Archive_7z
      */
     public function getFilename()
     {
-        return $this->_filename;
+        return $this->filename;
     }
 
 
@@ -191,7 +195,7 @@ class Archive_7z
      */
     public function getOutputDirectory()
     {
-        return $this->_outputDirectory;
+        return $this->outputDirectory;
     }
 
 
@@ -200,7 +204,7 @@ class Archive_7z
      */
     public function getPassword()
     {
-        return $this->_password;
+        return $this->password;
     }
 
 
@@ -209,27 +213,27 @@ class Archive_7z
      */
     public function getOverwriteMode()
     {
-        return $this->_overwriteMode;
+        return $this->overwriteMode;
     }
 
 
     /**
      * @return string
      */
-    private function _getCmdPrefix()
+    private function getCmdPrefix()
     {
-        return '"' . escapeshellcmd($this->_cmdPath) . '"'; // fix for windows
+        return '"' . escapeshellcmd($this->cli) . '"'; // fix for windows
     }
 
 
     /**
      * @return string
      */
-    private function _getCmdPostfix()
+    private function getCmdPostfix()
     {
         $cmd = '';
-        if ($this->_password !== null) {
-            $cmd .= ' -p' . escapeshellarg($this->_password);
+        if ($this->password !== null) {
+            $cmd .= ' -p' . escapeshellarg($this->password);
         }
 
         return $cmd;
@@ -241,9 +245,9 @@ class Archive_7z
      */
     public function extract()
     {
-        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd(
-            $this->_overwriteMode
-        ) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix();
+        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
+            $this->overwriteMode
+        ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix();
 
         exec($cmd, $out, $rv);
 
@@ -260,9 +264,9 @@ class Archive_7z
      */
     public function extractEntry($file)
     {
-        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' ' . escapeshellcmd(
-            $this->_overwriteMode
-        ) . ' -o' . escapeshellarg($this->_outputDirectory) . ' ' . $this->_getCmdPostfix() . ' ' . escapeshellarg(
+        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
+            $this->overwriteMode
+        ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix() . ' ' . escapeshellarg(
             $file
         );
 
@@ -282,8 +286,8 @@ class Archive_7z
      */
     public function getContent($file)
     {
-        $cmd = $this->_getCmdPrefix() . ' x ' . escapeshellarg($this->_filename) . ' -so ' . escapeshellarg($file) . ' '
-            . $this->_getCmdPostfix();
+        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' -so ' . escapeshellarg($file) . ' '
+            . $this->getCmdPostfix();
 
         $out = shell_exec($cmd);
 
@@ -301,7 +305,7 @@ class Archive_7z
      */
     public function getEntries()
     {
-        $cmd = $this->_getCmdPrefix() . ' l ' . escapeshellarg($this->_filename) . ' -slt ' . $this->_getCmdPostfix();
+        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfix();
 
         exec($cmd, $out, $rv);
 
@@ -310,7 +314,7 @@ class Archive_7z
         }
 
         $list = array();
-        foreach ($this->_parseEntries($out) as $v) {
+        foreach ($this->parseEntries($out) as $v) {
             $list[] = new Archive_7z_Entry($this, $v);
         }
 
@@ -323,14 +327,14 @@ class Archive_7z
      *
      * @return array
      */
-    private function _parseEntries(array $output)
+    private function parseEntries(array $output)
     {
         $head = true;
         $list = array();
         $i = 0;
 
         foreach ($output as $value) {
-            if ($value === $this->_headToken) {
+            if ($value === $this->headToken) {
                 $head = false;
                 continue;
             }
@@ -339,7 +343,7 @@ class Archive_7z
                 continue;
             }
 
-            if ($value === $this->_listToken) {
+            if ($value === $this->listToken) {
                 $i++;
                 continue;
             }

@@ -16,44 +16,44 @@ class Archive_7z_Entry
     /**
      * @var string
      */
-    private $_path;
+    private $path;
     /**
      * @var string
      */
-    private $_size;
+    private $size;
     /**
      * @var string
      */
-    private $_packedSize;
+    private $packedSize;
     /**
      * @var string
      */
-    private $_modified;
+    private $modified;
     /**
      * @var string
      */
-    private $_attributes;
+    private $attributes;
     /**
      * @var string
      */
-    private $_crc;
+    private $crc;
     /**
      * @var string
      */
-    private $_encrypted;
+    private $encrypted;
     /**
      * @var string
      */
-    private $_method;
+    private $method;
     /**
      * @var string
      */
-    private $_block;
+    private $block;
 
     /**
      * @var Archive_7z
      */
-    private $_archive;
+    private $archive;
 
 
     /**
@@ -62,21 +62,21 @@ class Archive_7z_Entry
      */
     public function __construct(Archive_7z $archive, array $data)
     {
-        $this->_archive = $archive;
-        $this->_parseEntry($data);
+        $this->archive = $archive;
+        $this->parseEntry($data);
     }
 
 
     /**
      * @param array $data
      */
-    private function _parseEntry(array $data)
+    private function parseEntry(array $data)
     {
         foreach ($data as $line) {
             list($k, $v) = explode(' =', $line, 2);
             $v = ltrim($v);
 
-            $this->_setData($k, $v);
+            $this->setData($k, $v);
         }
     }
 
@@ -85,43 +85,43 @@ class Archive_7z_Entry
      * @param string $key
      * @param string $value
      */
-    private function _setData($key, $value)
+    private function setData($key, $value)
     {
         switch ($key) {
         case 'Path':
-            $this->_path = $value;
+            $this->path = $value;
             break;
 
         case 'Size':
-            $this->_size = $value;
+            $this->size = $value;
             break;
 
         case 'Packed Size':
-            $this->_packedSize = $value;
+            $this->packedSize = $value;
             break;
 
         case 'Modified':
-            $this->_modified = $value;
+            $this->modified = $value;
             break;
 
         case 'Attributes':
-            $this->_attributes = $value;
+            $this->attributes = $value;
             break;
 
         case 'CRC':
-            $this->_crc = $value;
+            $this->crc = $value;
             break;
 
         case 'Encrypted':
-            $this->_encrypted = $value;
+            $this->encrypted = $value;
             break;
 
         case 'Method':
-            $this->_method = $value;
+            $this->method = $value;
             break;
 
         case 'Block':
-            $this->_block = $value;
+            $this->block = $value;
             break;
         }
     }
@@ -132,7 +132,7 @@ class Archive_7z_Entry
      */
     public function isDirectory()
     {
-        return ($this->_attributes[0] === 'D');
+        return ($this->attributes[0] === 'D');
     }
 
 
@@ -142,7 +142,7 @@ class Archive_7z_Entry
      */
     public function getContent()
     {
-        return $this->_archive->getContent($this->_path);
+        return $this->archive->getContent($this->path);
     }
 
 
@@ -151,7 +151,7 @@ class Archive_7z_Entry
      */
     public function extract()
     {
-        $this->_archive->extractEntry($this->_path);
+        $this->archive->extractEntry($this->path);
     }
 
 
@@ -162,10 +162,10 @@ class Archive_7z_Entry
      */
     public function extractTo($directory = './')
     {
-        $oldDirectory = $this->_archive->getOutputDirectory();
-        $this->_archive->setOutputDirectory($directory);
-        $this->_archive->extractEntry($this->_path);
-        $this->_archive->setOutputDirectory($oldDirectory);
+        $oldDirectory = $this->archive->getOutputDirectory();
+        $this->archive->setOutputDirectory($directory);
+        $this->archive->extractEntry($this->path);
+        $this->archive->setOutputDirectory($oldDirectory);
     }
 
 
@@ -174,7 +174,7 @@ class Archive_7z_Entry
      */
     public function getAttributes()
     {
-        return $this->_attributes;
+        return $this->attributes;
     }
 
     /**
@@ -182,7 +182,7 @@ class Archive_7z_Entry
      */
     public function getBlock()
     {
-        return $this->_block;
+        return $this->block;
     }
 
     /**
@@ -190,7 +190,7 @@ class Archive_7z_Entry
      */
     public function getCrc()
     {
-        return $this->_crc;
+        return $this->crc;
     }
 
     /**
@@ -198,7 +198,7 @@ class Archive_7z_Entry
      */
     public function getEncrypted()
     {
-        return $this->_encrypted;
+        return $this->encrypted;
     }
 
     /**
@@ -206,7 +206,7 @@ class Archive_7z_Entry
      */
     public function getMethod()
     {
-        return $this->_method;
+        return $this->method;
     }
 
     /**
@@ -214,7 +214,7 @@ class Archive_7z_Entry
      */
     public function getModified()
     {
-        return $this->_modified;
+        return $this->modified;
     }
 
     /**
@@ -222,7 +222,7 @@ class Archive_7z_Entry
      */
     public function getPackedSize()
     {
-        return $this->_packedSize;
+        return $this->packedSize;
     }
 
     /**
@@ -230,7 +230,7 @@ class Archive_7z_Entry
      */
     public function getPath()
     {
-        return $this->_path;
+        return $this->path;
     }
 
     /**
@@ -238,6 +238,6 @@ class Archive_7z_Entry
      */
     public function getSize()
     {
-        return $this->_size;
+        return $this->size;
     }
 }
