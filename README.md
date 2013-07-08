@@ -1,14 +1,22 @@
 # Работа с 7z архивами с помощью командной строки.
 
+[![Build Status](https://secure.travis-ci.org/Gemorroj/Archive_7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive_7z)
+
+
 На данный момент, поддерживается распаковка всего архива,
 распаковка любой директории или файла в архиве,
 просмотр всех файлов и директорий находящихся в архиве,
 получение содержимого файла в архиве.
 
+Требования:
+
+- PHP >= 5.2
+
+
 Пример:
 ```php
 <?php
-set_include_path(__DIR__);
+set_include_path(dirname(__FILE__));
 require 'Archive/7z.php';
 
 $obj = new Archive_7z('./test.7z');
