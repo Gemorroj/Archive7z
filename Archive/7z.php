@@ -17,6 +17,16 @@ require_once 'Archive/7z/Entry.php';
 class Archive_7z
 {
     /**
+     * Error codes
+     * 0 - Normal (no errors or warnings detected)
+     * 1 - Warning (Non fatal error(s)). For example, some files cannot be read during compressing. So they were not compressed
+     * 2 - Fatal error
+     * 7 - Bad command line parameters
+     * 8 - Not enough memory for operation
+     * 255 - User stopped the process with control-C (or similar)
+     */
+
+    /**
      * Overwrite all existing files
      *
      * @const string
@@ -42,6 +52,10 @@ class Archive_7z
     const OVERWRITE_MODE_T = '-aot';
 
 
+    /**
+     * @var int (0-9)
+     */
+    protected $compressionLevel = 9;
     /**
      * @var string
      */
@@ -84,17 +98,18 @@ class Archive_7z
 
     /**
      * @param string $filename 7z archive filename
-     * @param string $cli CLI path
+     * @param string $cli      CLI path
      *
      * @throws Archive_7z_Exception
      */
     public function __construct($filename, $cli = null)
     {
-        $this->setFilename($filename);
         if ($cli === null) {
             $cli = substr(PHP_OS, 0, 3) === 'WIN' ? $this->cliWin : $this->cliNix;
         }
+
         $this->setCli($cli);
+        $this->setFilename($filename);
     }
 
 
@@ -124,11 +139,12 @@ class Archive_7z
      */
     public function setFilename($filename)
     {
-        $this->filename = realpath($filename);
+        //$this->filename = realpath($filename);
+        $this->filename = $filename;
 
-        if (is_readable($this->filename) === false) {
-            throw new Archive_7z_Exception('Filename is not available');
-        }
+        //if (is_readable($this->filename) === false) {
+        //    throw new Archive_7z_Exception('Filename is not available');
+        //}
 
         return $this;
     }
@@ -177,13 +193,13 @@ class Archive_7z
         $this->overwriteMode = $mode;
 
         if (in_array(
-            $this->overwriteMode, array(
-                self::OVERWRITE_MODE_A,
-                self::OVERWRITE_MODE_S,
-                self::OVERWRITE_MODE_T,
-                self::OVERWRITE_MODE_U
-            )
-        ) === false
+                $this->overwriteMode, array(
+                    self::OVERWRITE_MODE_A,
+                    self::OVERWRITE_MODE_S,
+                    self::OVERWRITE_MODE_T,
+                    self::OVERWRITE_MODE_U
+                )
+            ) === false
         ) {
             throw new Archive_7z_Exception('Overwrite mode is not available');
         }
@@ -266,13 +282,13 @@ class Archive_7z
     public function extract()
     {
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
-            $this->overwriteMode
-        ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix();
+                $this->overwriteMode
+            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix();
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv);
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
         }
     }
 
@@ -285,15 +301,66 @@ class Archive_7z
     public function extractEntry($file)
     {
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
-            $this->overwriteMode
-        ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix() . ' ' . escapeshellarg(
-            $file
-        );
+                $this->overwriteMode
+            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix() . ' ' . escapeshellarg(
+                $file
+            );
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv);
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+        }
+    }
+
+
+    /**
+     * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
+     *
+     * @param string $file
+     * @param bool $includeSubFiles
+     * @param bool $storePath (not work for full paths)
+     *
+     * @throws Archive_7z_Exception
+     */
+    public function addEntry($file, $includeSubFiles = false, $storePath = false)
+    {
+        if ($storePath) {
+            $path = '-i!' . escapeshellarg($file);
+        } else {
+            $path = escapeshellarg(realpath($file));
+        }
+
+        $exclude = '';
+        if (!$includeSubFiles && is_dir($file) === true) {
+            $exclude = '-x!' . escapeshellarg(rtrim($file, '/') . '/*');
+        }
+
+        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . intval($this->compressionLevel) . ' -t7z ' . $this->getCmdPostfix() . ' '
+            . $path . ' ' . $exclude;
+
+        exec($cmd, $out, $rv);
+
+        if ($rv !== 0) {
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+        }
+    }
+
+
+    /**
+     * @param string $file
+     *
+     * @throws Archive_7z_Exception
+     */
+    public function delEntry($file)
+    {
+        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfix() . ' '
+            . escapeshellarg($file);
+
+        exec($cmd, $out, $rv);
+
+        if ($rv !== 0) {
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
         }
     }
 
@@ -330,7 +397,7 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv);
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
         }
 
         $list = array();
