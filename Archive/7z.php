@@ -17,7 +17,7 @@ require_once 'Archive/7z/Entry.php';
 class Archive_7z
 {
     /**
-     * Overwrite All existing files
+     * Overwrite all existing files
      *
      * @const string
      */
@@ -29,13 +29,13 @@ class Archive_7z
      */
     const OVERWRITE_MODE_S = '-aos';
     /**
-     * aUto rename extracting file (for example, name.txt will be renamed to name_1.txt)
+     * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt)
      *
      * @const string
      */
     const OVERWRITE_MODE_U = '-aou';
     /**
-     * auto rename existing file (for example, name.txt will be renamed to name_1.txt)
+     * Auto rename existing file (for example, name.txt will be renamed to name_1.txt)
      *
      * @const string
      */
@@ -84,14 +84,17 @@ class Archive_7z
 
     /**
      * @param string $filename 7z archive filename
+     * @param string $cli CLI path
      *
      * @throws Archive_7z_Exception
      */
-    public function __construct($filename)
+    public function __construct($filename, $cli = null)
     {
-        $this->setFilename($filename)->setCli(
-            substr(PHP_OS, 0, 3) === 'WIN' ? $this->cliWin : $this->cliNix
-        );
+        $this->setFilename($filename);
+        if ($cli === null) {
+            $cli = substr(PHP_OS, 0, 3) === 'WIN' ? $this->cliWin : $this->cliNix;
+        }
+        $this->setCli($cli);
     }
 
 
