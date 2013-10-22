@@ -5,6 +5,9 @@ php:
   - "5.3"
   - "5.2"
 
+before_script:
+  - chmod 777 Tests/tmp
+
 script: phpunit --configuration phpunit.xml
 
 notifications:
