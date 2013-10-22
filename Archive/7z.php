@@ -121,13 +121,22 @@ class Archive_7z
      */
     public function setCli($path)
     {
-        $this->cli = str_replace('\\', '/', realpath($path));
+        $this->cli = realpath($path);
 
         if (is_executable($this->cli) === false) {
             throw new Archive_7z_Exception('Cli is not available');
         }
 
         return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getCli()
+    {
+        return $this->cli;
     }
 
 
@@ -151,6 +160,15 @@ class Archive_7z
 
 
     /**
+     * @return string
+     */
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+
+
+    /**
      * @param string $directory
      *
      * @throws Archive_7z_Exception
@@ -169,6 +187,15 @@ class Archive_7z
 
 
     /**
+     * @return string
+     */
+    public function getOutputDirectory()
+    {
+        return $this->outputDirectory;
+    }
+
+
+    /**
      * @param string $password
      *
      * @throws Archive_7z_Exception
@@ -179,6 +206,15 @@ class Archive_7z
         $this->password = $password;
 
         return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getPassword()
+    {
+        return $this->password;
     }
 
 
@@ -211,42 +247,6 @@ class Archive_7z
     /**
      * @return string
      */
-    public function getCli()
-    {
-        return $this->cli;
-    }
-
-
-    /**
-     * @return string
-     */
-    public function getFilename()
-    {
-        return $this->filename;
-    }
-
-
-    /**
-     * @return string
-     */
-    public function getOutputDirectory()
-    {
-        return $this->outputDirectory;
-    }
-
-
-    /**
-     * @return string
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-
-    /**
-     * @return string
-     */
     public function getOverwriteMode()
     {
         return $this->overwriteMode;
@@ -258,7 +258,7 @@ class Archive_7z
      */
     private function getCmdPrefix()
     {
-        return '"' . escapeshellcmd($this->cli) . '"'; // fix for windows
+        return '"' . escapeshellcmd(str_replace('\\', '/', $this->cli)) . '"'; // fix for windows
     }
 
 
@@ -315,6 +315,50 @@ class Archive_7z
 
 
     /**
+     * @param string $file
+     *
+     * @throws Archive_7z_Exception
+     * @return string
+     */
+    public function getContent($file)
+    {
+        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' -so ' . escapeshellarg($file) . ' '
+            . $this->getCmdPostfix();
+
+        $out = shell_exec($cmd);
+
+        if ($out === null) {
+            throw new Archive_7z_Exception('Error!');
+        }
+
+        return $out;
+    }
+
+
+    /**
+     * @throws Archive_7z_Exception
+     * @return Archive_7z_Entry[]
+     */
+    public function getEntries()
+    {
+        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfix();
+
+        exec($cmd, $out, $rv);
+
+        if ($rv !== 0) {
+            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+        }
+
+        $list = array();
+        foreach ($this->parseEntries($out) as $v) {
+            $list[] = new Archive_7z_Entry($this, $v);
+        }
+
+        return $list;
+    }
+
+
+    /**
      * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
      *
      * @param string $file
@@ -362,50 +406,6 @@ class Archive_7z
         if ($rv !== 0) {
             throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
         }
-    }
-
-
-    /**
-     * @param string $file
-     *
-     * @throws Archive_7z_Exception
-     * @return string
-     */
-    public function getContent($file)
-    {
-        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' -so ' . escapeshellarg($file) . ' '
-            . $this->getCmdPostfix();
-
-        $out = shell_exec($cmd);
-
-        if ($out === null) {
-            throw new Archive_7z_Exception('Error!');
-        }
-
-        return $out;
-    }
-
-
-    /**
-     * @throws Archive_7z_Exception
-     * @return Archive_7z_Entry[]
-     */
-    public function getEntries()
-    {
-        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfix();
-
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
-        }
-
-        $list = array();
-        foreach ($this->parseEntries($out) as $v) {
-            $list[] = new Archive_7z_Entry($this, $v);
-        }
-
-        return $list;
     }
 
 
