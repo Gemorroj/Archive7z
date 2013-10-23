@@ -59,7 +59,7 @@ class Archive_7z
     /**
      * @var string
      */
-    protected $cliNix = '/usr/local/bin/7z';
+    protected $cliNix = '/usr/bin/7z';
     /**
      * @var string
      */
