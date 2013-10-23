@@ -50,8 +50,6 @@ class Archive_7z
      * @const string
      */
     const OVERWRITE_MODE_T = '-aot';
-
-
     /**
      * @var int (0-9)
      */
@@ -59,42 +57,37 @@ class Archive_7z
     /**
      * @var string
      */
-    protected $cliNix = '/usr/bin/7z';
+    protected $cliLinux = '/usr/bin/7z';
     /**
      * @var string
      */
-    protected $cliWin = 'C:\Program Files\7-Zip\7z.exe'; // %ProgramFiles%\7-Zip\7z.exe
-
-
+    protected $cliBsd = '/usr/local/bin/7z';
+    /**
+     * @var string
+     */
+    protected $cliWindows = 'C:\Program Files\7-Zip\7z.exe'; // %ProgramFiles%\7-Zip\7z.exe
     /**
      * @var string
      */
     private $cli;
-
     /**
      * @var string
      */
     private $filename;
-
     /**
      * @var string
      */
     private $password;
-
     /**
      * @var string
      */
     private $outputDirectory = './';
-
     /**
      * @var string
      */
     private $overwriteMode = self::OVERWRITE_MODE_A;
-
-
     private $headToken = '----------';
     private $listToken = '';
-
 
     /**
      * @param string $filename 7z archive filename
@@ -105,13 +98,36 @@ class Archive_7z
     public function __construct($filename, $cli = null)
     {
         if ($cli === null) {
-            $cli = substr(PHP_OS, 0, 3) === 'WIN' ? $this->cliWin : $this->cliNix;
+            $cli = $this->getAutoCli();
         }
 
         $this->setCli($cli);
         $this->setFilename($filename);
     }
 
+    /**
+     * @return string
+     */
+    protected function getAutoCli()
+    {
+        $os = strtoupper(php_uname('s'));
+
+        if (strpos($os, 'BSD')) {
+            return $this->cliBsd;
+        } elseif (strpos($os, 'WIN')) {
+            return $this->cliWindows;
+        } else {
+            return $this->cliLinux;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getCli()
+    {
+        return $this->cli;
+    }
 
     /**
      * @param string $path
@@ -130,15 +146,13 @@ class Archive_7z
         return $this;
     }
 
-
     /**
      * @return string
      */
-    public function getCli()
+    public function getFilename()
     {
-        return $this->cli;
+        return $this->filename;
     }
-
 
     /**
      * @param string $filename
@@ -158,15 +172,13 @@ class Archive_7z
         return $this;
     }
 
-
     /**
      * @return string
      */
-    public function getFilename()
+    public function getOutputDirectory()
     {
-        return $this->filename;
+        return $this->outputDirectory;
     }
-
 
     /**
      * @param string $directory
@@ -185,15 +197,13 @@ class Archive_7z
         return $this;
     }
 
-
     /**
      * @return string
      */
-    public function getOutputDirectory()
+    public function getPassword()
     {
-        return $this->outputDirectory;
+        return $this->password;
     }
-
 
     /**
      * @param string $password
@@ -208,15 +218,13 @@ class Archive_7z
         return $this;
     }
 
-
     /**
      * @return string
      */
-    public function getPassword()
+    public function getOverwriteMode()
     {
-        return $this->password;
+        return $this->overwriteMode;
     }
-
 
     /**
      * @param string $mode
@@ -243,55 +251,6 @@ class Archive_7z
         return $this;
     }
 
-
-    /**
-     * @return string
-     */
-    public function getOverwriteMode()
-    {
-        return $this->overwriteMode;
-    }
-
-
-    /**
-     * @return string
-     */
-    private function getCmdPrefix()
-    {
-        return '"' . escapeshellcmd(str_replace('\\', '/', $this->cli)) . '"'; // fix for windows
-    }
-
-
-    /**
-     * @return string
-     */
-    private function getCmdPostfixExtract()
-    {
-        $cmd = '';
-        if ($this->password !== null) {
-            $cmd .= ' -p' . escapeshellarg($this->password);
-        } else {
-            $cmd .= ' -p" "';
-        }
-
-        return $cmd;
-    }
-
-
-    /**
-     * @return string
-     */
-    private function getCmdPostfixCompress()
-    {
-        $cmd = '';
-        if ($this->password !== null) {
-            $cmd .= ' -p' . escapeshellarg($this->password);
-        }
-
-        return $cmd;
-    }
-
-
     /**
      * @throws Archive_7z_Exception
      */
@@ -308,6 +267,28 @@ class Archive_7z
         }
     }
 
+    /**
+     * @return string
+     */
+    private function getCmdPrefix()
+    {
+        return '"' . escapeshellcmd(str_replace('\\', '/', $this->cli)) . '"'; // fix for windows
+    }
+
+    /**
+     * @return string
+     */
+    private function getCmdPostfixExtract()
+    {
+        $cmd = '';
+        if ($this->password !== null) {
+            $cmd .= ' -p' . escapeshellarg($this->password);
+        } else {
+            $cmd .= ' -p" "';
+        }
+
+        return $cmd;
+    }
 
     /**
      * @param string $file
@@ -328,7 +309,6 @@ class Archive_7z
             throw new Archive_7z_Exception(end($out), $rv);
         }
     }
-
 
     /**
      * @param string $file
@@ -351,6 +331,21 @@ class Archive_7z
         return $result;
     }
 
+    /**
+     * @param string $file
+     * @throws Archive_7z_Exception
+     * @return Archive_7z_Entry|null
+     */
+    public function getEntry($file)
+    {
+        foreach ($this->getEntries() as $v) {
+            if ($v->getPath() == $file) {
+                return $v;
+            }
+        }
+
+        return null;
+    }
 
     /**
      * @throws Archive_7z_Exception
@@ -374,23 +369,37 @@ class Archive_7z
         return $list;
     }
 
-
     /**
-     * @param string $file
-     * @throws Archive_7z_Exception
-     * @return Archive_7z_Entry|null
+     * @param array $output
+     *
+     * @return array
      */
-    public function getEntry($file)
+    private function parseEntries(array $output)
     {
-        foreach ($this->getEntries() as $v) {
-            if ($v->getPath() == $file) {
-                return $v;
+        $head = true;
+        $list = array();
+        $i = 0;
+
+        foreach ($output as $value) {
+            if ($value === $this->headToken) {
+                $head = false;
+                continue;
             }
+
+            if ($head === true) {
+                continue;
+            }
+
+            if ($value === $this->listToken) {
+                $i++;
+                continue;
+            }
+
+            $list[$i][] = $value;
         }
 
-        return null;
+        return $list;
     }
-
 
     /**
      * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
@@ -424,6 +433,18 @@ class Archive_7z
         }
     }
 
+    /**
+     * @return string
+     */
+    private function getCmdPostfixCompress()
+    {
+        $cmd = '';
+        if ($this->password !== null) {
+            $cmd .= ' -p' . escapeshellarg($this->password);
+        }
+
+        return $cmd;
+    }
 
     /**
      * @param string $file
@@ -440,38 +461,5 @@ class Archive_7z
         if ($rv !== 0) {
             throw new Archive_7z_Exception(end($out), $rv);
         }
-    }
-
-
-    /**
-     * @param array $output
-     *
-     * @return array
-     */
-    private function parseEntries(array $output)
-    {
-        $head = true;
-        $list = array();
-        $i = 0;
-
-        foreach ($output as $value) {
-            if ($value === $this->headToken) {
-                $head = false;
-                continue;
-            }
-
-            if ($head === true) {
-                continue;
-            }
-
-            if ($value === $this->listToken) {
-                $i++;
-                continue;
-            }
-
-            $list[$i][] = $value;
-        }
-
-        return $list;
     }
 }
