@@ -3,7 +3,7 @@ require_once 'Archive/7z.php';
 
 class Archive_7zTest extends PHPUnit_Framework_TestCase
 {
-    protected $cliPath = 'c:\_SOFT_\Universal Extractor\bin\7z.exe';
+    protected $cliPath/* = 'c:\_SOFT_\Universal Extractor\bin\7z.exe'*/;
     protected $tmpDir;
 
     /**
