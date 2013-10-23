@@ -219,7 +219,7 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $obj->setPassword('123');
         $result = $obj->getContent('test/test.txt');
 
-        $this->assertEquals('test text', $result);
+        $this->assertEquals(file_get_contents(dirname(__FILE__) . '/testArchive.txt'), $result);
     }
 
     public function testGetEntriesPasswd()
@@ -231,5 +231,61 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(is_array($result));
         $this->assertCount(5, $result); // 4 file + 1 directory
         $this->assertInstanceOf('Archive_7z_Entry', $result[0]);
+    }
+
+    public function testGetEntryPasswd()
+    {
+        $obj = new Archive_7z(dirname(__FILE__) . '/testPasswd.7z', $this->cliPath);
+        $obj->setPassword('123');
+        $result = $obj->getEntry('test/test.txt');
+
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+    }
+
+    public function testAddEntryFullPathPasswd()
+    {
+        //copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
+        copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/file.txt');
+
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->setPassword('111');
+        $obj->addEntry(realpath($this->tmpDir . '/file.txt'), false, false);
+        $result = $obj->getEntry('file.txt');
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+        $this->assertEquals('file.txt', $result->getPath());
+
+        $new = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $this->setExpectedException('Archive_7z_Exception');
+        $new->getContent('file.txt');
+    }
+
+    public function testAddEntryFullPath()
+    {
+        //copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
+        copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/file.txt');
+
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->addEntry(realpath($this->tmpDir . '/file.txt'), false, false);
+        $result = $obj->getEntry('file.txt');
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+        $this->assertEquals('file.txt', $result->getPath());
+    }
+
+    public function testAddEntryLocalPath()
+    {
+        //copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
+        copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/test.txt');
+        $localPath =  basename(dirname(__FILE__)) . '/' . basename($this->tmpDir) . '/test.txt';
+
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->addEntry($localPath, false, true);
+        $result = $obj->getEntry($localPath);
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+        $this->assertEquals($localPath, $result->getPath());
+    }
+
+    public function testAddEntrySubFiles()
+    {
+        //todo
     }
 }

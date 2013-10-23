@@ -265,7 +265,23 @@ class Archive_7z
     /**
      * @return string
      */
-    private function getCmdPostfix()
+    private function getCmdPostfixExtract()
+    {
+        $cmd = '';
+        if ($this->password !== null) {
+            $cmd .= ' -p' . escapeshellarg($this->password);
+        } else {
+            $cmd .= ' -p""';
+        }
+
+        return $cmd;
+    }
+
+
+    /**
+     * @return string
+     */
+    private function getCmdPostfixCompress()
     {
         $cmd = '';
         if ($this->password !== null) {
@@ -283,12 +299,12 @@ class Archive_7z
     {
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
                 $this->overwriteMode
-            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix();
+            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract();
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+            throw new Archive_7z_Exception(end($out), $rv);
         }
     }
 
@@ -302,14 +318,14 @@ class Archive_7z
     {
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
                 $this->overwriteMode
-            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfix() . ' ' . escapeshellarg(
+            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract() . ' ' . escapeshellarg(
                 $file
             );
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+            throw new Archive_7z_Exception(end($out), $rv);
         }
     }
 
@@ -323,15 +339,16 @@ class Archive_7z
     public function getContent($file)
     {
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' -so ' . escapeshellarg($file) . ' '
-            . $this->getCmdPostfix();
+            . $this->getCmdPostfixExtract();
 
-        $out = shell_exec($cmd);
+        // в exec теряются переводы строк
+        $result = shell_exec($cmd);
 
-        if ($out === null) {
-            throw new Archive_7z_Exception('Error!');
+        if ($result === null) {
+            throw new Archive_7z_Exception('Error');
         }
 
-        return $out;
+        return $result;
     }
 
 
@@ -341,12 +358,12 @@ class Archive_7z
      */
     public function getEntries()
     {
-        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfix();
+        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract();
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+            throw new Archive_7z_Exception(end($out), $rv);
         }
 
         $list = array();
@@ -355,6 +372,23 @@ class Archive_7z
         }
 
         return $list;
+    }
+
+
+    /**
+     * @param string $file
+     * @throws Archive_7z_Exception
+     * @return Archive_7z_Entry|null
+     */
+    public function getEntry($file)
+    {
+        foreach ($this->getEntries() as $v) {
+            if ($v->getPath() == $file) {
+                return $v;
+            }
+        }
+
+        return null;
     }
 
 
@@ -380,13 +414,13 @@ class Archive_7z
             $exclude = '-x!' . escapeshellarg(rtrim($file, '/') . '/*');
         }
 
-        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . intval($this->compressionLevel) . ' -t7z ' . $this->getCmdPostfix() . ' '
+        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . intval($this->compressionLevel) . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
             . $path . ' ' . $exclude;
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+            throw new Archive_7z_Exception(end($out), $rv);
         }
     }
 
@@ -398,13 +432,13 @@ class Archive_7z
      */
     public function delEntry($file)
     {
-        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfix() . ' '
+        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
             . escapeshellarg($file);
 
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception('Error! Exit code: ' . $rv, $rv);
+            throw new Archive_7z_Exception(end($out), $rv);
         }
     }
 
