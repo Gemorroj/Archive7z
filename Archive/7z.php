@@ -271,7 +271,7 @@ class Archive_7z
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         } else {
-            $cmd .= ' -p""';
+            $cmd .= ' -p" "';
         }
 
         return $cmd;

@@ -275,7 +275,7 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
     {
         //copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
         copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/test.txt');
-        $localPath =  basename(dirname(__FILE__)) . '/' . basename($this->tmpDir) . '/test.txt';
+        $localPath = basename(dirname(__FILE__)) . '/' . basename($this->tmpDir) . '/test.txt';
 
         $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry($localPath, false, true);
@@ -284,8 +284,53 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($localPath, $result->getPath());
     }
 
-    public function testAddEntrySubFiles()
+    public function testAddEntryLocalPathSubFiles()
     {
-        //todo
+        mkdir($this->tmpDir . '/test');
+        copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/test/test.txt');
+        $localPath = basename(dirname(__FILE__)) . '/' . basename($this->tmpDir);
+
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->addEntry($localPath, true, true);
+        $result = $obj->getEntry($localPath);
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+        $this->assertEquals($localPath, $result->getPath());
+    }
+
+    public function testAddEntryFullPathSubFiles()
+    {
+        mkdir($this->tmpDir . '/test');
+        copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/test/test.txt');
+
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->addEntry(realpath($this->tmpDir), true, false);
+        $result = $obj->getEntry(basename($this->tmpDir));
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+        $this->assertEquals(basename($this->tmpDir), $result->getPath());
+    }
+
+    public function testDelEntry()
+    {
+        copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->delEntry('test/test.txt');
+        $this->assertNull($obj->getEntry('test/test.txt'));
+    }
+
+    public function testDelEntryPasswd()
+    {
+        copy(dirname(__FILE__) . '/testPasswd.7z', $this->tmpDir . '/test.7z');
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->setPassword('123');
+        $obj->delEntry('test/test.txt');
+        $this->assertNull($obj->getEntry('test/test.txt'));
+    }
+
+    public function testDelEntryPasswdFail()
+    {
+        copy(dirname(__FILE__) . '/testPasswd.7z', $this->tmpDir . '/test.7z');
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $this->setExpectedException('Archive_7z_Exception');
+        $obj->delEntry('test/test.txt');
     }
 }
