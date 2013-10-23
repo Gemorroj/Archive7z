@@ -72,14 +72,14 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
     /**
      * @todo test overwriteMode
      */
-    public function testExctract()
+    public function testExtract()
     {
         $obj = new Archive_7z(dirname(__FILE__) . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory(dirname(__FILE__) . '/tmp');
         $obj->extract();
     }
 
-    public function testExctractPasswd()
+    public function testExtractPasswd()
     {
         $obj = new Archive_7z(dirname(__FILE__) . '/testPasswd.7z', $this->cliPath);
         $obj->setOutputDirectory(dirname(__FILE__) . '/tmp');
@@ -90,21 +90,21 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
     /**
      * @todo test overwriteMode
      */
-    public function testExctractEntry()
+    public function testExtractEntry()
     {
         $obj = new Archive_7z(dirname(__FILE__) . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory(dirname(__FILE__) . '/tmp');
         $obj->extractEntry('test/2.jpg');
     }
 
-    public function testExctractEntryDos()
+    public function testExtractEntryDos()
     {
         $obj = new Archive_7z(dirname(__FILE__) . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory(dirname(__FILE__) . '/tmp');
         $obj->extractEntry(iconv('UTF-8', 'CP866', 'чавес.jpg'));
     }
 
-    public function testExctractEntryPasswd()
+    public function testExtractEntryPasswd()
     {
         $obj = new Archive_7z(dirname(__FILE__) . '/testPasswd.7z', $this->cliPath);
         $obj->setOutputDirectory(dirname(__FILE__) . '/tmp');
