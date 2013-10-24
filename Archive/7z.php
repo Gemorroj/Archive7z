@@ -281,7 +281,7 @@ class Archive_7z
     private function getCmdPostfixExtract()
     {
         $cmd = ' -y';
-        //$cmd .= ' -scc"UTF-8"'; // not work for linux
+        $cmd .= ' -scc"UTF-8"'; // not work for linux
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         } else {
@@ -297,7 +297,7 @@ class Archive_7z
     private function getCmdPostfixCompress()
     {
         $cmd = ' -y';
-        //$cmd .= ' -scc"UTF-8"'; // not work for linux
+        $cmd .= ' -scc"UTF-8"'; // not work for linux
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         }
@@ -430,8 +430,8 @@ class Archive_7z
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
         if ($storePath) {
-            $path = ''/*'-spf'*/; // not work for linux
-            $path .= ' -i!' . escapeshellarg($file);
+            $path = '-spf -i!' . escapeshellarg($file); // 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
+            //$path = ' -i!' . escapeshellarg($file);
         } else {
             $path = escapeshellarg(realpath($file));
         }
@@ -469,12 +469,13 @@ class Archive_7z
     }
 
     /**
+     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
+     *
      * @param string $fileSrc
      * @param string $fileDest
      *
      * @throws Archive_7z_Exception
      */
-    /*
     public function renameEntry($fileSrc, $fileDest)
     {
         $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
@@ -486,5 +487,4 @@ class Archive_7z
             throw new Archive_7z_Exception(end($out), $rv);
         }
     }
-    */
 }
