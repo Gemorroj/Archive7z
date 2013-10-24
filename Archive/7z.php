@@ -280,11 +280,24 @@ class Archive_7z
      */
     private function getCmdPostfixExtract()
     {
-        $cmd = '';
+        $cmd = ' -y -sccUTF-8';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         } else {
             $cmd .= ' -p" "';
+        }
+
+        return $cmd;
+    }
+
+    /**
+     * @return string
+     */
+    private function getCmdPostfixCompress()
+    {
+        $cmd = ' -y -sccUTF-8';
+        if ($this->password !== null) {
+            $cmd .= ' -p' . escapeshellarg($this->password);
         }
 
         return $cmd;
@@ -433,19 +446,6 @@ class Archive_7z
         if ($rv !== 0) {
             throw new Archive_7z_Exception(end($out), $rv);
         }
-    }
-
-    /**
-     * @return string
-     */
-    private function getCmdPostfixCompress()
-    {
-        $cmd = '';
-        if ($this->password !== null) {
-            $cmd .= ' -p' . escapeshellarg($this->password);
-        }
-
-        return $cmd;
     }
 
     /**

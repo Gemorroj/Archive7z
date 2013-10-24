@@ -200,11 +200,14 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
     }
 
 
-    public function testExtractEntryDos()
+    public function testExtractEntryUnicode()
     {
+        $file = iconv('UTF-8', 'Windows-1251', 'чавес.jpg');
         $obj = new Archive_7z(dirname(__FILE__) . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
-        $obj->extractEntry(iconv('UTF-8', 'CP866', 'чавес.jpg'));
+        $obj->extractEntry($file);
+        $result = is_file($this->tmpDir . '/' . $file);
+        $this->assertTrue($result);
     }
 
     public function testExtractEntryPasswd()
