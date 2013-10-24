@@ -138,6 +138,15 @@ class Archive_7z_Entry
 
 
     /**
+     * @return bool
+     */
+    public function isEncrypted()
+    {
+        return ($this->encrypted === '+');
+    }
+
+
+    /**
      * @throws Archive_7z_Exception
      * @return string
      */
