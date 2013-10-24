@@ -348,4 +348,16 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('Archive_7z_Exception');
         $obj->delEntry('test/test.txt');
     }
+
+    public function testRenameEntryPasswd()
+    {
+        copy(dirname(__FILE__) . '/testPasswd.7z', $this->tmpDir . '/test.7z');
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->setPassword('123');
+        $obj->renameEntry('test' . DIRECTORY_SEPARATOR . 'test.txt', 'test' . DIRECTORY_SEPARATOR . 'newTest.txt');
+        $resultSrc = $obj->getEntry('test' . DIRECTORY_SEPARATOR . 'test.txt');
+        $this->assertNull($resultSrc);
+        $resultDest = $obj->getEntry('test' . DIRECTORY_SEPARATOR . 'newTest.txt');
+        $this->assertInstanceOf('Archive_7z_Entry', $resultDest);
+    }
 }

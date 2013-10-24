@@ -464,4 +464,22 @@ class Archive_7z
             throw new Archive_7z_Exception(end($out), $rv);
         }
     }
+
+    /**
+     * @param string $fileSrc
+     * @param string $fileDest
+     *
+     * @throws Archive_7z_Exception
+     */
+    public function renameEntry($fileSrc, $fileDest)
+    {
+        $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
+            . escapeshellarg($fileSrc) . ' ' . escapeshellarg($fileDest);
+
+        exec($cmd, $out, $rv);
+
+        if ($rv !== 0) {
+            throw new Archive_7z_Exception(end($out), $rv);
+        }
+    }
 }
