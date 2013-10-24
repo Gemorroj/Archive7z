@@ -112,9 +112,9 @@ class Archive_7z
     {
         $os = strtoupper(php_uname('s'));
 
-        if (strpos($os, 'BSD')) {
+        if (strpos($os, 'BSD') !== false) {
             return $this->cliBsd;
-        } elseif (strpos($os, 'WIN')) {
+        } elseif (strpos($os, 'WIN') !== false) {
             return $this->cliWindows;
         } else {
             return $this->cliLinux;
@@ -413,7 +413,7 @@ class Archive_7z
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
         if ($storePath) {
-            $path = '-i!' . escapeshellarg($file);
+            $path = '-spf -i!' . escapeshellarg($file);
         } else {
             $path = escapeshellarg(realpath($file));
         }
