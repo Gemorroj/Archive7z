@@ -430,7 +430,8 @@ class Archive_7z
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
         if ($storePath) {
-            $path = '-spf -i!' . escapeshellarg($file);
+            $path = ''/*'-spf'*/; // not work for linux
+            $path .= ' -i!' . escapeshellarg($file);
         } else {
             $path = escapeshellarg(realpath($file));
         }
@@ -473,6 +474,7 @@ class Archive_7z
      *
      * @throws Archive_7z_Exception
      */
+    /*
     public function renameEntry($fileSrc, $fileDest)
     {
         $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
@@ -484,4 +486,5 @@ class Archive_7z
             throw new Archive_7z_Exception(end($out), $rv);
         }
     }
+    */
 }

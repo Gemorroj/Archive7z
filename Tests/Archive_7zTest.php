@@ -352,6 +352,7 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $obj->delEntry('test/test.txt');
     }
 
+    /*
     public function testRenameEntryPasswd()
     {
         copy(dirname(__FILE__) . '/testPasswd.7z', $this->tmpDir . '/test.7z');
@@ -363,4 +364,5 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $resultDest = $obj->getEntry('test' . DIRECTORY_SEPARATOR . 'newTest.txt');
         $this->assertInstanceOf('Archive_7z_Entry', $resultDest);
     }
+    */
 }
