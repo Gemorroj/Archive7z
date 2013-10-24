@@ -41,10 +41,12 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
 
     public function testSetGetCli()
     {
-        $result = $this->mock->setCli($this->cliPath);
-        $this->assertInstanceOf('Archive_7z', $result);
-        $this->assertEquals(realpath($this->cliPath), $this->mock->getCli());
+        // todo rewrite
+        $cli = $this->mock->getCli();
 
+        $result = $this->mock->setCli($cli);
+        $this->assertInstanceOf('Archive_7z', $result);
+        $this->assertEquals(realpath($cli), $this->mock->getCli());
     }
 
     public function testSetCliFail()
@@ -237,7 +239,7 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
     {
         $obj = new Archive_7z(dirname(__FILE__) . '/testPasswd.7z', $this->cliPath);
         $obj->setPassword('123');
-        $result = $obj->getEntry('test/test.txt');
+        $result = $obj->getEntry('test' . DIRECTORY_SEPARATOR . 'test.txt');
 
         $this->assertInstanceOf('Archive_7z_Entry', $result);
     }
@@ -271,11 +273,24 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('file.txt', $result->getPath());
     }
 
+    public function testAddEntryFullPathStore()
+    {
+        //copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
+        copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/file.txt');
+        $fullPath = realpath($this->tmpDir . '/file.txt');
+
+        $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $obj->addEntry($fullPath, false, true);
+        $result = $obj->getEntry($fullPath);
+        $this->assertInstanceOf('Archive_7z_Entry', $result);
+        $this->assertEquals($fullPath, $result->getPath());
+    }
+
     public function testAddEntryLocalPath()
     {
         //copy(dirname(__FILE__) . '/test.7z', $this->tmpDir . '/test.7z');
         copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/test.txt');
-        $localPath = basename(dirname(__FILE__)) . '/' . basename($this->tmpDir) . '/test.txt';
+        $localPath = basename(dirname(__FILE__)) . DIRECTORY_SEPARATOR . basename($this->tmpDir) . DIRECTORY_SEPARATOR . 'test.txt';
 
         $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry($localPath, false, true);
@@ -288,7 +303,7 @@ class Archive_7zTest extends PHPUnit_Framework_TestCase
     {
         mkdir($this->tmpDir . '/test');
         copy(dirname(__FILE__) . '/test.txt', $this->tmpDir . '/test/test.txt');
-        $localPath = basename(dirname(__FILE__)) . '/' . basename($this->tmpDir);
+        $localPath = basename(dirname(__FILE__)) . DIRECTORY_SEPARATOR . basename($this->tmpDir);
 
         $obj = new Archive_7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry($localPath, true, true);

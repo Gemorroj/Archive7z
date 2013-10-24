@@ -89,7 +89,8 @@ class Archive_7z_Entry
     {
         switch ($key) {
         case 'Path':
-            $this->path = str_replace('\\', '/', $value);
+            //$this->path = str_replace('\\', '/', $value);
+            $this->path = $value;
             break;
 
         case 'Size':

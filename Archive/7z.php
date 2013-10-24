@@ -338,6 +338,8 @@ class Archive_7z
      */
     public function getEntry($file)
     {
+        //$file = str_replace('\\', '/', $file);
+
         foreach ($this->getEntries() as $v) {
             if ($v->getPath() == $file) {
                 return $v;
@@ -406,7 +408,7 @@ class Archive_7z
      *
      * @param string $file
      * @param bool $includeSubFiles
-     * @param bool $storePath (not work for full paths)
+     * @param bool $storePath
      *
      * @throws Archive_7z_Exception
      */
