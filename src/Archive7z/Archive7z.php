@@ -486,4 +486,22 @@ class Archive7z
             throw new Exception(end($out), $rv);
         }
     }
+
+
+    /**
+     * @throws Exception
+     * @return bool
+     */
+    public function isValid()
+    {
+        $cmd = $this->getCmdPrefix() . ' t ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract();
+
+        exec($cmd, $out, $rv);
+
+        if ($rv !== 0) {
+            throw new Exception(end($out), $rv);
+        }
+
+        return (array_search('Everything is Ok', $out) !== false);
+    }
 }
