@@ -4,14 +4,16 @@
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
- * @copyright 2012 http://wapinet.ru
+ * @copyright 2013 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/Archive_7z
- * @version   0.1 alpha
+ * @link      https://github.com/Gemorroj/Archive7z
+ * @version   0.2 alpha
  *
  */
 
-class Archive_7z_Entry
+namespace Archive7z;
+
+class Entry
 {
     /**
      * @var string
@@ -51,16 +53,16 @@ class Archive_7z_Entry
     private $block;
 
     /**
-     * @var Archive_7z
+     * @var Archive7z
      */
     private $archive;
 
 
     /**
-     * @param Archive_7z $archive
+     * @param Archive7z $archive
      * @param array      $data
      */
-    public function __construct(Archive_7z $archive, array $data)
+    public function __construct(Archive7z $archive, array $data)
     {
         $this->archive = $archive;
         $this->parseEntry($data);
@@ -147,7 +149,7 @@ class Archive_7z_Entry
 
 
     /**
-     * @throws Archive_7z_Exception
+     * @throws Exception
      * @return string
      */
     public function getContent()
@@ -157,7 +159,7 @@ class Archive_7z_Entry
 
 
     /**
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function extract()
     {
@@ -168,7 +170,7 @@ class Archive_7z_Entry
     /**
      * @param string $directory
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function extractTo($directory = './')
     {

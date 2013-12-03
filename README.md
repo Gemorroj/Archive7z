@@ -1,6 +1,6 @@
 # Работа с 7z архивами с помощью командной строки.
 
-[![Build Status](https://secure.travis-ci.org/Gemorroj/Archive_7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive_7z)
+[![Build Status](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
 
 
 На данный момент, поддерживается распаковка всего архива,
@@ -12,7 +12,7 @@
 
 Требования:
 
-- PHP >= 5.2
+- PHP >= 5.3
 - shell
 - 7z >= 7.30
 
@@ -20,10 +20,7 @@
 Пример:
 ```php
 <?php
-set_include_path(dirname(__FILE__));
-require 'Archive/7z.php';
-
-$obj = new Archive_7z('./test.7z');
+$obj = new Archive7z('./test.7z');
 $obj->setOutputDirectory('./test');
 
 foreach ($obj->getEntries() as $v) {

@@ -1,2 +1,6 @@
 <?php
-set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/../');
+$baseDir = dirname(__DIR__);
+
+$loader = require __DIR__.'/../vendor/autoload.php';
+$loader->add('Archive7z', array($baseDir.'/src/', $baseDir.'/Tests/'));
+$loader->register();

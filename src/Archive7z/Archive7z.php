@@ -4,17 +4,16 @@
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
- * @copyright 2012 http://wapinet.ru
+ * @copyright 2013 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/Archive_7z
- * @version   0.1 alpha
+ * @link      https://github.com/Gemorroj/Archive7z
+ * @version   0.2 alpha
  *
  */
 
-require_once 'Archive/7z/Exception.php';
-require_once 'Archive/7z/Entry.php';
+namespace Archive7z;
 
-class Archive_7z
+class Archive7z
 {
     /**
      * Error codes
@@ -93,7 +92,7 @@ class Archive_7z
      * @param string $filename 7z archive filename
      * @param string $cli      CLI path
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function __construct($filename, $cli = null)
     {
@@ -132,15 +131,15 @@ class Archive_7z
     /**
      * @param string $path
      *
-     * @throws Archive_7z_Exception
-     * @return Archive_7z
+     * @throws Exception
+     * @return Archive7z
      */
     public function setCli($path)
     {
         $this->cli = realpath($path);
 
         if (is_executable($this->cli) === false) {
-            throw new Archive_7z_Exception('Cli is not available');
+            throw new Exception('Cli is not available');
         }
 
         return $this;
@@ -157,8 +156,8 @@ class Archive_7z
     /**
      * @param string $filename
      *
-     * @throws Archive_7z_Exception
-     * @return Archive_7z
+     * @throws Exception
+     * @return Archive7z
      */
     public function setFilename($filename)
     {
@@ -166,7 +165,7 @@ class Archive_7z
         $this->filename = $filename;
 
         //if (is_readable($this->filename) === false) {
-        //    throw new Archive_7z_Exception('Filename is not available');
+        //    throw new Exception('Filename is not available');
         //}
 
         return $this;
@@ -183,15 +182,15 @@ class Archive_7z
     /**
      * @param string $directory
      *
-     * @throws Archive_7z_Exception
-     * @return Archive_7z
+     * @throws Exception
+     * @return Archive7z
      */
     public function setOutputDirectory($directory = './')
     {
         $this->outputDirectory = realpath($directory);
 
         if (is_writable($this->outputDirectory) === false) {
-            throw new Archive_7z_Exception('Output directory is not available');
+            throw new Exception('Output directory is not available');
         }
 
         return $this;
@@ -208,8 +207,8 @@ class Archive_7z
     /**
      * @param string $password
      *
-     * @throws Archive_7z_Exception
-     * @return Archive_7z
+     * @throws Exception
+     * @return Archive7z
      */
     public function setPassword($password)
     {
@@ -229,10 +228,10 @@ class Archive_7z
     /**
      * @param string $mode
      *
-     * @throws Archive_7z_Exception
-     * @return Archive_7z
+     * @throws Exception
+     * @return Archive7z
      */
-    public function setOverwriteMode($mode = Archive_7z::OVERWRITE_MODE_A)
+    public function setOverwriteMode($mode = Archive7z::OVERWRITE_MODE_A)
     {
         $this->overwriteMode = $mode;
 
@@ -245,14 +244,14 @@ class Archive_7z
                 )
             ) === false
         ) {
-            throw new Archive_7z_Exception('Overwrite mode is not available');
+            throw new Exception('Overwrite mode is not available');
         }
 
         return $this;
     }
 
     /**
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function extract()
     {
@@ -263,7 +262,7 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception(end($out), $rv);
+            throw new Exception(end($out), $rv);
         }
     }
 
@@ -308,7 +307,7 @@ class Archive_7z
     /**
      * @param string $file
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function extractEntry($file)
     {
@@ -321,14 +320,14 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception(end($out), $rv);
+            throw new Exception(end($out), $rv);
         }
     }
 
     /**
      * @param string $file
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      * @return string
      */
     public function getContent($file)
@@ -340,7 +339,7 @@ class Archive_7z
         $result = shell_exec($cmd);
 
         if ($result === null) {
-            throw new Archive_7z_Exception('Error');
+            throw new Exception('Error');
         }
 
         return $result;
@@ -348,8 +347,8 @@ class Archive_7z
 
     /**
      * @param string $file
-     * @throws Archive_7z_Exception
-     * @return Archive_7z_Entry|null
+     * @throws Exception
+     * @return Entry|null
      */
     public function getEntry($file)
     {
@@ -365,8 +364,8 @@ class Archive_7z
     }
 
     /**
-     * @throws Archive_7z_Exception
-     * @return Archive_7z_Entry[]
+     * @throws Exception
+     * @return Entry[]
      */
     public function getEntries()
     {
@@ -375,12 +374,12 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception(end($out), $rv);
+            throw new Exception(end($out), $rv);
         }
 
         $list = array();
         foreach ($this->parseEntries($out) as $v) {
-            $list[] = new Archive_7z_Entry($this, $v);
+            $list[] = new Entry($this, $v);
         }
 
         return $list;
@@ -425,7 +424,7 @@ class Archive_7z
      * @param bool $includeSubFiles
      * @param bool $storePath
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
@@ -447,14 +446,14 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception(end($out), $rv);
+            throw new Exception(end($out), $rv);
         }
     }
 
     /**
      * @param string $file
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function delEntry($file)
     {
@@ -464,7 +463,7 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception(end($out), $rv);
+            throw new Exception(end($out), $rv);
         }
     }
 
@@ -474,7 +473,7 @@ class Archive_7z
      * @param string $fileSrc
      * @param string $fileDest
      *
-     * @throws Archive_7z_Exception
+     * @throws Exception
      */
     public function renameEntry($fileSrc, $fileDest)
     {
@@ -484,7 +483,7 @@ class Archive_7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Archive_7z_Exception(end($out), $rv);
+            throw new Exception(end($out), $rv);
         }
     }
 }
