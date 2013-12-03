@@ -60,7 +60,7 @@ class Entry
 
     /**
      * @param Archive7z $archive
-     * @param array      $data
+     * @param array $data
      */
     public function __construct(Archive7z $archive, array $data)
     {
@@ -90,42 +90,42 @@ class Entry
     private function setData($key, $value)
     {
         switch ($key) {
-        case 'Path':
-            //$this->path = str_replace('\\', '/', $value);
-            $this->path = $value;
-            break;
+            case 'Path':
+                //$this->path = str_replace('\\', '/', $value);
+                $this->path = $value;
+                break;
 
-        case 'Size':
-            $this->size = $value;
-            break;
+            case 'Size':
+                $this->size = $value;
+                break;
 
-        case 'Packed Size':
-            $this->packedSize = $value;
-            break;
+            case 'Packed Size':
+                $this->packedSize = $value;
+                break;
 
-        case 'Modified':
-            $this->modified = $value;
-            break;
+            case 'Modified':
+                $this->modified = $value;
+                break;
 
-        case 'Attributes':
-            $this->attributes = $value;
-            break;
+            case 'Attributes':
+                $this->attributes = $value;
+                break;
 
-        case 'CRC':
-            $this->crc = $value;
-            break;
+            case 'CRC':
+                $this->crc = $value;
+                break;
 
-        case 'Encrypted':
-            $this->encrypted = $value;
-            break;
+            case 'Encrypted':
+                $this->encrypted = $value;
+                break;
 
-        case 'Method':
-            $this->method = $value;
-            break;
+            case 'Method':
+                $this->method = $value;
+                break;
 
-        case 'Block':
-            $this->block = $value;
-            break;
+            case 'Block':
+                $this->block = $value;
+                break;
         }
     }
 

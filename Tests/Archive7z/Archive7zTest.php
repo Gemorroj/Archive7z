@@ -295,7 +295,9 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     {
         //copy(__DIR__ . '/test.7z', $this->tmpDir . '/test.7z');
         copy(__DIR__ . '/test.txt', $this->tmpDir . '/test.txt');
-        $localPath = basename(__DIR__) . DIRECTORY_SEPARATOR . basename($this->tmpDir) . DIRECTORY_SEPARATOR . 'test.txt';
+        $localPath = basename(__DIR__) . DIRECTORY_SEPARATOR . basename(
+                $this->tmpDir
+            ) . DIRECTORY_SEPARATOR . 'test.txt';
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry($localPath, false, true);

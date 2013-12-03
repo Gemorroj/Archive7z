@@ -90,7 +90,7 @@ class Archive7z
 
     /**
      * @param string $filename 7z archive filename
-     * @param string $cli      CLI path
+     * @param string $cli CLI path
      *
      * @throws Exception
      */
@@ -236,7 +236,8 @@ class Archive7z
         $this->overwriteMode = $mode;
 
         if (in_array(
-                $this->overwriteMode, array(
+                $this->overwriteMode,
+                array(
                     self::OVERWRITE_MODE_A,
                     self::OVERWRITE_MODE_S,
                     self::OVERWRITE_MODE_T,
@@ -313,7 +314,8 @@ class Archive7z
     {
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
                 $this->overwriteMode
-            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract() . ' ' . escapeshellarg(
+            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract(
+            ) . ' ' . escapeshellarg(
                 $file
             );
 
@@ -369,7 +371,8 @@ class Archive7z
      */
     public function getEntries()
     {
-        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract();
+        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract(
+            );
 
         exec($cmd, $out, $rv);
 
@@ -429,7 +432,9 @@ class Archive7z
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
         if ($storePath) {
-            $path = '-spf -i!' . escapeshellarg($file); // 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
+            $path = '-spf -i!' . escapeshellarg(
+                    $file
+                ); // 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
             //$path = ' -i!' . escapeshellarg($file);
         } else {
             $path = escapeshellarg(realpath($file));
@@ -440,7 +445,9 @@ class Archive7z
             $exclude = '-x!' . escapeshellarg(rtrim($file, '/') . '/*');
         }
 
-        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . intval($this->compressionLevel) . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
+        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . intval(
+                $this->compressionLevel
+            ) . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
             . $path . ' ' . $exclude;
 
         exec($cmd, $out, $rv);
@@ -457,7 +464,8 @@ class Archive7z
      */
     public function delEntry($file)
     {
-        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
+        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract(
+            ) . ' '
             . escapeshellarg($file);
 
         exec($cmd, $out, $rv);
@@ -477,7 +485,8 @@ class Archive7z
      */
     public function renameEntry($fileSrc, $fileDest)
     {
-        $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
+        $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract(
+            ) . ' '
             . escapeshellarg($fileSrc) . ' ' . escapeshellarg($fileDest);
 
         exec($cmd, $out, $rv);
