@@ -263,7 +263,7 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
     }
 
@@ -322,7 +322,7 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
     }
 
@@ -377,7 +377,7 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
 
         $list = array();
@@ -453,7 +453,7 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
     }
 
@@ -471,7 +471,7 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
     }
 
@@ -492,12 +492,14 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
     }
 
 
     /**
+     * Is valid archive?
+     *
      * @throws Exception
      * @return bool
      */
@@ -508,9 +510,29 @@ class Archive7z
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
-            throw new Exception(end($out), $rv);
+            throw new Exception($this->getCliError($out), $rv);
         }
 
         return (array_search('Everything is Ok', $out) !== false);
+    }
+
+
+    /**
+     * Get cli error
+     *
+     * @param array $out
+     * @todo add tests
+     *
+     * @return string|null
+     */
+    protected function getCliError(array $out)
+    {
+        for ($i = sizeof($out) - 1; $i >= 0; --$i) {
+            if ($out[$i] !== '') {
+                return $out[$i];
+            }
+        }
+
+        return null;
     }
 }
