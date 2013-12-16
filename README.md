@@ -3,7 +3,7 @@
 [![Build Status](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
 
 
-Функции:
+### Функции:
 
 - распаковка всего архива;
 - распаковка любой директории или файла в архиве;
@@ -14,7 +14,7 @@
 - проверка корректности архива;
 
 
-Требования:
+### Требования:
 
 - PHP >= 5.3
 - shell
@@ -27,7 +27,7 @@
 [ссылка](https://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/#7003)
 
 
-Установка через composer:
+### Установка через composer:
 
 - Добавьте проект в ваш файл composer.json:
 
@@ -45,7 +45,7 @@ $ php composer.phar update gemorroj/archive7z
 ```
 
 
-Пример работы:
+### Пример работы:
 
 ```php
 <?php
