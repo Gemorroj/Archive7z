@@ -40,7 +40,7 @@
 ```
 - Установите проект:
 
-```
+```bash
 $ php composer.phar update gemorroj/archive7z
 ```
 
