@@ -260,11 +260,7 @@ class Archive7z
                 $this->overwriteMode
             ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract();
 
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
-        }
+        $this->execute($cmd);
     }
 
     /**
@@ -319,11 +315,7 @@ class Archive7z
                 $file
             );
 
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
-        }
+        $this->execute($cmd);
     }
 
     /**
@@ -374,11 +366,7 @@ class Archive7z
         $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract(
             );
 
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
-        }
+        $out = $this->execute($cmd);
 
         $list = array();
         foreach ($this->parseEntries($out) as $v) {
@@ -450,11 +438,7 @@ class Archive7z
             ) . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
             . $path . ' ' . $exclude;
 
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
-        }
+        $this->execute($cmd);
     }
 
     /**
@@ -468,11 +452,7 @@ class Archive7z
             ) . ' '
             . escapeshellarg($file);
 
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
-        }
+        $this->execute($cmd);
     }
 
     /**
@@ -489,11 +469,7 @@ class Archive7z
             ) . ' '
             . escapeshellarg($fileSrc) . ' ' . escapeshellarg($fileDest);
 
-        exec($cmd, $out, $rv);
-
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
-        }
+        $this->execute($cmd);
     }
 
 
@@ -507,13 +483,28 @@ class Archive7z
     {
         $cmd = $this->getCmdPrefix() . ' t ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract();
 
+        $out = $this->execute($cmd);
+
+        return (array_search('Everything is Ok', $out) !== false);
+    }
+
+
+    /**
+     * @param string $cmd
+     *
+     * @todo add tests
+     * @return array
+     * @throws Exception
+     */
+    protected function execute($cmd)
+    {
         exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
             throw new Exception($this->getCliError($out), $rv);
         }
 
-        return (array_search('Everything is Ok', $out) !== false);
+        return $out;
     }
 
 
