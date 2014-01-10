@@ -409,6 +409,7 @@ class Archive7z
     }
 
     /**
+     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
      * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
      *
      * @param string $file
@@ -422,8 +423,7 @@ class Archive7z
         if ($storePath) {
             $path = '-spf -i!' . escapeshellarg(
                     $file
-                ); // 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
-            //$path = ' -i!' . escapeshellarg($file);
+                );
         } else {
             $path = escapeshellarg(realpath($file));
         }
@@ -492,7 +492,6 @@ class Archive7z
     /**
      * @param string $cmd
      *
-     * @todo add tests
      * @return array
      * @throws Exception
      */
@@ -512,7 +511,6 @@ class Archive7z
      * Get cli error
      *
      * @param array $out
-     * @todo add tests
      *
      * @return string|null
      */
