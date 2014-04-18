@@ -136,11 +136,17 @@ class Archive7z
      */
     public function setCli($path)
     {
-        $this->cli = realpath($path);
+        $cli = realpath($path);
 
-        if (is_executable($this->cli) === false) {
+        if ($cli === false) {
             throw new Exception('Cli is not available');
         }
+
+        if (is_executable($cli) === false) {
+            throw new Exception('Cli is not executable');
+        }
+
+        $this->cli = $cli;
 
         return $this;
     }
@@ -161,12 +167,19 @@ class Archive7z
      */
     public function setFilename($filename)
     {
-        //$this->filename = realpath($filename);
-        $this->filename = $filename;
+        /*
+        $filename = realpath($filename);
 
-        //if (is_readable($this->filename) === false) {
-        //    throw new Exception('Filename is not available');
-        //}
+        if ($filename === false) {
+            throw new Exception('Filename is not available');
+        }
+
+        if (is_readable($filename) === false) {
+            throw new Exception('Filename is not readable');
+        }
+        */
+
+        $this->filename = $filename;
 
         return $this;
     }
@@ -187,11 +200,17 @@ class Archive7z
      */
     public function setOutputDirectory($directory = './')
     {
-        $this->outputDirectory = realpath($directory);
+        $outputDirectory = realpath($directory);
 
-        if (is_writable($this->outputDirectory) === false) {
+        if ($outputDirectory === false) {
             throw new Exception('Output directory is not available');
         }
+
+        if (is_writable($outputDirectory) === false) {
+            throw new Exception('Output directory is not writable');
+        }
+
+        $this->outputDirectory = $outputDirectory;
 
         return $this;
     }
@@ -421,9 +440,7 @@ class Archive7z
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
         if ($storePath) {
-            $path = '-spf -i!' . escapeshellarg(
-                    $file
-                );
+            $path = '-spf -i!' . escapeshellarg($file);
         } else {
             $path = escapeshellarg(realpath($file));
         }
