@@ -53,7 +53,7 @@ $obj = new Archive7z('./test.7z');
 $obj->setOutputDirectory('./test');
 
 foreach ($obj->getEntries() as $v) {
-    if ($v->getName() === 'test.txt') {
+    if ($v->getPath() === 'test.txt') {
         print_r($v);
         $v->extractTo('./test2');
     }
