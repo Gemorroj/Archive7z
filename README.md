@@ -59,7 +59,7 @@ foreach ($obj->getEntries() as $v) {
     }
 }
 
-echo $obj->getContent('test.txt');
+echo $obj->getContent('test/test.txt');
 
 $obj->extract();
 
