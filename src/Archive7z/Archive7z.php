@@ -296,7 +296,8 @@ class Archive7z
     private function getCmdPostfixExtract()
     {
         $cmd = ' -y';
-        $cmd .= ' -scc"UTF-8"'; // not work for linux
+        $cmd .= ' -scc"UTF-8"';
+        $cmd .= ' -scs"UTF-8"';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         } else {
@@ -312,7 +313,8 @@ class Archive7z
     private function getCmdPostfixCompress()
     {
         $cmd = ' -y';
-        $cmd .= ' -scc"UTF-8"'; // not work for linux
+        $cmd .= ' -scc"UTF-8"';
+        $cmd .= ' -scs"UTF-8"';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         }
