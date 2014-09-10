@@ -428,7 +428,7 @@ class Archive7z
     }
 
     /**
-     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
+     * 7-zip >= 7.25 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
      * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
      *
      * @param string $file
