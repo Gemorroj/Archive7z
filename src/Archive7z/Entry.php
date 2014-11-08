@@ -59,29 +59,16 @@ class Entry
 
 
     /**
-     * @param Archive7z $archive
-     * @param array $data
+     * @param Archive7z $archive Archive7z object
+     * @param array $data parsed entry data
      */
     public function __construct(Archive7z $archive, array $data)
     {
         $this->archive = $archive;
-        $this->parseEntry($data);
-    }
-
-
-    /**
-     * @param array $data
-     */
-    private function parseEntry(array $data)
-    {
-        foreach ($data as $line) {
-            list($k, $v) = explode(' =', $line, 2);
-            $v = ltrim($v);
-
+        foreach ($data as $k => $v) {
             $this->setData($k, $v);
         }
     }
-
 
     /**
      * @param string $key

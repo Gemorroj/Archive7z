@@ -85,8 +85,7 @@ class Archive7z
      * @var string
      */
     private $overwriteMode = self::OVERWRITE_MODE_A;
-    private $headToken = '----------';
-    private $listToken = '';
+
 
     /**
      * @param string $filename 7z archive filename
@@ -390,40 +389,9 @@ class Archive7z
         $out = $this->execute($cmd);
 
         $list = array();
-        foreach ($this->parseEntries($out) as $v) {
+        $parser = new Parser($out);
+        foreach ($parser->parseEntries() as $v) {
             $list[] = new Entry($this, $v);
-        }
-
-        return $list;
-    }
-
-    /**
-     * @param array $output
-     *
-     * @return array
-     */
-    private function parseEntries(array $output)
-    {
-        $head = true;
-        $list = array();
-        $i = 0;
-
-        foreach ($output as $value) {
-            if ($value === $this->headToken) {
-                $head = false;
-                continue;
-            }
-
-            if ($head === true) {
-                continue;
-            }
-
-            if ($value === $this->listToken) {
-                $i++;
-                continue;
-            }
-
-            $list[$i][] = $value;
         }
 
         return $list;
