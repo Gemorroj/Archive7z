@@ -21,8 +21,8 @@
 - **7z >= 7.30**
 
 Т.е. на данный момент код не работает под *nix.
-Игорь Павлов планирует открыть исходный код новой версии в январе 2014г.
-[ссылка](http://sourceforge.net/p/sevenzip/discussion/45797/thread/207a4f9e/#bb54)
+Игорь Павлов открытл исходный код 7-zip версии 9.34 ноябре 2014г.
+[ссылка](http://sourceforge.net/p/sevenzip/discussion/45797/thread/9e42ada6/)
 После этого, необходимо дождаться адаптации кода под *nix системы.
 [ссылка](https://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/#7003)
 
