@@ -122,7 +122,7 @@ class Entry
      */
     public function isDirectory()
     {
-        return ($this->attributes[0] === 'D');
+        return (strpos($this->attributes, 'D') !== false);
     }
 
 
