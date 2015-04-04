@@ -312,10 +312,10 @@ class Archive7z
     private function getCmdPostfixExtract()
     {
         $cmd = ' -y';
-        if ($this->isOsWin()) {
-            $cmd .= ' -scc"UTF-8"'; // not work for *nix
+        if ($this->isOsWin()) { // not work for *nix
+            $cmd .= ' -scc"UTF-8"';
+            $cmd .= ' -scs"UTF-8"';
         }
-        $cmd .= ' -scs"UTF-8"';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         } else {
@@ -331,10 +331,10 @@ class Archive7z
     private function getCmdPostfixCompress()
     {
         $cmd = ' -y';
-        if ($this->isOsWin()) {
-            $cmd .= ' -scc"UTF-8"'; // not work for *nix
+        if ($this->isOsWin()) {  // not work for *nix
+            $cmd .= ' -scc"UTF-8"';
+            $cmd .= ' -scs"UTF-8"';
         }
-        $cmd .= ' -scs"UTF-8"';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
         }
