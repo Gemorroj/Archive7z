@@ -103,16 +103,33 @@ class Archive7z
         $this->setFilename($filename);
     }
 
+
+    /**
+     * @return string
+     */
+    protected function isOsWin()
+    {
+        return stripos(PHP_OS, 'WIN') !== false;
+    }
+
+
+    /**
+     * @return string
+     */
+    protected function isOsBsd()
+    {
+        return stripos(PHP_OS, 'BSD') !== false;
+    }
+
+
     /**
      * @return string
      */
     protected function getAutoCli()
     {
-        $os = strtoupper(php_uname('s'));
-
-        if (strpos($os, 'BSD') !== false) {
+        if ($this->isOsBsd()) {
             return $this->cliBsd;
-        } elseif (strpos($os, 'WIN') !== false) {
+        } elseif ($this->isOsWin()) {
             return $this->cliWindows;
         } else {
             return $this->cliLinux;
@@ -295,7 +312,9 @@ class Archive7z
     private function getCmdPostfixExtract()
     {
         $cmd = ' -y';
-        $cmd .= ' -scc"UTF-8"';
+        if ($this->isOsWin()) {
+            $cmd .= ' -scc"UTF-8"'; // not work for *nix
+        }
         $cmd .= ' -scs"UTF-8"';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
@@ -312,7 +331,9 @@ class Archive7z
     private function getCmdPostfixCompress()
     {
         $cmd = ' -y';
-        $cmd .= ' -scc"UTF-8"';
+        if ($this->isOsWin()) {
+            $cmd .= ' -scc"UTF-8"'; // not work for *nix
+        }
         $cmd .= ' -scs"UTF-8"';
         if ($this->password !== null) {
             $cmd .= ' -p' . escapeshellarg($this->password);
