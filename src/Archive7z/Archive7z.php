@@ -85,6 +85,14 @@ class Archive7z
      * @var string
      */
     private $overwriteMode = self::OVERWRITE_MODE_A;
+    /**
+     * @var bool
+     */
+    protected $changeSystemLocale = true;
+    /**
+     * @var string
+     */
+    protected $systemLocale = 'en_US.utf8';
 
 
     /**
@@ -229,6 +237,27 @@ class Archive7z
         $this->outputDirectory = $outputDirectory;
 
         return $this;
+    }
+
+
+    /**
+     * @param bool $changeSystemLocale
+     * @return Archive7z
+     */
+    public function setChangeSystemLocale($changeSystemLocale)
+    {
+        $this->changeSystemLocale = $changeSystemLocale;
+
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function getChangeSystemLocale()
+    {
+        return $this->changeSystemLocale;
     }
 
     /**
@@ -505,7 +534,11 @@ class Archive7z
      */
     protected function execute($cmd)
     {
-        exec($cmd, $out, $rv);
+        if ($this->isOsWin() || !$this->getChangeSystemLocale()) {
+            exec($cmd, $out, $rv);
+        } else {
+            exec($this->systemLocale . ' ' . $cmd, $out, $rv);
+        }
 
         if ($rv !== 0) {
             throw new Exception($this->getCliError($out), $rv);
