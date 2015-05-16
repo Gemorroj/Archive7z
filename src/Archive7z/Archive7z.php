@@ -88,7 +88,7 @@ class Archive7z
     /**
      * @var bool
      */
-    protected $changeSystemLocale = true;
+    protected $changeSystemLocale = false;
     /**
      * @var string
      */
@@ -534,7 +534,7 @@ class Archive7z
      */
     protected function execute($cmd)
     {
-        if ($this->isOsWin() || !$this->getChangeSystemLocale()) {
+        if (!$this->getChangeSystemLocale() || $this->isOsWin()) {
             exec($cmd, $out, $rv);
         } else {
             exec($this->systemLocale . ' ' . $cmd, $out, $rv);
