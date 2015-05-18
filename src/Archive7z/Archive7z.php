@@ -522,7 +522,7 @@ class Archive7z
 
         $out = $this->execute($cmd);
 
-        return (array_search('Everything is Ok', $out) !== false);
+        return in_array('Everything is Ok', $out, true);
     }
 
 
@@ -535,16 +535,40 @@ class Archive7z
     protected function execute($cmd)
     {
         if (!$this->getChangeSystemLocale() || $this->isOsWin()) {
-            exec($cmd, $out, $rv);
+            $out = $this->exec($cmd);
         } else {
-            exec($this->systemLocale . ' ' . $cmd, $out, $rv);
+            $out = $this->execLang($cmd);
         }
+
+        return $out;
+    }
+
+
+    /**
+     * @param string $cmd
+     * @return array
+     * @throws Exception
+     */
+    protected function exec($cmd)
+    {
+        exec($cmd, $out, $rv);
 
         if ($rv !== 0) {
             throw new Exception($this->getCliError($out), $rv);
         }
 
         return $out;
+    }
+
+
+    /**
+     * @param string $cmd
+     * @return array
+     * @throws Exception
+     */
+    protected function execLang($cmd)
+    {
+        return $this->exec('LANG=' . escapeshellarg($this->systemLocale) . ' ' . $cmd);
     }
 
 
@@ -557,7 +581,7 @@ class Archive7z
      */
     protected function getCliError(array $out)
     {
-        for ($i = sizeof($out) - 1; $i >= 0; --$i) {
+        for ($i = count($out) - 1; $i >= 0; --$i) {
             if ($out[$i] !== '') {
                 return $out[$i];
             }
