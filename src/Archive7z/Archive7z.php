@@ -54,9 +54,12 @@ class Archive7z
      */
     protected $compressionLevel = 9;
     /**
-     * @var string
+     * @var array
      */
-    protected $cliLinux = '/usr/bin/7z';
+    protected $cliLinux = array(
+        '/usr/bin/7z',
+        '/usr/bin/7za' // CentOS 7 with package p7zip
+    );
     /**
      * @var string
      */
@@ -140,7 +143,11 @@ class Archive7z
         } elseif ($this->isOsWin()) {
             return $this->cliWindows;
         } else {
-            return $this->cliLinux;
+            foreach ($this->cliLinux as $cli) {
+                if (file_exists($cli)) {
+                    return $cli;
+                }
+            }
         }
     }
 
