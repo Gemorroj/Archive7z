@@ -18,7 +18,7 @@
 
 - PHP >= 5.3
 - shell
-- **7z >= 7.30**
+- **7z >= 7.30 (>= 9.38 p7zip)**
 
 
 ### Установка через composer:
@@ -44,7 +44,6 @@ $ php composer.phar update gemorroj/archive7z
 ```php
 <?php
 $obj = new Archive7z('./test.7z');
-$obj->setOutputDirectory('./test');
 
 foreach ($obj->getEntries() as $v) {
     if ($v->getPath() === 'test.txt') {
@@ -55,6 +54,7 @@ foreach ($obj->getEntries() as $v) {
 
 echo $obj->getContent('test/test.txt');
 
+$obj->setOutputDirectory('./test');
 $obj->extract();
 
 $obj->addEntry(__FILE__);
