@@ -56,11 +56,11 @@ class Archive7z
     /**
      * @var string
      */
-    protected $cliLinux = '/usr/bin/7z';
+    protected $cliLinux = '/usr/bin/7za';
     /**
      * @var string
      */
-    protected $cliBsd = '/usr/local/bin/7z';
+    protected $cliBsd = '/usr/local/bin/7za';
     /**
      * @var string
      */
