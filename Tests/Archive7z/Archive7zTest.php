@@ -23,6 +23,16 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $this->mock = $this->getMock('Archive7z\Archive7z', null, array('fake.7z', $this->cliPath));
     }
 
+
+    protected function getCurrentFilesystemEncoding()
+    {
+        if (stripos(PHP_OS, 'WIN') !== false) { // windows
+            return 'Windows-1251';
+        }
+        return exec('locale charmap');
+    }
+
+
     protected function tearDown()
     {
         $this->cleanDir($this->tmpDir);
@@ -110,7 +120,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function testExtractCyrillic()
     {
         $dirCyrillic = $this->tmpDir . '/папка';
-        $chavezFile = iconv('UTF-8', 'Windows-1251', 'чавес.jpg');
+        $chavezFile = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
 
         if (!mkdir($dirCyrillic)) {
             self::markTestIncomplete('Cant create cyrillic directory.');
@@ -231,9 +241,9 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testExtractEntryUnicode()
+    public function testExtractEntryCyrillic()
     {
-        $file = iconv('UTF-8', 'Windows-1251', 'чавес.jpg');
+        $file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
         $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->extractEntry($file);
@@ -396,4 +406,25 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $resultDest = $obj->getEntry('test' . DIRECTORY_SEPARATOR . 'newTest.txt');
         self::assertInstanceOf('Archive7z\Entry', $resultDest);
     }
+
+
+    public function testChangeSystemLocale()
+    {
+        $file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
+        $obj->setChangeSystemLocale(true);
+        $obj->setOutputDirectory($this->tmpDir);
+        $obj->extractEntry($file);
+
+        self::assertFileExists($this->tmpDir . '/' . $file);
+    }
+
+    public function testChangeSystemLocaleFail()
+    {
+        $new = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
+        $new->setChangeSystemLocale(true);
+        $this->setExpectedException('Archive7z\Exception');
+        $new->getContent('file.txt');
+    }
+
 }

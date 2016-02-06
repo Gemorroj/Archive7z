@@ -90,7 +90,11 @@ class Archive7z
     /**
      * @var string
      */
-    protected $systemLocale = 'en_US.utf8';
+    protected $systemLocaleNix = 'en_US.utf8';
+    /**
+     * @var string
+     */
+    protected $systemLocaleWin = '65001';
 
 
     /**
@@ -532,10 +536,10 @@ class Archive7z
      */
     protected function execute($cmd)
     {
-        if (!$this->getChangeSystemLocale() || $this->isOsWin()) {
+        if (!$this->getChangeSystemLocale()) {
             $out = $this->exec($cmd);
         } else {
-            $out = $this->execLang($cmd);
+            $out = $this->execLocale($cmd);
         }
 
         return $out;
@@ -564,9 +568,13 @@ class Archive7z
      * @return array
      * @throws Exception
      */
-    protected function execLang($cmd)
+    protected function execLocale($cmd)
     {
-        return $this->exec('LANG=' . escapeshellarg($this->systemLocale) . ' ' . $cmd);
+        if ($this->isOsWin()) {
+            return $this->exec('chcp ' . escapeshellarg($this->systemLocaleWin) . ' & ' . $cmd);
+        } else {
+            return $this->exec('LANG=' . escapeshellarg($this->systemLocaleNix) . ' ' . $cmd);
+        }
     }
 
 
