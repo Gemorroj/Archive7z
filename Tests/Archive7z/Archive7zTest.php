@@ -5,9 +5,10 @@ use Archive7z\Archive7z;
 
 class Archive7zTest extends \PHPUnit_Framework_TestCase
 {
-    protected $cliPath /* = 'c:\_SOFT_\Universal Extractor\bin\7z.exe'*/;
+    protected $cliPath;
     protected $tmpDir;
-    protected $filesDir;
+    protected $fixturesDir;
+    protected $baseDir;
 
     /**
      * @var Archive7z
@@ -16,15 +17,16 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->tmpDir = dirname(__DIR__) . '/tmp';
-        $this->filesDir = dirname(__DIR__);
+        $this->baseDir = dirname(__DIR__);
+        $this->tmpDir = $this->baseDir . DIRECTORY_SEPARATOR . 'tmp';
+        $this->fixturesDir = $this->baseDir . DIRECTORY_SEPARATOR . 'fixtures';
         $this->mock = $this->getMock('Archive7z\Archive7z', null, array('fake.7z', $this->cliPath));
     }
 
     protected function tearDown()
     {
         $this->cleanDir($this->tmpDir);
-        touch($this->tmpDir . '/index.html');
+        touch($this->tmpDir . '/.gitkeep');
     }
 
     protected function cleanDir($dir)
@@ -100,7 +102,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testExtract()
     {
-        $obj = new Archive7z($this->filesDir . '/test.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->extract();
     }
@@ -114,7 +116,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
             self::markTestIncomplete('Cant create cyrillic directory.');
         }
 
-        $obj = new Archive7z($this->filesDir . '/test.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($dirCyrillic);
         $obj->extract();
 
@@ -125,7 +127,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testExtractPasswd()
     {
-        $obj = new Archive7z($this->filesDir . '/testPasswd.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/testPasswd.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->setPassword('123');
         $obj->extract();
@@ -137,11 +139,11 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
             self::markTestIncomplete('Cant create directory.');
         }
 
-        $sourceFile = $this->filesDir . '/test.txt';
+        $sourceFile = $this->fixturesDir . '/test.txt';
         $targetFile = $this->tmpDir . '/test/test.txt';
-        $archiveFile = $this->filesDir . '/testArchive.txt';
+        $archiveFile = $this->fixturesDir . '/testArchive.txt';
 
-        $obj = new Archive7z($this->filesDir . '/test.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
 
 
@@ -178,7 +180,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testExtractEntry()
     {
-        $obj = new Archive7z($this->filesDir . '/test.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->extractEntry('test/2.jpg');
         self::assertFileExists($this->tmpDir . '/test/2.jpg');
@@ -190,11 +192,11 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
             self::markTestIncomplete('Cant create directory.');
         }
 
-        $sourceFile = $this->filesDir . '/test.txt';
+        $sourceFile = $this->fixturesDir . '/test.txt';
         $targetFile = $this->tmpDir . '/test/test.txt';
-        $archiveFile = $this->filesDir . '/testArchive.txt';
+        $archiveFile = $this->fixturesDir . '/testArchive.txt';
 
-        $obj = new Archive7z($this->filesDir . '/test.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
 
 
@@ -232,7 +234,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function testExtractEntryUnicode()
     {
         $file = iconv('UTF-8', 'Windows-1251', 'чавес.jpg');
-        $obj = new Archive7z($this->filesDir . '/test.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->extractEntry($file);
 
@@ -241,7 +243,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testExtractEntryPasswd()
     {
-        $obj = new Archive7z($this->filesDir . '/testPasswd.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/testPasswd.7z', $this->cliPath);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->setPassword('123');
         $obj->extractEntry('1.jpg');
@@ -249,16 +251,16 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testGetContentPasswd()
     {
-        $obj = new Archive7z($this->filesDir . '/testPasswd.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/testPasswd.7z', $this->cliPath);
         $obj->setPassword('123');
         $result = $obj->getContent('test/test.txt');
 
-        self::assertEquals(file_get_contents($this->filesDir . '/testArchive.txt'), $result);
+        self::assertEquals(file_get_contents($this->fixturesDir . '/testArchive.txt'), $result);
     }
 
     public function testGetEntriesPasswd()
     {
-        $obj = new Archive7z($this->filesDir . '/testPasswd.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/testPasswd.7z', $this->cliPath);
         $obj->setPassword('123');
         $result = $obj->getEntries();
 
@@ -269,7 +271,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testGetEntryPasswd()
     {
-        $obj = new Archive7z($this->filesDir . '/testPasswd.7z', $this->cliPath);
+        $obj = new Archive7z($this->fixturesDir . '/testPasswd.7z', $this->cliPath);
         $obj->setPassword('123');
         $result = $obj->getEntry('test' . DIRECTORY_SEPARATOR . 'test.txt');
 
@@ -278,8 +280,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryFullPathPasswd()
     {
-        //copy($this->filesDir . '/test.7z', $this->tmpDir . '/test.7z');
-        copy($this->filesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->setPassword('111');
@@ -295,8 +296,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryFullPath()
     {
-        //copy($this->filesDir . '/test.7z', $this->tmpDir . '/test.7z');
-        copy($this->filesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry(realpath($this->tmpDir . '/file.txt'), false, false);
@@ -307,8 +307,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryFullPathStore()
     {
-        //copy($this->filesDir . '/test.7z', $this->tmpDir . '/test.7z');
-        copy($this->filesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
         $fullPath = realpath($this->tmpDir . '/file.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
@@ -320,11 +319,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryLocalPath()
     {
-        //copy($this->filesDir . '/test.7z', $this->tmpDir . '/test.7z');
-        copy($this->filesDir . '/test.txt', $this->tmpDir . '/test.txt');
-        $localPath = basename($this->filesDir) . DIRECTORY_SEPARATOR . basename(
-                $this->tmpDir
-            ) . DIRECTORY_SEPARATOR . 'test.txt';
+        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test.txt');
+        $localPath = $this->tmpDir . DIRECTORY_SEPARATOR . 'test.txt';
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry($localPath, false, true);
@@ -339,8 +335,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
             self::markTestIncomplete('Cant create directory.');
         }
 
-        copy($this->filesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
-        $localPath = basename($this->filesDir) . DIRECTORY_SEPARATOR . basename($this->tmpDir);
+        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
+        $localPath = $this->tmpDir;
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry($localPath, true, true);
@@ -355,7 +351,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
             self::markTestIncomplete('Cant create directory.');
         }
 
-        copy($this->filesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
+        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->addEntry(realpath($this->tmpDir), true, false);
@@ -366,7 +362,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testDelEntry()
     {
-        copy($this->filesDir . '/test.7z', $this->tmpDir . '/test.7z');
+        copy($this->fixturesDir . '/test.7z', $this->tmpDir . '/test.7z');
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->delEntry('test/test.txt');
         self::assertNull($obj->getEntry('test/test.txt'));
@@ -374,7 +370,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testDelEntryPasswd()
     {
-        copy($this->filesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
+        copy($this->fixturesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->setPassword('123');
         $obj->delEntry('test/test.txt');
@@ -383,7 +379,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testDelEntryPasswdFail()
     {
-        copy($this->filesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
+        copy($this->fixturesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $this->setExpectedException('Archive7z\Exception');
         $obj->delEntry('test/test.txt');
@@ -391,7 +387,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testRenameEntryPasswd()
     {
-        copy($this->filesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
+        copy($this->fixturesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $obj->setPassword('123');
         $obj->renameEntry('test' . DIRECTORY_SEPARATOR . 'test.txt', 'test' . DIRECTORY_SEPARATOR . 'newTest.txt');

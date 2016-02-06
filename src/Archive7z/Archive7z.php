@@ -7,8 +7,6 @@
  * @copyright 2013 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
  * @link      https://github.com/Gemorroj/Archive7z
- * @version   0.2 alpha
- *
  */
 
 namespace Archive7z;
