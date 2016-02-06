@@ -11,6 +11,8 @@
 
 namespace Archive7z;
 
+use Symfony\Component\Process\Process;
+
 class Archive7z
 {
     /**
@@ -401,14 +403,14 @@ class Archive7z
         $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' -so ' . escapeshellarg($file) . ' '
             . $this->getCmdPostfixExtract();
 
-        // в exec теряются переводы строк
-        $result = shell_exec($cmd);
+        $process = new Process($cmd);
+        $process->run();
 
-        if ($result === null) {
-            throw new Exception('Error');
+        if (!$process->isSuccessful()) {
+            throw new Exception($process->getErrorOutput());
         }
 
-        return $result;
+        return $process->getOutput();
     }
 
     /**
@@ -553,13 +555,16 @@ class Archive7z
      */
     protected function exec($cmd)
     {
-        exec($cmd, $out, $rv);
+        $process = new Process($cmd);
+        $process->run();
 
-        if ($rv !== 0) {
-            throw new Exception($this->getCliError($out), $rv);
+        if (!$process->isSuccessful()) {
+            $arrayErrorOutput = explode(PHP_EOL, $process->getErrorOutput());
+            $error = $this->getCliError($arrayErrorOutput);
+            throw new Exception($error);
         }
 
-        return $out;
+        return explode(PHP_EOL, $process->getOutput());
     }
 
 
