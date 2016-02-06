@@ -14,7 +14,8 @@ before_script:
   - tar xjvf p7zip_15.09_src_all.tar.bz2
   - cd p7zip_15.09
   - make all3
-  - ./install.sh
+  - sudo ./install.sh
+  - cd ..
 
   - composer self-update && composer install --dev --prefer-source --no-interaction
 
