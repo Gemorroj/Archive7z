@@ -15,6 +15,7 @@ before_script:
   - cd p7zip_15.09
   - make all3
   - sudo ./install.sh
+  - sudo ln /usr/local/bin/7za /usr/bin/7za
   - cd ..
 
   - composer self-update && composer install --dev --prefer-source --no-interaction
