@@ -50,6 +50,8 @@ $ php composer.phar update gemorroj/archive7z
 
 ```php
 <?php
+use Archive7z\Archive7z;
+
 $obj = new Archive7z('./test.7z');
 
 foreach ($obj->getEntries() as $v) {
