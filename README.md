@@ -52,20 +52,51 @@ $ php composer.phar update gemorroj/archive7z
 <?php
 use Archive7z\Archive7z;
 
-$obj = new Archive7z('./test.7z');
+$obj = new Archive7z('path_to_7z_file.7z');
 
-foreach ($obj->getEntries() as $v) {
-    if ($v->getPath() === 'test.txt') {
-        print_r($v);
-        $v->extractTo('./test2');
+foreach ($obj->getEntries() as $entry) {
+        print_r($entry);
+        /*
+Archive7z\Entry Object
+(
+    [path:Archive7z\Entry:private] => test/test.txt
+    [size:Archive7z\Entry:private] => 14
+    [packedSize:Archive7z\Entry:private] => 19
+    [modified:Archive7z\Entry:private] => 2013-10-23 16:28:51
+    [attributes:Archive7z\Entry:private] => A
+    [crc:Archive7z\Entry:private] => A346C3A7
+    [encrypted:Archive7z\Entry:private] => -
+    [method:Archive7z\Entry:private] => LZMA:16
+    [block:Archive7z\Entry:private] => 2
+    [archive:Archive7z\Entry:private] => Archive7z\Archive7z Object
+        (
+            [compressionLevel:protected] => 9
+            [cliLinux:protected] => /usr/bin/7za
+            [cliBsd:protected] => /usr/local/bin/7za
+            [cliWindows:protected] => C:\Program Files\7-Zip\7z.exe
+            [cli:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
+            [filename:Archive7z\Archive7z:private] => path_to_7z_file.7z
+            [password:Archive7z\Archive7z:private] => 
+            [outputDirectory:Archive7z\Archive7z:private] => ./
+            [overwriteMode:Archive7z\Archive7z:private] => -aoa
+            [changeSystemLocale:protected] => 
+            [systemLocaleNix:protected] => en_US.utf8
+            [systemLocaleWin:protected] => 65001
+        )
+
+)
+         */
+
+    if ($entry->getPath() === 'test/test.txt') {
+        $entry->extractTo('path_to_extract_folder/'); // extract file
     }
 }
 
 echo $obj->getContent('test/test.txt');
 
-$obj->setOutputDirectory('./test');
-$obj->extract();
+$obj->setOutputDirectory('path_to_extract_folder/');
+$obj->extract(); // extract archive
 
-$obj->addEntry(__FILE__);
-$obj->addEntry('Tests/bootstrap.php', false);
+$obj->addEntry(__FILE__); // add file to archive
+$obj->addEntry(__DIR__, true);  // add directory to archive (include subfolders)
 ```
