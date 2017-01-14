@@ -3,7 +3,7 @@
     "description": "7z cli wrapper",
     "keywords": ["7z","archive"],
     "type": "library",
-    "license": "GPLv3",
+    "license": "LGPL 3.0",
     "authors": [
         {
             "name": "Gemorroj"
@@ -14,7 +14,7 @@
         "symfony/process": "^2.3|^3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8"
+        "phpunit/phpunit": "^4.8|^5.0"
     },
     "autoload": {
         "psr-4": {
