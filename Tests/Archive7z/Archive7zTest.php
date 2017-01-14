@@ -20,7 +20,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $this->baseDir = dirname(__DIR__);
         $this->tmpDir = $this->baseDir . DIRECTORY_SEPARATOR . 'tmp';
         $this->fixturesDir = $this->baseDir . DIRECTORY_SEPARATOR . 'fixtures';
-        $this->mock = $this->getMock('Archive7z\Archive7z', null, array('fake.7z', $this->cliPath));
+
+        $this->mock = new Archive7z('fake.7z', $this->cliPath);
     }
 
 

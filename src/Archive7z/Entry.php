@@ -206,6 +206,9 @@ class Entry
     }
 
     /**
+     * return size only for first file of solid block
+     * @see https://github.com/Gemorroj/Archive7z/issues/5
+     *
      * @return string
      */
     public function getPackedSize()

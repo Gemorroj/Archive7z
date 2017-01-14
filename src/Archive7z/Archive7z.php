@@ -151,7 +151,7 @@ class Archive7z
      * @param string $path
      *
      * @throws Exception
-     * @return Archive7z
+     * @return $this
      */
     public function setCli($path)
     {
@@ -182,7 +182,7 @@ class Archive7z
      * @param string $filename
      *
      * @throws Exception
-     * @return Archive7z
+     * @return $this
      */
     public function setFilename($filename)
     {
@@ -215,7 +215,7 @@ class Archive7z
      * @param string $directory
      *
      * @throws Exception
-     * @return Archive7z
+     * @return $this
      */
     public function setOutputDirectory($directory = './')
     {
@@ -237,7 +237,7 @@ class Archive7z
 
     /**
      * @param bool $changeSystemLocale
-     * @return Archive7z
+     * @return $this
      */
     public function setChangeSystemLocale($changeSystemLocale)
     {
@@ -267,7 +267,7 @@ class Archive7z
      * @param string $password
      *
      * @throws Exception
-     * @return Archive7z
+     * @return $this
      */
     public function setPassword($password)
     {
@@ -288,7 +288,7 @@ class Archive7z
      * @param string $mode
      *
      * @throws Exception
-     * @return Archive7z
+     * @return $this
      */
     public function setOverwriteMode($mode = Archive7z::OVERWRITE_MODE_A)
     {
