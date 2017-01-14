@@ -1,36 +1,35 @@
-# Работа с 7z архивами с помощью командной строки.
+# A wrapper over 7-zip (p7zip)
 
 [![Build Status](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
 
 
-### Функции:
+### Features:
 
-- распаковка всего архива;
-- распаковка любой директории или файла в архиве;
-- просмотр всех файлов и директорий находящихся в архиве;
-- получение содержимого файла в архиве;
-- удаление директории или файла из архива;
-- добавление файлов в архив;
-- проверка корректности архива;
+- Extract archive;
+- Extract any directory or file;
+- List files or directories;
+- Get contents of any file in archive;
+- Delete files or directories;
+- Add files or directories;
 
 
-### Требования:
+### Requirements:
 
 - PHP >= 5.3
 - shell
 - **7-zip >= 7.30 (p7zip >= 9.38)**
 
 
-### Примечания:
+### Notes:
 
- - Список файлов/директорий отображается всегда в кодировке UTF-8
- - При указании файлов/директорий для распаковки, их имена нужно указывать в кидировке текущей файловой системы
- - При распаковке архива, имена файлов/директорий запишутся в кодировке текущей файловой системы
+ - List of files/directories is always displayed in UTF-8
+ - When unpacking, the names of the files/directories you need to specify the encoding of the current file system
+ - When you unpack the archive, the file names/directories are written in the encoding of the current file system
 
 
-### Установка через composer:
+### Installation:
 
-- Добавьте проект в ваш файл composer.json:
+- add to composer.json:
 
 ```json
 {
@@ -39,20 +38,25 @@
     }
 }
 ```
-- Установите проект:
+- install:
 
 ```bash
 $ php composer.phar update gemorroj/archive7z
 ```
 
 
-### Пример работы:
+### Example:
 
 ```php
 <?php
 use Archive7z\Archive7z;
 
 $obj = new Archive7z('path_to_7z_file.7z');
+
+if (!$obj->isValid()) {
+    throw new Exception('Incorrect archive');
+}
+
 
 foreach ($obj->getEntries() as $entry) {
         print_r($entry);
@@ -92,7 +96,7 @@ Archive7z\Entry Object
     }
 }
 
-echo $obj->getContent('test/test.txt');
+echo $obj->getContent('test/test.txt'); // show content of the file
 
 $obj->setOutputDirectory('path_to_extract_folder/');
 $obj->extract(); // extract archive
