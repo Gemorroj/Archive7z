@@ -1,4 +1,4 @@
-# A wrapper over 7-zip (p7zip)
+#Wrapper 7-zip (p7zip)
 
 [![Build Status](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
 
