@@ -301,7 +301,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         self::assertEquals('file.txt', $result->getPath());
 
         $new = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
-        $this->setExpectedException('Archive7z\Exception');
+        $this->setExpectedException('Symfony\Component\Process\Exception\ProcessFailedException');
         $new->getContent('file.txt');
     }
 
@@ -392,7 +392,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     {
         copy($this->fixturesDir . '/testPasswd.7z', $this->tmpDir . '/test.7z');
         $obj = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
-        $this->setExpectedException('Archive7z\Exception');
+        $this->setExpectedException('Symfony\Component\Process\Exception\ProcessFailedException');
         $obj->delEntry('test/test.txt');
     }
 
@@ -424,8 +424,13 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     {
         $new = new Archive7z($this->tmpDir . '/test.7z', $this->cliPath);
         $new->setChangeSystemLocale(true);
-        $this->setExpectedException('Archive7z\Exception');
+        $this->setExpectedException('Symfony\Component\Process\Exception\ProcessFailedException');
         $new->getContent('file.txt');
     }
 
+    public function testIsValid()
+    {
+        $valid = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
+        self::assertTrue($valid->isValid());
+    }
 }

@@ -266,7 +266,6 @@ class Archive7z
     /**
      * @param string $password
      *
-     * @throws Exception
      * @return $this
      */
     public function setPassword($password)
@@ -311,7 +310,7 @@ class Archive7z
     }
 
     /**
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function extract()
     {
@@ -369,7 +368,7 @@ class Archive7z
     /**
      * @param string $file
      *
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function extractEntry($file)
     {
@@ -386,7 +385,7 @@ class Archive7z
     /**
      * @param string $file
      *
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return string
      */
     public function getContent($file)
@@ -395,18 +394,14 @@ class Archive7z
             . $this->getCmdPostfixExtract();
 
         $process = new Process($cmd);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new Exception($process->getErrorOutput());
-        }
+        $process->mustRun();
 
         return $process->getOutput();
     }
 
     /**
      * @param string $file
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return Entry|null
      */
     public function getEntry($file)
@@ -414,7 +409,7 @@ class Archive7z
         //$file = str_replace('\\', '/', $file);
 
         foreach ($this->getEntries() as $v) {
-            if ($v->getPath() == $file) {
+            if ($v->getPath() === $file) {
                 return $v;
             }
         }
@@ -423,15 +418,15 @@ class Archive7z
     }
 
     /**
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return Entry[]
      */
     public function getEntries()
     {
-        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract(
-            );
+        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract();
 
-        $out = $this->execute($cmd);
+        $process = $this->execute($cmd);
+        $out = explode(PHP_EOL, $process->getOutput());
 
         $list = array();
         $parser = new Parser($out);
@@ -450,7 +445,7 @@ class Archive7z
      * @param bool $includeSubFiles
      * @param bool $storePath
      *
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
@@ -476,7 +471,7 @@ class Archive7z
     /**
      * @param string $file
      *
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function delEntry($file)
     {
@@ -493,7 +488,7 @@ class Archive7z
      * @param string $fileSrc
      * @param string $fileDest
      *
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function renameEntry($fileSrc, $fileDest)
     {
@@ -508,87 +503,49 @@ class Archive7z
     /**
      * Is valid archive?
      *
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return bool
      */
     public function isValid()
     {
         $cmd = $this->getCmdPrefix() . ' t ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract();
 
-        $out = $this->execute($cmd);
+        $process = $this->execute($cmd);
 
-        return in_array('Everything is Ok', $out, true);
+        return (false !== strpos($process->getOutput(), 'Everything is Ok'));
     }
 
 
     /**
      * @param string $cmd
      *
-     * @return array
-     * @throws Exception
+     * @return Process
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     protected function execute($cmd)
     {
         if (!$this->getChangeSystemLocale()) {
-            $out = $this->exec($cmd);
+            return $this->exec($cmd);
         } else {
-            $out = $this->execLocale($cmd);
+            if ($this->isOsWin()) {
+                return $this->exec('chcp ' . escapeshellarg($this->systemLocaleWin) . ' & ' . $cmd);
+            } else {
+                return $this->exec('LANG=' . escapeshellarg($this->systemLocaleNix) . ' ' . $cmd);
+            }
         }
-
-        return $out;
     }
 
 
     /**
      * @param string $cmd
-     * @return array
-     * @throws Exception
+     * @return Process
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     protected function exec($cmd)
     {
         $process = new Process($cmd);
-        $process->run();
+        $process->mustRun();
 
-        if (!$process->isSuccessful()) {
-            $arrayErrorOutput = explode(PHP_EOL, $process->getErrorOutput());
-            $error = $this->getCliError($arrayErrorOutput);
-            throw new Exception($error);
-        }
-
-        return explode(PHP_EOL, $process->getOutput());
-    }
-
-
-    /**
-     * @param string $cmd
-     * @return array
-     * @throws Exception
-     */
-    protected function execLocale($cmd)
-    {
-        if ($this->isOsWin()) {
-            return $this->exec('chcp ' . escapeshellarg($this->systemLocaleWin) . ' & ' . $cmd);
-        } else {
-            return $this->exec('LANG=' . escapeshellarg($this->systemLocaleNix) . ' ' . $cmd);
-        }
-    }
-
-
-    /**
-     * Get cli error
-     *
-     * @param array $out
-     *
-     * @return string|null
-     */
-    protected function getCliError(array $out)
-    {
-        for ($i = count($out) - 1; $i >= 0; --$i) {
-            if ($out[$i] !== '') {
-                return $out[$i];
-            }
-        }
-
-        return null;
+        return $process;
     }
 }
