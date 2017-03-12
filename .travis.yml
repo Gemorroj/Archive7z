@@ -22,9 +22,9 @@ before_script:
   - sudo ln /usr/local/bin/7za /usr/bin/7za
   - cd ..
 
-  - composer self-update && composer install --prefer-source --no-interaction
+  - composer self-update && composer install --no-interaction
 
-script: phpunit --configuration phpunit.xml
+script: vendor/bin/phpunit --configuration phpunit.xml
 
 notifications:
   email: false
