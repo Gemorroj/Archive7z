@@ -3,7 +3,7 @@
     "description": "7z cli wrapper",
     "keywords": ["7z","archive","p7zip","7-zip"],
     "type": "library",
-    "license": "LGPL 3.0",
+    "license": "LGPL-3.0",
     "authors": [
         {
             "name": "Gemorroj"
