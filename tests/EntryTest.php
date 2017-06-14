@@ -3,17 +3,13 @@ namespace Tests\Archive7z;
 
 use Archive7z\Archive7z;
 
-//TODO
 class EntryTest extends \PHPUnit_Framework_TestCase
 {
-    protected $cliPath;
     protected $fixturesDir;
-    protected $baseDir;
 
     protected function setUp()
     {
-        $this->baseDir = dirname(__DIR__);
-        $this->fixturesDir = $this->baseDir . DIRECTORY_SEPARATOR . 'fixtures';
+        $this->fixturesDir = __DIR__ . '/fixtures';
     }
 
 
@@ -31,7 +27,7 @@ class EntryTest extends \PHPUnit_Framework_TestCase
         );
         $actualResults = array();
 
-        $archive = new Archive7z($this->fixturesDir . '/test.7z', $this->cliPath);
+        $archive = new Archive7z($this->fixturesDir . '/test.7z');
         foreach ($archive->getEntries() as $entry) {
             $actualResults[] = $entry->getPackedSize();
         }

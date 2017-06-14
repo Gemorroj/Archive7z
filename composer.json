@@ -18,7 +18,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Archive7z\\": "src/Archive7z"
+            "Archive7z\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Archive7z\\Tests\\": "tests/"
         }
     }
 }
