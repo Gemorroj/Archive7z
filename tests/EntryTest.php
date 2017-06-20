@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Archive7z;
+namespace Archive7z\Tests;
 
 use Archive7z\Archive7z;
 
