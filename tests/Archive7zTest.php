@@ -120,7 +120,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function testExtractCyrillic()
     {
         $dirCyrillic = $this->tmpDir . '/папка';
-        $chavezFile = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        //$chavezFile = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        $chavezFile = 'чавес.jpg';
 
         if (!mkdir($dirCyrillic)) {
             self::markTestIncomplete('Cant create cyrillic directory.');
@@ -243,7 +244,9 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testExtractEntryCyrillic()
     {
-        $file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        //$file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        $file = 'чавес.jpg';
+
         $obj = new Archive7z($this->fixturesDir . '/test.7z');
         $obj->setOutputDirectory($this->tmpDir);
         $obj->extractEntry($file);
@@ -410,7 +413,9 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testChangeSystemLocale()
     {
-        $file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        //$file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
+        $file = 'чавес.jpg';
+
         $obj = new Archive7z($this->fixturesDir . '/test.7z');
         $obj->setChangeSystemLocale(true);
         $obj->setOutputDirectory($this->tmpDir);
