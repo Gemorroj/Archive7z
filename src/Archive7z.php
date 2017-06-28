@@ -121,7 +121,7 @@ class Archive7z
      */
     protected function isOsBsd()
     {
-        return stripos(PHP_OS, 'BSD') !== false;
+        return stripos(PHP_OS, 'BSD') !== false | stripos(PHP_OS, 'Darwin') !== false;
     }
 
 
