@@ -113,7 +113,7 @@ class Archive7z
      */
     protected function isOsWin()
     {
-        return false !== \stripos(PHP_OS, 'WIN');
+        return false !== \stripos(\PHP_OS, 'Win');
     }
 
 
@@ -122,7 +122,7 @@ class Archive7z
      */
     protected function isOsBsd()
     {
-        return false !== \stripos(PHP_OS, 'BSD') || false !== \stripos(PHP_OS, 'Darwin');
+        return false !== \stripos(\PHP_OS, 'BSD') || false !== \stripos(\PHP_OS, 'Darwin');
     }
 
 
@@ -133,7 +133,8 @@ class Archive7z
     {
         if ($this->isOsBsd()) {
             return $this->cliBsd;
-        } elseif ($this->isOsWin()) {
+        }
+        if ($this->isOsWin()) {
             return $this->cliWindows;
         }
 
@@ -449,7 +450,7 @@ class Archive7z
         $processBuilder = $this->decorateCmdExtract($processBuilder);
 
         $process = $this->execute($processBuilder);
-        $out = \explode(PHP_EOL, $process->getOutput());
+        $out = \explode(\PHP_EOL, $process->getOutput());
 
         $list = [];
         $parser = new Parser($out);
