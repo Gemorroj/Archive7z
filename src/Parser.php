@@ -23,7 +23,7 @@ class Parser
     public function parseEntries()
     {
         $head = true;
-        $list = array();
+        $list = [];
         $i = 0;
 
         foreach ($this->data as $value) {
@@ -32,7 +32,7 @@ class Parser
                 continue;
             }
 
-            if ($head === true) {
+            if (true === $head) {
                 continue;
             }
 
@@ -42,7 +42,7 @@ class Parser
             }
 
             $entry = $this->parseEntry($value);
-            $list[$i][key($entry)] = current($entry);
+            $list[$i][\key($entry)] = \current($entry);
         }
 
         return $list;
@@ -54,9 +54,9 @@ class Parser
      */
     protected function parseEntry($line)
     {
-        list($k, $v) = explode(' =', $line, 2);
-        $v = ltrim($v);
+        list($k, $v) = \explode(' =', $line, 2);
+        $v = \ltrim($v);
 
-        return array($k => $v);
+        return [$k => $v];
     }
 }

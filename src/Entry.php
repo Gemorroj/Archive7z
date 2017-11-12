@@ -111,7 +111,7 @@ class Entry
      */
     public function isDirectory()
     {
-        return (strpos($this->attributes, 'D') !== false);
+        return false !== \strpos($this->attributes, 'D');
     }
 
 
@@ -120,7 +120,7 @@ class Entry
      */
     public function isEncrypted()
     {
-        return ($this->encrypted === '+');
+        return '+' === $this->encrypted;
     }
 
 

@@ -98,7 +98,7 @@ class Archive7z
      */
     public function __construct($filename, $cli = null)
     {
-        if ($cli === null) {
+        if (null === $cli) {
             $cli = $this->getAutoCli();
         }
 
@@ -112,7 +112,7 @@ class Archive7z
      */
     protected function isOsWin()
     {
-        return stripos(PHP_OS, 'WIN') !== false;
+        return false !== \stripos(PHP_OS, 'WIN');
     }
 
 
@@ -121,7 +121,7 @@ class Archive7z
      */
     protected function isOsBsd()
     {
-        return stripos(PHP_OS, 'BSD') !== false || stripos(PHP_OS, 'Darwin') !== false;
+        return false !== \stripos(PHP_OS, 'BSD') || false !== \stripos(PHP_OS, 'Darwin');
     }
 
 
@@ -134,9 +134,9 @@ class Archive7z
             return $this->cliBsd;
         } elseif ($this->isOsWin()) {
             return $this->cliWindows;
-        } else {
-            return $this->cliLinux;
         }
+
+        return $this->cliLinux;
     }
 
     /**
@@ -155,13 +155,13 @@ class Archive7z
      */
     public function setCli($path)
     {
-        $cli = realpath($path);
+        $cli = \realpath($path);
 
-        if ($cli === false) {
+        if (false === $cli) {
             throw new Exception('Cli is not available');
         }
 
-        if (is_executable($cli) === false) {
+        if (false === \is_executable($cli)) {
             throw new Exception('Cli is not executable');
         }
 
@@ -187,13 +187,13 @@ class Archive7z
     public function setFilename($filename)
     {
         /*
-        $filename = realpath($filename);
+        $filename = \realpath($filename);
 
-        if ($filename === false) {
+        if (false === $filename) {
             throw new Exception('Filename is not available');
         }
 
-        if (is_readable($filename) === false) {
+        if (false === \is_readable($filename)) {
             throw new Exception('Filename is not readable');
         }
         */
@@ -219,13 +219,13 @@ class Archive7z
      */
     public function setOutputDirectory($directory = './')
     {
-        $outputDirectory = realpath($directory);
+        $outputDirectory = \realpath($directory);
 
-        if ($outputDirectory === false) {
+        if (false === $outputDirectory) {
             throw new Exception('Output directory is not available');
         }
 
-        if (is_writable($outputDirectory) === false) {
+        if (false === \is_writable($outputDirectory)) {
             throw new Exception('Output directory is not writable');
         }
 
@@ -293,16 +293,12 @@ class Archive7z
     {
         $this->overwriteMode = $mode;
 
-        if (in_array(
-                $this->overwriteMode,
-                array(
-                    self::OVERWRITE_MODE_A,
-                    self::OVERWRITE_MODE_S,
-                    self::OVERWRITE_MODE_T,
-                    self::OVERWRITE_MODE_U
-                )
-            ) === false
-        ) {
+        if (false === \in_array($this->overwriteMode, [
+            self::OVERWRITE_MODE_A,
+            self::OVERWRITE_MODE_S,
+            self::OVERWRITE_MODE_T,
+            self::OVERWRITE_MODE_U,
+        ])) {
             throw new Exception('Overwrite mode is not available');
         }
 
@@ -314,9 +310,8 @@ class Archive7z
      */
     public function extract()
     {
-        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
-                $this->overwriteMode
-            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract();
+        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd($this->overwriteMode)
+            . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract();
 
         $this->execute($cmd);
     }
@@ -326,7 +321,7 @@ class Archive7z
      */
     private function getCmdPrefix()
     {
-        return '"' . escapeshellcmd(str_replace('\\', '/', $this->cli)) . '"'; // fix for windows
+        return '"' . escapeshellcmd(\str_replace('\\', '/', $this->cli)) . '"'; // fix for windows
     }
 
     /**
@@ -372,12 +367,9 @@ class Archive7z
      */
     public function extractEntry($file)
     {
-        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd(
-                $this->overwriteMode
-            ) . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract(
-            ) . ' ' . escapeshellarg(
-                $file
-            );
+        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd($this->overwriteMode)
+            . ' -o' . escapeshellarg($this->outputDirectory)
+            . ' ' . $this->getCmdPostfixExtract() . ' ' . escapeshellarg($file);
 
         $this->execute($cmd);
     }
@@ -426,9 +418,9 @@ class Archive7z
         $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract();
 
         $process = $this->execute($cmd);
-        $out = explode(PHP_EOL, $process->getOutput());
+        $out = \explode(PHP_EOL, $process->getOutput());
 
-        $list = array();
+        $list = [];
         $parser = new Parser($out);
         foreach ($parser->parseEntries() as $v) {
             $list[] = new Entry($this, $v);
@@ -452,17 +444,16 @@ class Archive7z
         if ($storePath) {
             $path = '-spf -i!' . escapeshellarg($file);
         } else {
-            $path = escapeshellarg(realpath($file));
+            $path = escapeshellarg(\realpath($file));
         }
 
         $exclude = '';
-        if (!$includeSubFiles && is_dir($file) === true) {
-            $exclude = '-x!' . escapeshellarg(rtrim($file, '/') . '/*');
+        if (!$includeSubFiles && true === \is_dir($file)) {
+            $exclude = '-x!' . escapeshellarg(\rtrim($file, '/') . '/*');
         }
 
-        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . intval(
-                $this->compressionLevel
-            ) . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
+        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . \intval($this->compressionLevel)
+            . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
             . $path . ' ' . $exclude;
 
         $this->execute($cmd);
@@ -475,8 +466,7 @@ class Archive7z
      */
     public function delEntry($file)
     {
-        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract(
-            ) . ' '
+        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
             . escapeshellarg($file);
 
         $this->execute($cmd);
@@ -492,8 +482,7 @@ class Archive7z
      */
     public function renameEntry($fileSrc, $fileDest)
     {
-        $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract(
-            ) . ' '
+        $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
             . escapeshellarg($fileSrc) . ' ' . escapeshellarg($fileDest);
 
         $this->execute($cmd);
@@ -512,7 +501,7 @@ class Archive7z
 
         $process = $this->execute($cmd);
 
-        return (false !== strpos($process->getOutput(), 'Everything is Ok'));
+        return false !== \strpos($process->getOutput(), 'Everything is Ok');
     }
 
 

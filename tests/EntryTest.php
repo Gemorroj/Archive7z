@@ -18,14 +18,14 @@ class EntryTest extends \PHPUnit_Framework_TestCase
      */
     public function testPackedSize()
     {
-        $expectedResults = array(
+        $expectedResults = [
             '60572',
             '104822',
             '', // второй файл в solid блоке
             '19',
             '0' // directory
-        );
-        $actualResults = array();
+        ];
+        $actualResults = [];
 
         $archive = new Archive7z($this->fixturesDir . '/test.7z');
         foreach ($archive->getEntries() as $entry) {
