@@ -3,6 +3,7 @@
 namespace Archive7z;
 
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessBuilder;
 
 class Archive7z
 {
@@ -310,54 +311,70 @@ class Archive7z
      */
     public function extract()
     {
-        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd($this->overwriteMode)
-            . ' -o' . escapeshellarg($this->outputDirectory) . ' ' . $this->getCmdPostfixExtract();
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'x',
+            $this->filename,
+            $this->overwriteMode,
+            '-o' . $this->outputDirectory,
 
-        $this->execute($cmd);
+        ]);
+
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
+
+        $this->execute($processBuilder);
     }
 
     /**
-     * @return string
+     * @return ProcessBuilder
      */
-    private function getCmdPrefix()
+    private function getProcessBuilder()
     {
-        return '"' . escapeshellcmd(\str_replace('\\', '/', $this->cli)) . '"'; // fix for windows
+        $processBuilder = new ProcessBuilder();
+        $processBuilder->setPrefix(\str_replace('\\', '/', $this->cli));
+
+        return $processBuilder;
     }
 
     /**
-     * @return string
+     * @param ProcessBuilder $processBuilder
+     * @return ProcessBuilder
      */
-    private function getCmdPostfixExtract()
+    private function decorateCmdExtract(ProcessBuilder $processBuilder)
     {
-        $cmd = ' -y';
+        $processBuilder->add('-y');
+
         if ($this->isOsWin()) { // not work for *nix
-            $cmd .= ' -scc"UTF-8"';
-            $cmd .= ' -scs"UTF-8"';
-        }
-        if ($this->password !== null) {
-            $cmd .= ' -p' . escapeshellarg($this->password);
-        } else {
-            $cmd .= ' -p" "';
+            $processBuilder->add('-sccUTF-8');
+            $processBuilder->add('-scsUTF-8');
         }
 
-        return $cmd;
+        if (null !== $this->password) {
+            $processBuilder->add('-p' . $this->password);
+        } else {
+            $processBuilder->add('-p '); //todo
+        }
+
+        return $processBuilder;
     }
 
     /**
-     * @return string
+     * @param ProcessBuilder $processBuilder
+     * @return ProcessBuilder
      */
-    private function getCmdPostfixCompress()
+    private function decorateCmdCompress(ProcessBuilder $processBuilder)
     {
-        $cmd = ' -y';
+        $processBuilder->add('-y');
+
         if ($this->isOsWin()) {  // not work for *nix
-            $cmd .= ' -scc"UTF-8"';
-            $cmd .= ' -scs"UTF-8"';
-        }
-        if ($this->password !== null) {
-            $cmd .= ' -p' . escapeshellarg($this->password);
+            $processBuilder->add('-sccUTF-8');
+            $processBuilder->add('-scsUTF-8');
         }
 
-        return $cmd;
+        if (null !== $this->password) {
+            $processBuilder->add('-p' . $this->password);
+        }
+
+        return $processBuilder;
     }
 
     /**
@@ -367,11 +384,16 @@ class Archive7z
      */
     public function extractEntry($file)
     {
-        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' ' . escapeshellcmd($this->overwriteMode)
-            . ' -o' . escapeshellarg($this->outputDirectory)
-            . ' ' . $this->getCmdPostfixExtract() . ' ' . escapeshellarg($file);
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'x',
+            $this->filename,
+            $this->overwriteMode,
+            '-o' . $this->outputDirectory,
+        ]);
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
+        $processBuilder->add($file);
 
-        $this->execute($cmd);
+        $this->execute($processBuilder);
     }
 
     /**
@@ -382,11 +404,15 @@ class Archive7z
      */
     public function getContent($file)
     {
-        $cmd = $this->getCmdPrefix() . ' x ' . escapeshellarg($this->filename) . ' -so ' . escapeshellarg($file) . ' '
-            . $this->getCmdPostfixExtract();
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'x',
+            $this->filename,
+            '-so',
+            $file,
+        ]);
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
 
-        $process = new Process($cmd);
-        $process->mustRun();
+        $process = $processBuilder->getProcess()->mustRun();
 
         return $process->getOutput();
     }
@@ -398,7 +424,7 @@ class Archive7z
      */
     public function getEntry($file)
     {
-        //$file = str_replace('\\', '/', $file);
+        //$file = \str_replace('\\', '/', $file);
 
         foreach ($this->getEntries() as $v) {
             if ($v->getPath() === $file) {
@@ -415,9 +441,14 @@ class Archive7z
      */
     public function getEntries()
     {
-        $cmd = $this->getCmdPrefix() . ' l ' . escapeshellarg($this->filename) . ' -slt ' . $this->getCmdPostfixExtract();
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'l',
+            $this->filename,
+            '-slt',
+        ]);
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
 
-        $process = $this->execute($cmd);
+        $process = $this->execute($processBuilder);
         $out = \explode(PHP_EOL, $process->getOutput());
 
         $list = [];
@@ -437,26 +468,34 @@ class Archive7z
      * @param bool $includeSubFiles
      * @param bool $storePath
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
      */
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'a',
+            $this->filename,
+            '-mx=' . (int)$this->compressionLevel,
+            '-t7z',
+        ]);
+        $processBuilder = $this->decorateCmdCompress($processBuilder);
+
         if ($storePath) {
-            $path = '-spf -i!' . escapeshellarg($file);
+            $processBuilder->add('-spf');
+            $processBuilder->add('-i!' . $file);
         } else {
-            $path = escapeshellarg(\realpath($file));
+            $realPath = \realpath($file);
+            if (false === $realPath) {
+                throw new Exception('Can not resolve absolute path for "' . $file . '"');
+            }
+            $processBuilder->add($realPath);
         }
 
-        $exclude = '';
         if (!$includeSubFiles && true === \is_dir($file)) {
-            $exclude = '-x!' . escapeshellarg(\rtrim($file, '/') . '/*');
+            $processBuilder->add('-x!' . \rtrim($file, '/') . '/*');
         }
 
-        $cmd = $this->getCmdPrefix() . ' a ' . escapeshellarg($this->filename) . ' -mx=' . \intval($this->compressionLevel)
-            . ' -t7z ' . $this->getCmdPostfixCompress() . ' '
-            . $path . ' ' . $exclude;
-
-        $this->execute($cmd);
+        $this->execute($processBuilder);
     }
 
     /**
@@ -466,10 +505,14 @@ class Archive7z
      */
     public function delEntry($file)
     {
-        $cmd = $this->getCmdPrefix() . ' d ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
-            . escapeshellarg($file);
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'd',
+            $this->filename,
+        ]);
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
+        $processBuilder->add($file);
 
-        $this->execute($cmd);
+        $this->execute($processBuilder);
     }
 
     /**
@@ -482,10 +525,15 @@ class Archive7z
      */
     public function renameEntry($fileSrc, $fileDest)
     {
-        $cmd = $this->getCmdPrefix() . ' rn ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract() . ' '
-            . escapeshellarg($fileSrc) . ' ' . escapeshellarg($fileDest);
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            'rn',
+            $this->filename,
+        ]);
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
+        $processBuilder->add($fileSrc);
+        $processBuilder->add($fileDest);
 
-        $this->execute($cmd);
+        $this->execute($processBuilder);
     }
 
 
@@ -497,44 +545,42 @@ class Archive7z
      */
     public function isValid()
     {
-        $cmd = $this->getCmdPrefix() . ' t ' . escapeshellarg($this->filename) . ' ' . $this->getCmdPostfixExtract();
+        $processBuilder = $this->getProcessBuilder()->setArguments([
+            't',
+            $this->filename,
+        ]);
+        $processBuilder = $this->decorateCmdExtract($processBuilder);
 
-        $process = $this->execute($cmd);
+        $process = $this->execute($processBuilder);
 
         return false !== \strpos($process->getOutput(), 'Everything is Ok');
     }
 
 
     /**
-     * @param string $cmd
+     * @param ProcessBuilder $processBuilder
      *
      * @return Process
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    protected function execute($cmd)
+    protected function execute(ProcessBuilder $processBuilder)
     {
-        if (!$this->getChangeSystemLocale()) {
-            return $this->exec($cmd);
-        } else {
+        $process = $processBuilder->getProcess();
+
+        if ($this->getChangeSystemLocale()) {
             if ($this->isOsWin()) {
-                return $this->exec('chcp ' . escapeshellarg($this->systemLocaleWin) . ' & ' . $cmd);
+                $localeProcessBuilder = new ProcessBuilder([
+                    $this->systemLocaleWin,
+                ]);
+                $localeProcessBuilder->setPrefix('chcp');
             } else {
-                return $this->exec('LANG=' . escapeshellarg($this->systemLocaleNix) . ' ' . $cmd);
+                $localeProcessBuilder = new ProcessBuilder([
+                    'LANG=' . $this->systemLocaleNix,
+                ]);
             }
+            $process->setCommandLine($localeProcessBuilder->getProcess()->getCommandLine() . ' & ' . $process->getCommandLine());
         }
-    }
 
-
-    /**
-     * @param string $cmd
-     * @return Process
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     */
-    protected function exec($cmd)
-    {
-        $process = new Process($cmd);
-        $process->mustRun();
-
-        return $process;
+        return $process->mustRun();
     }
 }
