@@ -3,7 +3,6 @@
 namespace Archive7z;
 
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 
 class Archive7z
 {
@@ -308,74 +307,70 @@ class Archive7z
     }
 
     /**
+     * @param array $arguments
+     * @return Process
+     */
+    private function makeProcess(array $arguments)
+    {
+        return new Process(\array_merge([\str_replace('\\', '/', $this->cli)], $arguments));
+    }
+
+
+    /**
+     * @return array
+     */
+    private function decorateCmdExtract()
+    {
+        $out = [];
+        $out[] = '-y';
+
+        if ($this->isOsWin()) { // not work for *nix
+            $out[] = '-sccUTF-8';
+            $out[] = '-scsUTF-8';
+        }
+
+        if (null !== $this->password) {
+            $out[] = '-p' . $this->password;
+        } else {
+            $out[] = '-p '; //todo
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return array
+     */
+    private function decorateCmdCompress()
+    {
+        $out = [];
+        $out[] = '-y';
+
+        if ($this->isOsWin()) {  // not work for *nix
+            $out[] = '-sccUTF-8';
+            $out[] = '-scsUTF-8';
+        }
+
+        if (null !== $this->password) {
+            $out[] = '-p' . $this->password;
+        }
+
+        return $out;
+    }
+
+    /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function extract()
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             'x',
             $this->filename,
             $this->overwriteMode,
             '-o' . $this->outputDirectory,
+        ], $this->decorateCmdExtract()));
 
-        ]);
-
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
-
-        $this->execute($processBuilder);
-    }
-
-    /**
-     * @return ProcessBuilder
-     */
-    private function getProcessBuilder()
-    {
-        $processBuilder = new ProcessBuilder();
-        $processBuilder->setPrefix(\str_replace('\\', '/', $this->cli));
-
-        return $processBuilder;
-    }
-
-    /**
-     * @param ProcessBuilder $processBuilder
-     * @return ProcessBuilder
-     */
-    private function decorateCmdExtract(ProcessBuilder $processBuilder)
-    {
-        $processBuilder->add('-y');
-
-        if ($this->isOsWin()) { // not work for *nix
-            $processBuilder->add('-sccUTF-8');
-            $processBuilder->add('-scsUTF-8');
-        }
-
-        if (null !== $this->password) {
-            $processBuilder->add('-p' . $this->password);
-        } else {
-            $processBuilder->add('-p '); //todo
-        }
-
-        return $processBuilder;
-    }
-
-    /**
-     * @param ProcessBuilder $processBuilder
-     * @return ProcessBuilder
-     */
-    private function decorateCmdCompress(ProcessBuilder $processBuilder)
-    {
-        $processBuilder->add('-y');
-
-        if ($this->isOsWin()) {  // not work for *nix
-            $processBuilder->add('-sccUTF-8');
-            $processBuilder->add('-scsUTF-8');
-        }
-
-        if (null !== $this->password) {
-            $processBuilder->add('-p' . $this->password);
-        }
-
-        return $processBuilder;
+        $this->execute($process);
     }
 
     /**
@@ -385,16 +380,14 @@ class Archive7z
      */
     public function extractEntry($file)
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             'x',
             $this->filename,
             $this->overwriteMode,
             '-o' . $this->outputDirectory,
-        ]);
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
-        $processBuilder->add($file);
+        ], $this->decorateCmdExtract(), [$file]));
 
-        $this->execute($processBuilder);
+        $this->execute($process);
     }
 
     /**
@@ -405,17 +398,14 @@ class Archive7z
      */
     public function getContent($file)
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             'x',
             $this->filename,
             '-so',
             $file,
-        ]);
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
+        ], $this->decorateCmdExtract()));
 
-        $process = $processBuilder->getProcess()->mustRun();
-
-        return $process->getOutput();
+        return $process->mustRun()->getOutput();
     }
 
     /**
@@ -442,15 +432,13 @@ class Archive7z
      */
     public function getEntries()
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             'l',
             $this->filename,
             '-slt',
-        ]);
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
+        ], $this->decorateCmdExtract()));
 
-        $process = $this->execute($processBuilder);
-        $out = \explode(\PHP_EOL, $process->getOutput());
+        $out = \explode(\PHP_EOL, $this->execute($process)->getOutput()); //todo: use getIterator
 
         $list = [];
         $parser = new Parser($out);
@@ -473,30 +461,30 @@ class Archive7z
      */
     public function addEntry($file, $includeSubFiles = false, $storePath = false)
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
-            'a',
-            $this->filename,
-            '-mx=' . (int)$this->compressionLevel,
-            '-t7z',
-        ]);
-        $processBuilder = $this->decorateCmdCompress($processBuilder);
+        $args = [];
+        $args[] = 'a';
+        $args[] = $this->filename;
+        $args[] = '-mx=' . (int)$this->compressionLevel;
+        $args[] = '-t7z';
 
         if ($storePath) {
-            $processBuilder->add('-spf');
-            $processBuilder->add('-i!' . $file);
+            $args[] = '-spf';
+            $args[] = '-i!' . $file;
         } else {
             $realPath = \realpath($file);
             if (false === $realPath) {
                 throw new Exception('Can not resolve absolute path for "' . $file . '"');
             }
-            $processBuilder->add($realPath);
+            $args[] = $realPath;
         }
 
         if (!$includeSubFiles && true === \is_dir($file)) {
-            $processBuilder->add('-x!' . \rtrim($file, '/') . '/*');
+            $args[] = '-x!' . \rtrim($file, '/') . '/*';
         }
 
-        $this->execute($processBuilder);
+        $process = $this->makeProcess(\array_merge($args, $this->decorateCmdCompress()));
+
+        $this->execute($process);
     }
 
     /**
@@ -506,14 +494,13 @@ class Archive7z
      */
     public function delEntry($file)
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             'd',
             $this->filename,
-        ]);
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
-        $processBuilder->add($file);
+            $file,
+        ], $this->decorateCmdExtract()));
 
-        $this->execute($processBuilder);
+        $this->execute($process);
     }
 
     /**
@@ -526,15 +513,14 @@ class Archive7z
      */
     public function renameEntry($fileSrc, $fileDest)
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             'rn',
             $this->filename,
-        ]);
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
-        $processBuilder->add($fileSrc);
-        $processBuilder->add($fileDest);
+            $fileSrc,
+            $fileDest,
+        ], $this->decorateCmdExtract()));
 
-        $this->execute($processBuilder);
+        $this->execute($process);
     }
 
 
@@ -546,40 +532,38 @@ class Archive7z
      */
     public function isValid()
     {
-        $processBuilder = $this->getProcessBuilder()->setArguments([
+        $process = $this->makeProcess(\array_merge([
             't',
             $this->filename,
-        ]);
-        $processBuilder = $this->decorateCmdExtract($processBuilder);
+        ], $this->decorateCmdExtract()));
 
-        $process = $this->execute($processBuilder);
+        $process = $this->execute($process);
 
         return false !== \strpos($process->getOutput(), 'Everything is Ok');
     }
 
 
     /**
-     * @param ProcessBuilder $processBuilder
+     * @param Process $process
      *
      * @return Process
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    protected function execute(ProcessBuilder $processBuilder)
+    protected function execute(Process $process)
     {
-        $process = $processBuilder->getProcess();
-
         if ($this->getChangeSystemLocale()) {
             if ($this->isOsWin()) {
-                $localeProcessBuilder = new ProcessBuilder([
+                $localeProcess = new Process([
+                    'chcp',
                     $this->systemLocaleWin,
                 ]);
-                $localeProcessBuilder->setPrefix('chcp');
             } else {
-                $localeProcessBuilder = new ProcessBuilder([
+                $localeProcess = new Process([
                     'LANG=' . $this->systemLocaleNix,
                 ]);
             }
-            $process->setCommandLine($localeProcessBuilder->getProcess()->getCommandLine() . ' & ' . $process->getCommandLine());
+
+            $process->setCommandLine($localeProcess->getCommandLine() . ' & ' . $process->getCommandLine());
         }
 
         return $process->mustRun();
