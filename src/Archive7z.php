@@ -438,7 +438,9 @@ class Archive7z
             '-slt',
         ], $this->decorateCmdExtract()));
 
-        $out = \explode(\PHP_EOL, $this->execute($process)->getOutput()); //todo: use getIterator
+        $this->execute($process);
+
+        $out = \explode(\PHP_EOL, $process->getOutput());
 
         $list = [];
         $parser = new Parser($out);
@@ -537,7 +539,7 @@ class Archive7z
             $this->filename,
         ], $this->decorateCmdExtract()));
 
-        $process = $this->execute($process);
+        $this->execute($process);
 
         return false !== \strpos($process->getOutput(), 'Everything is Ok');
     }
@@ -546,7 +548,6 @@ class Archive7z
     /**
      * @param Process $process
      *
-     * @return Process
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     protected function execute(Process $process)
@@ -566,6 +567,6 @@ class Archive7z
             $process->setCommandLine($localeProcess->getCommandLine() . ' & ' . $process->getCommandLine());
         }
 
-        return $process->mustRun();
+        $process->mustRun();
     }
 }
