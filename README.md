@@ -1,6 +1,9 @@
 # Wrapper 7-zip (p7zip)
 
-[![Build Status](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
+[![License](https://poser.pugx.org/gemorroj/archive7z/license)](https://packagist.org/packages/gemorroj/archive7z)
+[![Latest Stable Version](https://poser.pugx.org/gemorroj/archive7z/v/stable)](https://packagist.org/packages/gemorroj/archive7z)
+[![Build Status Travis](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
+[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/3i7po8fka1eqdb8a)](https://ci.appveyor.com/project/Gemorroj/archive7z)
 
 
 ### Features:
