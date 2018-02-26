@@ -7,6 +7,6 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
 {
     public function test()
     {
-        self::assertInstanceOf('Exception', new Exception);
+        self::assertInstanceOf(\Exception::class, new Exception);
     }
 }

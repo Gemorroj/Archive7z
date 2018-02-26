@@ -8,12 +8,12 @@
 
 ### Features:
 
-- Extract archive;
-- Extract any directory or file;
-- List files or directories;
-- Get contents of any file in archive;
-- Delete files or directories;
-- Add files or directories;
+- Unpacking archives (all supports 7zip archiver formats - 7z, XZ, BZIP2, GZIP, TAR, ZIP, WIM, AR, ARJ, CAB, CHM, CPIO, CramFS, DMG, EXT, FAT, GPT, HFS, IHEX, ISO, LZH, LZMA, MBR, MSI, NSIS, NTFS, QCOW2, RAR, RPM, SquashFS, UDF, UEFI, VDI, VHD, VMDK, WIM, XAR and Z)
+- Extract any directory or file
+- List files and directories
+- Get contents of any file from archive
+- Delete files or directories (only 7z format now)
+- Add files or directories (only 7z format now)
 
 
 ### Requirements:
@@ -25,7 +25,7 @@
 
 ### Notes:
 
- - List of files/directories is always displayed in UTF-8
+ - List of files/directories is always in UTF-8
  - When unpacking, the names of the files/directories you need to specify the encoding of the current file system
  - When you unpack the archive, the file names/directories are written in the encoding of the current file system
 
