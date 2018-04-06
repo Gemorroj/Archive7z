@@ -44,7 +44,7 @@
 - install:
 
 ```bash
-$ php composer.phar update gemorroj/archive7z
+$ composer require gemorroj/archive7z
 ```
 
 
