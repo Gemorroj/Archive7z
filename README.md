@@ -31,20 +31,8 @@
 
 
 ### Installation:
-
-- add to composer.json:
-
-```json
-{
-    "require": {
-        "gemorroj/archive7z": "dev-master"
-    }
-}
-```
-- install:
-
 ```bash
-$ php composer.phar update gemorroj/archive7z
+composer require gemorroj/archive7z
 ```
 
 
