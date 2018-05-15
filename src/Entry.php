@@ -67,7 +67,6 @@ class Entry
     {
         switch ($key) {
             case 'Path':
-                //$this->path = str_replace('\\', '/', $value);
                 $this->path = $value;
                 break;
 
@@ -222,6 +221,14 @@ class Entry
     public function getPath()
     {
         return $this->path;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUnixPath()
+    {
+       return \str_replace('\\', '/', $this->getPath());
     }
 
     /**

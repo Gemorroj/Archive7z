@@ -39,23 +39,23 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     protected function tearDown()
     {
         $this->cleanDir($this->tmpDir);
-        rmdir($this->tmpDir);
+        \rmdir($this->tmpDir);
     }
 
     protected function cleanDir($dir)
     {
-        $h = opendir($dir);
-        while (($file = readdir($h)) !== false) {
+        $h = \opendir($dir);
+        while (($file = \readdir($h)) !== false) {
             if ($file !== '.' && $file !== '..') {
-                if (is_dir($dir . '/' . $file) === true) {
+                if (\is_dir($dir . '/' . $file)) {
                     $this->cleanDir($dir . '/' . $file);
-                    rmdir($dir . '/' . $file);
+                    \rmdir($dir . '/' . $file);
                 } else {
-                    unlink($dir . '/' . $file);
+                    \unlink($dir . '/' . $file);
                 }
             }
         }
-        closedir($h);
+        \closedir($h);
     }
 
     public function testSetGetCli()
@@ -120,6 +120,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
             ['test.zip'],
             ['test.tar'],
             ['test.rar'],
+            ['testUnix.zip'],
         ];
     }
 
@@ -134,7 +135,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         //$chavezFile = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
         $chavezFile = 'чавес.jpg';
 
-        if (!mkdir($dirCyrillic)) {
+        if (!\mkdir($dirCyrillic)) {
             self::markTestIncomplete('Cant create cyrillic directory.');
         }
 
@@ -184,7 +185,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractOverwrite($archiveName)
     {
-        if (!mkdir($this->tmpDir . '/test')) {
+        if (!\mkdir($this->tmpDir . '/test')) {
             self::markTestIncomplete('Cant create directory.');
         }
 
@@ -197,33 +198,33 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_A);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extract();
         self::assertFileEquals($archiveFile, $targetFile);
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_S);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extract();
         self::assertFileEquals($sourceFile, $targetFile);
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_T);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extract();
         self::assertFileExists($this->tmpDir . '/test/test_1.txt');
         self::assertFileEquals($archiveFile, $targetFile);
         self::assertFileEquals($sourceFile, $this->tmpDir . '/test/test_1.txt');
-        unlink($this->tmpDir . '/test/test_1.txt');
+        \unlink($this->tmpDir . '/test/test_1.txt');
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_U);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extract();
         self::assertFileExists($this->tmpDir . '/test/test_1.txt');
         self::assertFileEquals($sourceFile, $targetFile);
         self::assertFileEquals($archiveFile, $this->tmpDir . '/test/test_1.txt');
-        unlink($this->tmpDir . '/test/test_1.txt');
+        \unlink($this->tmpDir . '/test/test_1.txt');
     }
 
 
@@ -246,7 +247,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractEntryOverwrite($archiveName)
     {
-        if (!mkdir($this->tmpDir . '/test')) {
+        if (!\mkdir($this->tmpDir . '/test')) {
             self::markTestIncomplete('Cant create directory.');
         }
 
@@ -259,13 +260,13 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_A);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt');
         self::assertFileEquals($archiveFile, $targetFile);
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_S);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt');
         self::assertFileEquals($sourceFile, $targetFile);
 
@@ -276,7 +277,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         self::assertFileExists($this->tmpDir . '/test/test_1.txt');
         self::assertFileEquals($archiveFile, $targetFile);
         self::assertFileEquals($sourceFile, $this->tmpDir . '/test/test_1.txt');
-        unlink($this->tmpDir . '/test/test_1.txt');
+        \unlink($this->tmpDir . '/test/test_1.txt');
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_U);
@@ -285,7 +286,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         self::assertFileExists($this->tmpDir . '/test/test_1.txt');
         self::assertFileEquals($sourceFile, $targetFile);
         self::assertFileEquals($archiveFile, $this->tmpDir . '/test/test_1.txt');
-        unlink($this->tmpDir . '/test/test_1.txt');
+        \unlink($this->tmpDir . '/test/test_1.txt');
     }
 
 
@@ -328,7 +329,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $obj->setPassword('123');
         $result = $obj->getContent('test/test.txt');
 
-        self::assertEquals(file_get_contents($this->fixturesDir . '/testArchive.txt'), $result);
+        self::assertEquals(\file_get_contents($this->fixturesDir . '/testArchive.txt'), $result);
     }
 
 
@@ -356,7 +357,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     {
         $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
         $obj->setPassword('123');
-        $result = $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt');
+        $result = $obj->getEntry('test/test.txt');
 
         self::assertInstanceOf(Entry::class, $result);
     }
@@ -367,12 +368,12 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddEntryFullPathPasswd($archiveName)
     {
-        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('111');
-        $obj->addEntry(realpath($this->tmpDir . '/file.txt'), false, false);
+        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'), false, false);
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals('file.txt', $result->getPath());
@@ -384,7 +385,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryFullPath()
     {
-        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
 
         $obj = new Archive7z($tempArchive);
@@ -396,8 +397,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryFullPathStore()
     {
-        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
-        $fullPath = realpath($this->tmpDir . '/file.txt');
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        $fullPath = \realpath($this->tmpDir . '/file.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
         $obj->addEntry($fullPath, false, true);
@@ -408,8 +409,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryLocalPath()
     {
-        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test.txt');
-        $localPath = realpath($this->tmpDir . '/test.txt');
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test.txt');
+        $localPath = \realpath($this->tmpDir . '/test.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
         $obj->addEntry($localPath, false, true);
@@ -421,12 +422,12 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryLocalPathSubFiles()
     {
-        if (!mkdir($this->tmpDir . '/test')) {
+        if (!\mkdir($this->tmpDir . '/test')) {
             self::markTestIncomplete('Cant create directory.');
         }
 
-        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
-        $localPath = realpath($this->tmpDir);
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
+        $localPath = \realpath($this->tmpDir);
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
         $obj->addEntry($localPath, true, true);
@@ -437,14 +438,14 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     public function testAddEntryFullPathSubFiles()
     {
-        if (!mkdir($this->tmpDir . '/test')) {
+        if (!\mkdir($this->tmpDir . '/test')) {
             self::markTestIncomplete('Cant create directory.');
         }
 
-        copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
-        $obj->addEntry(realpath($this->tmpDir), true, false);
+        $obj->addEntry(\realpath($this->tmpDir), true, false);
         $result = $obj->getEntry(basename($this->tmpDir));
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals(basename($this->tmpDir), $result->getPath());
@@ -455,6 +456,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         return [
             ['test.7z', 'test.7z'],
             ['test.zip', 'test.zip'],
+            ['testUnix.zip', 'testUnix.zip'],
         ];
     }
 
@@ -465,13 +467,13 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testDelEntry($fixtureArchiveName, $tmpArchiveName)
     {
-        copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
         $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
 
-        self::assertInstanceOf(Entry::class, $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt'));
+        self::assertInstanceOf(Entry::class, $obj->getEntry('test/test.txt'));
 
         $obj->delEntry('test/test.txt');
-        self::assertNull($obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt'));
+        self::assertNull($obj->getEntry('test/test.txt'));
     }
 
 
@@ -490,14 +492,14 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testDelEntryPasswd($fixtureArchiveName, $tmpArchiveName)
     {
-        copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
         $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
         $obj->setPassword('123');
 
-        self::assertInstanceOf(Entry::class, $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt'));
+        self::assertInstanceOf(Entry::class, $obj->getEntry('test/test.txt'));
 
         $obj->delEntry('test/test.txt');
-        self::assertNull($obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt'));
+        self::assertNull($obj->getEntry('test/test.txt'));
     }
 
     /**
@@ -507,7 +509,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testDelEntryPasswdFail($fixtureArchiveName, $tmpArchiveName)
     {
-        copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
         $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
 
         if (pathinfo($fixtureArchiveName, PATHINFO_EXTENSION) !== 'zip') { // zip allow delete files from encrypted archives 😮
@@ -525,23 +527,22 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testRenameEntryPasswd($fixtureArchiveName, $tmpArchiveName)
     {
-        copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
         $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
         $obj->setPassword('123');
 
-        $resultSrc = $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt');
+        $resultSrc = $obj->getEntry('test/test.txt');
         self::assertInstanceOf(Entry::class, $resultSrc);
-        $resultDest = $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'newTest.txt');
+        $resultDest = $obj->getEntry('test/newTest.txt');
         self::assertNull($resultDest);
 
         $obj->renameEntry('test/test.txt', 'test/newTest.txt');
 
-        $resultSrc = $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'test.txt');
+        $resultSrc = $obj->getEntry('test/test.txt');
         self::assertNull($resultSrc);
-        $resultDest = $obj->getEntry('test' . \DIRECTORY_SEPARATOR . 'newTest.txt');
+        $resultDest = $obj->getEntry('test/newTest.txt');
         self::assertInstanceOf(Entry::class, $resultDest);
     }
-
 
     /**
      * @param string $archiveName

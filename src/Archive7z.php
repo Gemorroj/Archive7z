@@ -162,7 +162,7 @@ class Archive7z
             throw new Exception('Cli is not available');
         }
 
-        if (false === \is_executable($cli)) {
+        if (!\is_executable($cli)) {
             throw new Exception('Cli is not executable');
         }
 
@@ -194,7 +194,7 @@ class Archive7z
             throw new Exception('Filename is not available');
         }
 
-        if (false === \is_readable($filename)) {
+        if (!\is_readable($filename)) {
             throw new Exception('Filename is not readable');
         }
         */
@@ -226,7 +226,7 @@ class Archive7z
             throw new Exception('Output directory is not available');
         }
 
-        if (false === \is_writable($outputDirectory)) {
+        if (!\is_writable($outputDirectory)) {
             throw new Exception('Output directory is not writable');
         }
 
@@ -299,7 +299,7 @@ class Archive7z
             self::OVERWRITE_MODE_S,
             self::OVERWRITE_MODE_T,
             self::OVERWRITE_MODE_U,
-        ])) {
+        ], true)) {
             throw new Exception('Overwrite mode is not available');
         }
 
@@ -415,10 +415,10 @@ class Archive7z
      */
     public function getEntry($file)
     {
-        //$file = \str_replace('\\', '/', $file);
+        $file = \str_replace('\\', '/', $file);
 
         foreach ($this->getEntries() as $v) {
-            if ($v->getPath() === $file) {
+            if ($v->getUnixPath() === $file) {
                 return $v;
             }
         }
@@ -480,7 +480,7 @@ class Archive7z
             $args[] = $realPath;
         }
 
-        if (!$includeSubFiles && true === \is_dir($file)) {
+        if (!$includeSubFiles && \is_dir($file)) {
             $args[] = '-x!' . \rtrim($file, '/') . '/*';
         }
 
