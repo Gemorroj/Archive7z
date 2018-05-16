@@ -22,6 +22,7 @@ before_install:
     - make all3
     - sudo ./install.sh
     - sudo ln /usr/local/bin/7za /usr/bin/7za
+    - sudo ln /usr/local/bin/7z /usr/bin/7z
     - cd ..
 
     # Update composer
