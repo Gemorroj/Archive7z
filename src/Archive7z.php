@@ -17,6 +17,12 @@ class Archive7z
      */
 
     /**
+     * 7z uses plugins (7z.so and Codecs/Rar.so) to handle archives.
+     * 7za is a stand-alone executable (7za handles less archive formats than 7z).
+     * 7zr is a light stand-alone executable that supports only 7z/LZMA/BCJ/BCJ2.
+     */
+
+    /**
      * Overwrite all existing files
      *
      * @const string
@@ -45,17 +51,17 @@ class Archive7z
      */
     protected $compressionLevel = 9;
     /**
-     * @var string
+     * @var array
      */
-    protected $cliLinux = '/usr/bin/7za';
+    protected $cliLinux = ['/usr/bin/7z', '/usr/bin/7za'];
     /**
-     * @var string
+     * @var array
      */
-    protected $cliBsd = '/usr/local/bin/7za';
+    protected $cliBsd = ['/usr/local/bin/7z', '/usr/local/bin/7za'];
     /**
-     * @var string
+     * @var array
      */
-    protected $cliWindows = 'C:\Program Files\7-Zip\7z.exe'; // %ProgramFiles%\7-Zip\7z.exe
+    protected $cliWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
     /**
      * @var string
      */
@@ -126,18 +132,29 @@ class Archive7z
 
 
     /**
-     * @return string
+     * @return string|null
      */
     protected function getAutoCli()
     {
+        $cliPath = null;
         if ($this->isOsBsd()) {
-            return $this->cliBsd;
+            $cliPath = $this->cliBsd;
         }
         if ($this->isOsWin()) {
-            return $this->cliWindows;
+            $cliPath = $this->cliWindows;
+        }
+        if (null === $cliPath) {
+            $cliPath = $this->cliLinux;
         }
 
-        return $this->cliLinux;
+        foreach ($cliPath as $cli) {
+            if (\is_file($cli)) {
+                $cliPath = $cli;
+                break;
+            }
+        }
+
+        return $cliPath;
     }
 
     /**

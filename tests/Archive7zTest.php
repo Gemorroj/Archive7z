@@ -65,7 +65,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
         $result = $this->mock->setCli($cli);
         self::assertInstanceOf(Archive7z::class, $result);
-        self::assertEquals(realpath($cli), $this->mock->getCli());
+        self::assertEquals(\realpath($cli), $this->mock->getCli());
     }
 
     public function testSetCliFail()
@@ -87,7 +87,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     {
         $result = $this->mock->setOutputDirectory($this->tmpDir);
         self::assertInstanceOf(Archive7z::class, $result);
-        self::assertEquals(realpath($this->tmpDir), $this->mock->getOutputDirectory());
+        self::assertEquals(\realpath($this->tmpDir), $this->mock->getOutputDirectory());
     }
 
     public function testSetGetOutputDirectoryFail()
@@ -272,7 +272,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_T);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt');
         self::assertFileExists($this->tmpDir . '/test/test_1.txt');
         self::assertFileEquals($archiveFile, $targetFile);
@@ -281,7 +281,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_U);
-        copy($sourceFile, $targetFile);
+        \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt');
         self::assertFileExists($this->tmpDir . '/test/test_1.txt');
         self::assertFileEquals($sourceFile, $targetFile);
@@ -329,7 +329,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $obj->setPassword('123');
         $result = $obj->getContent('test/test.txt');
 
-        self::assertEquals(\file_get_contents($this->fixturesDir . '/testArchive.txt'), $result);
+        self::assertStringEqualsFile($this->fixturesDir . '/testArchive.txt', $result);
     }
 
 
@@ -343,7 +343,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $obj->setPassword('123');
         $result = $obj->getEntries();
 
-        self::assertTrue(\is_array($result));
+        self::assertInternalType('array', $result);
         self::assertCount(5, $result); // 4 file + 1 directory
         self::assertInstanceOf(Entry::class, $result[0]);
     }
@@ -389,7 +389,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
 
         $obj = new Archive7z($tempArchive);
-        $obj->addEntry(realpath($this->tmpDir . '/file.txt'), false, false);
+        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'), false, false);
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals('file.txt', $result->getPath());
@@ -446,9 +446,9 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
         $obj->addEntry(\realpath($this->tmpDir), true, false);
-        $result = $obj->getEntry(basename($this->tmpDir));
+        $result = $obj->getEntry(\basename($this->tmpDir));
         self::assertInstanceOf(Entry::class, $result);
-        self::assertEquals(basename($this->tmpDir), $result->getPath());
+        self::assertEquals(\basename($this->tmpDir), $result->getPath());
     }
 
     public function delProvider()
@@ -512,7 +512,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
         $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
 
-        if (pathinfo($fixtureArchiveName, PATHINFO_EXTENSION) !== 'zip') { // zip allow delete files from encrypted archives 😮
+        if (\pathinfo($fixtureArchiveName, PATHINFO_EXTENSION) !== 'zip') { // zip allow delete files from encrypted archives 😮
             $this->expectException(ProcessFailedException::class);
         }
 

@@ -16,7 +16,7 @@ env:
 before_install:
     # Install p7zip
     #  - sudo apt-get install p7zip-full
-    - curl -L  http://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2 > p7zip_16.02_src_all.tar.bz2
+    - curl -L http://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2 > p7zip_16.02_src_all.tar.bz2
     - tar xjvf p7zip_16.02_src_all.tar.bz2
     - cd p7zip_16.02
     - make all3
