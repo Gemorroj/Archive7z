@@ -139,10 +139,10 @@ class Archive7z
         $cliPath = null;
         if ($this->isOsBsd()) {
             $cliPath = $this->cliBsd;
-        } else
-            if ($this->isOsWin()) {
-            	$cliPath = $this->cliWindows;
-            }
+        } else if ($this->isOsWin()) {
+            $cliPath = $this->cliWindows;
+        }
+
         if (null === $cliPath) {
             $cliPath = $this->cliLinux;
         }
