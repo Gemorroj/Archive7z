@@ -12,7 +12,7 @@
 - Extract any directory or file
 - List files and directories
 - Get contents of any file from archive
-- Delete files or directories (only 7z format now)
+- Delete files or directories (all supports 7zip archiver formats)
 - Add files or directories (only 7z format now)
 
 
