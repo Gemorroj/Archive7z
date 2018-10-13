@@ -388,51 +388,51 @@ class Archive7z
     }
 
     /**
-     * @param string $file
+     * @param string $path
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extractEntry($file)
+    public function extractEntry($path)
     {
         $process = $this->makeProcess(\array_merge([
             'x',
             $this->filename,
             $this->overwriteMode,
             '-o' . $this->outputDirectory,
-        ], $this->decorateCmdExtract(), [$file]));
+        ], $this->decorateCmdExtract(), [$path]));
 
         $this->execute($process);
     }
 
     /**
-     * @param string $file
+     * @param string $path
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return string
      */
-    public function getContent($file)
+    public function getContent($path)
     {
         $process = $this->makeProcess(\array_merge([
             'x',
             $this->filename,
             '-so',
-            $file,
+            $path,
         ], $this->decorateCmdExtract()));
 
         return $process->mustRun()->getOutput();
     }
 
     /**
-     * @param string $file
+     * @param string $path
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return Entry|null
      */
-    public function getEntry($file)
+    public function getEntry($path)
     {
-        $file = \str_replace('\\', '/', $file);
+        $path = \str_replace('\\', '/', $path);
 
         foreach ($this->getEntries() as $v) {
-            if ($v->getUnixPath() === $file) {
+            if ($v->getUnixPath() === $path) {
                 return $v;
             }
         }
@@ -469,13 +469,13 @@ class Archive7z
      * 7-zip >= 7.25 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
      * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
      *
-     * @param string $file
+     * @param string $path
      * @param bool $includeSubFiles
      * @param bool $storePath
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
      */
-    public function addEntry($file, $includeSubFiles = false, $storePath = false)
+    public function addEntry($path, $includeSubFiles = false, $storePath = false)
     {
         $args = [];
         $args[] = 'a';
@@ -485,17 +485,17 @@ class Archive7z
 
         if ($storePath) {
             $args[] = '-spf';
-            $args[] = '-i!' . $file;
+            $args[] = '-i!' . $path;
         } else {
-            $realPath = \realpath($file);
+            $realPath = \realpath($path);
             if (false === $realPath) {
-                throw new Exception('Can not resolve absolute path for "' . $file . '"');
+                throw new Exception('Can not resolve absolute path for "' . $path . '"');
             }
             $args[] = $realPath;
         }
 
-        if (!$includeSubFiles && \is_dir($file)) {
-            $args[] = '-x!' . \rtrim($file, '/') . '/*';
+        if (!$includeSubFiles && \is_dir($path)) {
+            $args[] = '-x!' . \rtrim($path, '/') . '/*';
         }
 
         $process = $this->makeProcess(\array_merge($args, $this->decorateCmdCompress()));
@@ -504,16 +504,16 @@ class Archive7z
     }
 
     /**
-     * @param string $file
+     * @param string $path
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function delEntry($file)
+    public function delEntry($path)
     {
         $process = $this->makeProcess(\array_merge([
             'd',
             $this->filename,
-            $file,
+            $path,
         ], $this->decorateCmdExtract()));
 
         $this->execute($process);
@@ -522,18 +522,18 @@ class Archive7z
     /**
      * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
      *
-     * @param string $fileSrc
-     * @param string $fileDest
+     * @param string $pathSrc
+     * @param string $pathDest
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function renameEntry($fileSrc, $fileDest)
+    public function renameEntry($pathSrc, $pathDest)
     {
         $process = $this->makeProcess(\array_merge([
             'rn',
             $this->filename,
-            $fileSrc,
-            $fileDest,
+            $pathSrc,
+            $pathDest,
         ], $this->decorateCmdExtract()));
 
         $this->execute($process);
