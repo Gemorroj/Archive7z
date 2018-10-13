@@ -51,17 +51,17 @@ class Archive7z
      */
     protected $compressionLevel = 9;
     /**
-     * @var array
+     * @var string[]
      */
-    protected $cliLinux = ['/usr/bin/7z', '/usr/bin/7za'];
+    protected static $cliLinux = ['/usr/bin/7z', '/usr/bin/7za'];
     /**
-     * @var array
+     * @var string[]
      */
-    protected $cliBsd = ['/usr/local/bin/7z', '/usr/local/bin/7za'];
+    protected static $cliBsd = ['/usr/local/bin/7z', '/usr/local/bin/7za'];
     /**
-     * @var array
+     * @var string[]
      */
-    protected $cliWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
+    protected static $cliWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
     /**
      * @var string
      */
@@ -105,18 +105,17 @@ class Archive7z
     public function __construct($filename, $cli = null)
     {
         if (null === $cli) {
-            $cli = $this->getAutoCli();
+            $cli = static::getAutoCli();
         }
 
         $this->setCli($cli);
         $this->setFilename($filename);
     }
 
-
     /**
      * @return string
      */
-    protected function isOsWin()
+    protected static function isOsWin()
     {
         return false !== \stripos(\PHP_OS, 'Win');
     }
@@ -125,7 +124,7 @@ class Archive7z
     /**
      * @return string
      */
-    protected function isOsBsd()
+    protected static function isOsBsd()
     {
         return false !== \stripos(\PHP_OS, 'BSD') || false !== \stripos(\PHP_OS, 'Darwin');
     }
@@ -134,17 +133,17 @@ class Archive7z
     /**
      * @return string|null
      */
-    protected function getAutoCli()
+    protected static function getAutoCli()
     {
         $cliPath = null;
-        if ($this->isOsBsd()) {
-            $cliPath = $this->cliBsd;
-        } else if ($this->isOsWin()) {
-            $cliPath = $this->cliWindows;
+        if (static::isOsBsd()) {
+            $cliPath = static::$cliBsd;
+        } else if (static::isOsWin()) {
+            $cliPath = static::$cliWindows;
         }
 
         if (null === $cliPath) {
-            $cliPath = $this->cliLinux;
+            $cliPath = static::$cliLinux;
         }
 
         foreach ($cliPath as $cli) {
@@ -341,7 +340,7 @@ class Archive7z
         $out = [];
         $out[] = '-y';
 
-        if ($this->isOsWin()) { // not work for *nix
+        if (static::isOsWin()) { // not work for *nix
             $out[] = '-sccUTF-8';
             $out[] = '-scsUTF-8';
         }
@@ -356,14 +355,14 @@ class Archive7z
     }
 
     /**
-     * @return array
+     * @return string[]
      */
     private function decorateCmdCompress()
     {
         $out = [];
         $out[] = '-y';
 
-        if ($this->isOsWin()) {  // not work for *nix
+        if (static::isOsWin()) {  // not work for *nix
             $out[] = '-sccUTF-8';
             $out[] = '-scsUTF-8';
         }
@@ -570,7 +569,7 @@ class Archive7z
     protected function execute(Process $process)
     {
         if ($this->getChangeSystemLocale()) {
-            if ($this->isOsWin()) {
+            if (static::isOsWin()) {
                 $localeProcess = new Process([
                     'chcp',
                     $this->systemLocaleWin,

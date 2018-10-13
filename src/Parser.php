@@ -10,7 +10,7 @@ class Parser
     protected $data;
 
     /**
-     * @param array $data cli output
+     * @param string[] $data cli output
      */
     public function __construct(array $data)
     {
@@ -50,7 +50,7 @@ class Parser
 
     /**
      * @param string $line
-     * @return array
+     * @return string[]
      */
     protected function parseEntry($line)
     {

@@ -29,7 +29,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     protected function getCurrentFilesystemEncoding()
     {
-        if (\stripos(PHP_OS, 'WIN') !== false) { // windows
+        if (\stripos(\PHP_OS, 'WIN') !== false) { // windows
             return 'Windows-1251';
         }
         return \exec('locale charmap');
