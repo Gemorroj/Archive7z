@@ -8,12 +8,13 @@
 
 ### Features:
 
-- Unpacking archives (all supports 7zip archiver formats - 7z, XZ, BZIP2, GZIP, TAR, ZIP, WIM, AR, ARJ, CAB, CHM, CPIO, CramFS, DMG, EXT, FAT, GPT, HFS, IHEX, ISO, LZH, LZMA, MBR, MSI, NSIS, NTFS, QCOW2, RAR, RPM, SquashFS, UDF, UEFI, VDI, VHD, VMDK, WIM, XAR and Z)
+- Support all 7-zip formats: `7z`, `XZ`, `BZIP2`, `GZIP`, `TAR`, `ZIP`, `WIM`, `AR`, `ARJ`, `CAB`, `CHM`, `CPIO`, `CramFS`, `DMG`, `EXT`, `FAT`, `GPT`, `HFS`, `IHEX`, `ISO`, `LZH`, `LZMA`, `MBR`, `MSI`, `NSIS`, `NTFS`, `QCOW2`, `RAR`, `RPM`, `SquashFS`, `UDF`, `UEFI`, `VDI`, `VHD`, `VMDK`, `WIM`, `XAR` and `Z`
+- Unpacking archives
 - Extract any directory or file
 - List files and directories
 - Get contents of any file from archive
-- Delete files or directories (all supports 7zip archiver formats)
-- Add files or directories (only 7z format now)
+- Delete files or directories (not `RAR`)
+- Add files or directories (not `RAR`)
 
 
 ### Requirements:

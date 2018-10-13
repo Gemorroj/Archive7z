@@ -466,12 +466,11 @@ class Archive7z
     }
 
     /**
-     * 7-zip >= 7.25 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
-     * @todo custom format (-t7z, -tzip, -tgzip, -tbzip2 or -ttar)
+     * 7-zip >= 7.25
      *
      * @param string $path
-     * @param bool $includeSubFiles
-     * @param bool $storePath
+     * @param bool $includeSubFiles recursive store all files in path
+     * @param bool $storePath store real filesystem path in archive
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
      */
@@ -481,7 +480,6 @@ class Archive7z
         $args[] = 'a';
         $args[] = $this->filename;
         $args[] = '-mx=' . (int)$this->compressionLevel;
-        $args[] = '-t7z';
 
         if ($storePath) {
             $args[] = '-spf';

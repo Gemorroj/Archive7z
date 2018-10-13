@@ -362,11 +362,60 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         self::assertInstanceOf(Entry::class, $result);
     }
 
+    public function entryProvider()
+    {
+        return [
+            ['test.7z'],
+            ['test.zip'],
+            ['test.tar'],
+            ['testUnix.zip'],
+        ];
+    }
+
     /**
      * @param string $archiveName
-     * @dataProvider extractPasswdProvider
+     * @dataProvider entryProvider
      */
-    public function testAddEntryFullPathPasswd($archiveName)
+    public function testAddEntryExists($archiveName)
+    {
+        \copy($this->fixturesDir . '/' . $archiveName, $this->tmpDir . '/' . $archiveName);
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_' . $archiveName;
+
+        $obj = new Archive7z($tempArchive);
+        $obj->addEntry(__FILE__);
+        $result = $obj->getEntry(\basename(__FILE__));
+        self::assertInstanceOf(Entry::class, $result);
+        self::assertEquals(\basename(__FILE__), $result->getPath());
+        self::assertTrue($obj->isValid());
+    }
+
+    /**
+     * @param string $archiveName
+     * @dataProvider entryProvider
+     */
+    public function testAddEntryNew($archiveName)
+    {
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_' . $archiveName;
+
+        $obj = new Archive7z($tempArchive);
+        $obj->addEntry(__FILE__);
+        $result = $obj->getEntry(\basename(__FILE__));
+        self::assertInstanceOf(Entry::class, $result);
+        self::assertEquals(\basename(__FILE__), $result->getPath());
+        self::assertTrue($obj->isValid());
+    }
+
+    public function testAddEntryRar()
+    {
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_archive.rar';
+
+        $obj = new Archive7z($tempArchive);
+        $this->expectException(ProcessFailedException::class);
+        $obj->addEntry(__FILE__);
+    }
+
+
+    public function testAddEntryFullPathPasswd()
     {
         \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
