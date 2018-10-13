@@ -53,19 +53,19 @@ class Archive7z
     /**
      * @var string[]
      */
-    protected static $cliLinux = ['/usr/bin/7z', '/usr/bin/7za'];
+    protected static $binary7zLinux = ['/usr/bin/7z', '/usr/bin/7za'];
     /**
      * @var string[]
      */
-    protected static $cliBsd = ['/usr/local/bin/7z', '/usr/local/bin/7za'];
+    protected static $binary7zBsd = ['/usr/local/bin/7z', '/usr/local/bin/7za'];
     /**
      * @var string[]
      */
-    protected static $cliWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
+    protected static $binary7zWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
     /**
      * @var string
      */
-    private $cli;
+    private $binary7z;
     /**
      * @var string
      */
@@ -98,17 +98,17 @@ class Archive7z
 
     /**
      * @param string $filename 7z archive filename
-     * @param string $cli CLI path
+     * @param string $binary7z &-zip binary path
      *
      * @throws Exception
      */
-    public function __construct($filename, $cli = null)
+    public function __construct($filename, $binary7z = null)
     {
-        if (null === $cli) {
-            $cli = static::getAutoCli();
+        if (null === $binary7z) {
+            $binary7z = static::getAutoBinary7z();
         }
 
-        $this->setCli($cli);
+        $this->setBinary7z($binary7z);
         $this->setFilename($filename);
     }
 
@@ -133,35 +133,33 @@ class Archive7z
     /**
      * @return string|null
      */
-    protected static function getAutoCli()
+    protected static function getAutoBinary7z()
     {
-        $cliPath = null;
+        $binary7zPath = null;
+
         if (static::isOsBsd()) {
-            $cliPath = static::$cliBsd;
+            $binary7zPaths = static::$binary7zBsd;
         } else if (static::isOsWin()) {
-            $cliPath = static::$cliWindows;
+            $binary7zPaths = static::$binary7zWindows;
+        } else {
+            $binary7zPaths = static::$binary7zLinux;
         }
 
-        if (null === $cliPath) {
-            $cliPath = static::$cliLinux;
-        }
-
-        foreach ($cliPath as $cli) {
-            if (\is_file($cli)) {
-                $cliPath = $cli;
+        foreach ($binary7zPaths as $binary7zPath) {
+            if (\is_file($binary7zPath)) {
                 break;
             }
         }
 
-        return $cliPath;
+        return $binary7zPath;
     }
 
     /**
      * @return string
      */
-    public function getCli()
+    public function getBinary7z()
     {
-        return $this->cli;
+        return $this->binary7z;
     }
 
     /**
@@ -170,19 +168,19 @@ class Archive7z
      * @throws Exception
      * @return $this
      */
-    public function setCli($path)
+    public function setBinary7z($path)
     {
-        $cli = \realpath($path);
+        $binary7z = \realpath($path);
 
-        if (false === $cli) {
-            throw new Exception('Cli is not available');
+        if (false === $binary7z) {
+            throw new Exception('Binary of 7-zip is not available');
         }
 
-        if (!\is_executable($cli)) {
-            throw new Exception('Cli is not executable');
+        if (!\is_executable($binary7z)) {
+            throw new Exception('Binary of 7-zip is not executable');
         }
 
-        $this->cli = $cli;
+        $this->binary7z = $binary7z;
 
         return $this;
     }
@@ -328,7 +326,7 @@ class Archive7z
      */
     private function makeProcess(array $arguments)
     {
-        return new Process(\array_merge([\str_replace('\\', '/', $this->cli)], $arguments));
+        return new Process(\array_merge([\str_replace('\\', '/', $this->getBinary7z())], $arguments));
     }
 
 

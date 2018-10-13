@@ -58,20 +58,20 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         \closedir($h);
     }
 
-    public function testSetGetCli()
+    public function testSetGetBinary7z()
     {
         // todo rewrite
-        $cli = $this->mock->getCli();
+        $binary = $this->mock->getBinary7z();
 
-        $result = $this->mock->setCli($cli);
+        $result = $this->mock->setBinary7z($binary);
         self::assertInstanceOf(Archive7z::class, $result);
-        self::assertEquals(\realpath($cli), $this->mock->getCli());
+        self::assertEquals(\realpath($binary), $this->mock->getBinary7z());
     }
 
-    public function testSetCliFail()
+    public function testSetBinary7zFail()
     {
         $this->expectException(Exception::class);
-        $this->mock->setCli('./fake_path');
+        $this->mock->setBinary7z('./fake_path');
     }
 
 
