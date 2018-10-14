@@ -78,18 +78,6 @@ class Archive7z
      * @var string
      */
     private $overwriteMode = self::OVERWRITE_MODE_A;
-    /**
-     * @var bool
-     */
-    protected $changeSystemLocale = false;
-    /**
-     * @var string
-     */
-    protected $systemLocaleNix = 'en_US.utf8';
-    /**
-     * @var string
-     */
-    protected $systemLocaleWin = '65001';
 
 
     /**
@@ -234,27 +222,6 @@ class Archive7z
         return $this;
     }
 
-
-    /**
-     * @param bool $changeSystemLocale
-     * @return $this
-     */
-    public function setChangeSystemLocale($changeSystemLocale)
-    {
-        $this->changeSystemLocale = $changeSystemLocale;
-
-        return $this;
-    }
-
-
-    /**
-     * @return bool
-     */
-    public function getChangeSystemLocale()
-    {
-        return $this->changeSystemLocale;
-    }
-
     /**
      * @return string
      */
@@ -323,6 +290,13 @@ class Archive7z
         $out = [];
         $out[] = '-y';
 
+        /*
+  { "utf-8", CP_UTF8 },
+  { "win", CP_ACP },
+  { "dos", CP_OEMCP },
+  { "utf-16le", MY__CP_UTF16 },
+  { "utf-16be", MY__CP_UTF16BE }
+         */
         if (static::isOsWin()) { // not work for *nix
             $out[] = '-sccUTF-8';
             $out[] = '-scsUTF-8';
@@ -345,6 +319,13 @@ class Archive7z
         $out = [];
         $out[] = '-y';
 
+        /*
+  { "utf-8", CP_UTF8 },
+  { "win", CP_ACP },
+  { "dos", CP_OEMCP },
+  { "utf-16le", MY__CP_UTF16 },
+  { "utf-16be", MY__CP_UTF16BE }
+         */
         if (static::isOsWin()) {  // not work for *nix
             $out[] = '-sccUTF-8';
             $out[] = '-scsUTF-8';
@@ -454,12 +435,11 @@ class Archive7z
      * 7-zip >= 7.25
      *
      * @param string $path
-     * @param bool $includeSubFiles recursive store all files in path
      * @param bool $storePath store real filesystem path in archive
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
      */
-    public function addEntry($path, $includeSubFiles = false, $storePath = false)
+    public function addEntry($path, $storePath = false)
     {
         $args = [];
         $args[] = 'a';
@@ -468,17 +448,18 @@ class Archive7z
 
         if ($storePath) {
             $args[] = '-spf';
-            $args[] = '-i!' . $path;
+            $args[] = $path;
         } else {
             $realPath = \realpath($path);
             if (false === $realPath) {
                 throw new Exception('Can not resolve absolute path for "' . $path . '"');
             }
-            $args[] = $realPath;
-        }
 
-        if (!$includeSubFiles && \is_dir($path)) {
-            $args[] = '-x!' . \rtrim($path, '/') . '/*';
+            if (\is_dir($realPath)) {
+                $realPath .= '/*';
+            }
+
+            $args[] = $realPath;
         }
 
         $process = $this->makeProcess(\array_merge($args, $this->decorateCmdCompress()));
@@ -549,14 +530,6 @@ class Archive7z
      */
     protected function execute(Process $process)
     {
-        if ($this->getChangeSystemLocale()) {
-            if (static::isOsWin()) {
-                $process->setCommandLine('chcp ' . $this->systemLocaleWin . ' & ' . $process->getCommandLine());
-            } else {
-                $process->setCommandLine('LANG=' . $this->systemLocaleNix . ' & ' . $process->getCommandLine());
-            }
-        }
-
         $process->mustRun();
     }
 }

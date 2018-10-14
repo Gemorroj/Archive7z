@@ -93,5 +93,5 @@ echo $obj->getContent('test/test.txt'); // show content of the file
 $obj->setOutputDirectory('path_to_extract_folder/')->extract(); // extract archive
 
 $obj->addEntry(__FILE__); // add file to archive
-$obj->addEntry(__DIR__, true);  // add directory to archive (include subfolders)
+$obj->addEntry(__DIR__);  // add directory to archive (include subfolders)
 ```

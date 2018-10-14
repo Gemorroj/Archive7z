@@ -12,22 +12,21 @@ class EntryTest extends \PHPUnit_Framework_TestCase
         $this->fixturesDir = __DIR__ . '/fixtures';
     }
 
-
     /**
      * @see https://github.com/Gemorroj/Archive7z/issues/5
      */
     public function testPackedSize()
     {
         $expectedResults = [
-            '60572',
-            '104822',
-            '', // второй файл в solid блоке
-            '19',
-            '0' // directory
+            '0', // directory
+            '165102', // solid архив
+            '',
+            '',
+            '',
         ];
         $actualResults = [];
 
-        $archive = new Archive7z($this->fixturesDir . '/test.7z');
+        $archive = new Archive7z($this->fixturesDir . '/7zip-18.05/test.7z');
         foreach ($archive->getEntries() as $entry) {
             $actualResults[] = $entry->getPackedSize();
         }

@@ -27,15 +27,6 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    protected function getCurrentFilesystemEncoding()
-    {
-        if (\stripos(\PHP_OS, 'WIN') !== false) { // windows
-            return 'Windows-1251';
-        }
-        return \exec('locale charmap');
-    }
-
-
     protected function tearDown()
     {
         $this->cleanDir($this->tmpDir);
@@ -116,11 +107,19 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function extractProvider()
     {
         return [
-            ['test.7z'],
-            ['test.zip'],
-            ['test.tar'],
-            ['test.rar'],
-            ['testUnix.zip'],
+            ['7zip-18.05/test.7z'],
+            ['7zip-18.05/test.tar'],
+            ['7zip-18.05/test.wim'],
+            ['7zip-18.05/test.zip'],
+            ['totalcommander-9.21a/test.tar'],
+            ['totalcommander-9.21a/test.zip'],
+            ['winrar-5.61/test.zip'],
+            ['winrar-5.61/test4.rar'],
+            ['winrar-5.61/test5.rar'],
+            ['linux/zip-0.3/test.zip'],
+            ['linux/p7zip-16.02/test.7z'],
+            ['linux/p7zip-16.02/test.tar'],
+            ['linux/p7zip-16.02/test.zip'],
         ];
     }
 
@@ -132,7 +131,6 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function testExtractCyrillic($archiveName)
     {
         $dirCyrillic = $this->tmpDir . '/папка';
-        //$chavezFile = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
         $chavezFile = 'чавес.jpg';
 
         if (!\mkdir($dirCyrillic)) {
@@ -163,14 +161,13 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      * @param string $archiveName
      * @dataProvider extractPasswdProvider
      */
-    public function testExtractPasswd($archiveName)
+    public function testExtractPasswdCyrillic($archiveName)
     {
         $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
         $obj->setOutputDirectory($this->tmpDir);
         $obj->setPassword('123');
         $obj->extract();
 
-        //$chavezFile = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
         $chavezFile = 'чавес.jpg';
 
         self::assertFileExists($this->tmpDir . '/1.jpg');
@@ -296,7 +293,6 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractEntryCyrillic($archiveName)
     {
-        //$file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
         $file = 'чавес.jpg';
 
         $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
@@ -365,10 +361,19 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function entryProvider()
     {
         return [
-            ['test.7z'],
-            ['test.zip'],
-            ['test.tar'],
-            ['testUnix.zip'],
+            ['7zip-18.05/test.7z'],
+            ['7zip-18.05/test.tar'],
+            ['7zip-18.05/test.wim'],
+            ['7zip-18.05/test.zip'],
+            ['totalcommander-9.21a/test.tar'],
+            ['totalcommander-9.21a/test.zip'],
+            ['winrar-5.61/test.zip'],
+            //['winrar-5.61/test4.rar'], // not supported
+            //['winrar-5.61/test5.rar'], // not supported
+            ['linux/zip-0.3/test.zip'],
+            ['linux/p7zip-16.02/test.7z'],
+            ['linux/p7zip-16.02/test.tar'],
+            ['linux/p7zip-16.02/test.zip'],
         ];
     }
 
@@ -378,8 +383,8 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddEntryExists($archiveName)
     {
-        \copy($this->fixturesDir . '/' . $archiveName, $this->tmpDir . '/' . $archiveName);
-        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_' . $archiveName;
+        \copy($this->fixturesDir . '/' . $archiveName, $this->tmpDir . '/' . \str_replace('/', '_', $archiveName));
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_' . \str_replace('/', '_', $archiveName);
 
         $obj = new Archive7z($tempArchive);
         $obj->addEntry(__FILE__);
@@ -395,7 +400,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddEntryNew($archiveName)
     {
-        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_' . $archiveName;
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '_' . \str_replace('/', '_', $archiveName);
 
         $obj = new Archive7z($tempArchive);
         $obj->addEntry(__FILE__);
@@ -422,7 +427,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('111');
-        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'), false, false);
+        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'));
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals('file.txt', $result->getPath());
@@ -438,7 +443,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
 
         $obj = new Archive7z($tempArchive);
-        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'), false, false);
+        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'));
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals('file.txt', $result->getPath());
@@ -450,7 +455,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $fullPath = \realpath($this->tmpDir . '/file.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
-        $obj->addEntry($fullPath, false, true);
+        $obj->addEntry($fullPath, true);
         $result = $obj->getEntry($fullPath);
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals($fullPath, $result->getPath());
@@ -462,7 +467,7 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $localPath = \realpath($this->tmpDir . '/test.txt');
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
-        $obj->addEntry($localPath, false, true);
+        $obj->addEntry($localPath, true);
         $result = $obj->getEntry($localPath);
 
         self::assertInstanceOf(Entry::class, $result);
@@ -479,45 +484,39 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         $localPath = \realpath($this->tmpDir);
 
         $obj = new Archive7z($this->tmpDir . '/test.7z');
-        $obj->addEntry($localPath, true, true);
+        $obj->addEntry($localPath, true);
         $result = $obj->getEntry($localPath);
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals($localPath, $result->getPath());
     }
 
-    public function testAddEntryFullPathSubFiles()
-    {
-        if (!\mkdir($this->tmpDir . '/test')) {
-            self::markTestIncomplete('Cant create directory.');
-        }
-
-        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/test/test.txt');
-
-        $obj = new Archive7z($this->tmpDir . '/test.7z');
-        $obj->addEntry(\realpath($this->tmpDir), true, false);
-        $result = $obj->getEntry(\basename($this->tmpDir));
-        self::assertInstanceOf(Entry::class, $result);
-        self::assertEquals(\basename($this->tmpDir), $result->getPath());
-    }
-
     public function delProvider()
     {
         return [
-            ['test.7z', 'test.7z'],
-            ['test.zip', 'test.zip'],
-            ['testUnix.zip', 'testUnix.zip'],
+            ['7zip-18.05/test.7z'],
+            ['7zip-18.05/test.tar'],
+            ['7zip-18.05/test.wim'],
+            ['7zip-18.05/test.zip'],
+            ['totalcommander-9.21a/test.tar'],
+            ['totalcommander-9.21a/test.zip'],
+            ['winrar-5.61/test.zip'],
+            //['winrar-5.61/test4.rar'], // not supported
+            //['winrar-5.61/test5.rar'], // not supported
+            ['linux/zip-0.3/test.zip'],
+            ['linux/p7zip-16.02/test.7z'],
+            ['linux/p7zip-16.02/test.tar'],
+            ['linux/p7zip-16.02/test.zip'],
         ];
     }
 
     /**
      * @param string $fixtureArchiveName
-     * @param string $tmpArchiveName
      * @dataProvider delProvider
      */
-    public function testDelEntry($fixtureArchiveName, $tmpArchiveName)
+    public function testDelEntry($fixtureArchiveName)
     {
-        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
-        $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . \str_replace('/', '_', $fixtureArchiveName));
+        $obj = new Archive7z($this->tmpDir . '/' . \str_replace('/', '_', $fixtureArchiveName));
 
         self::assertInstanceOf(Entry::class, $obj->getEntry('test/test.txt'));
 
@@ -529,20 +528,19 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
     public function delPasswdProvider()
     {
         return [
-            ['testPasswd.7z', 'testPasswd.7z'],
-            ['testPasswd.zip', 'testPasswd.zip'],
+            ['testPasswd.7z'],
+            ['testPasswd.zip'],
         ];
     }
 
     /**
      * @param string $fixtureArchiveName
-     * @param string $tmpArchiveName
      * @dataProvider delPasswdProvider
      */
-    public function testDelEntryPasswd($fixtureArchiveName, $tmpArchiveName)
+    public function testDelEntryPasswd($fixtureArchiveName)
     {
-        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
-        $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $fixtureArchiveName);
+        $obj = new Archive7z($this->tmpDir . '/' . $fixtureArchiveName);
         $obj->setPassword('123');
 
         self::assertInstanceOf(Entry::class, $obj->getEntry('test/test.txt'));
@@ -553,13 +551,12 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @param string $fixtureArchiveName
-     * @param string $tmpArchiveName
      * @dataProvider delPasswdProvider
      */
-    public function testDelEntryPasswdFail($fixtureArchiveName, $tmpArchiveName)
+    public function testDelEntryPasswdFail($fixtureArchiveName)
     {
-        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
-        $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $fixtureArchiveName);
+        $obj = new Archive7z($this->tmpDir . '/' . $fixtureArchiveName);
 
         if (\pathinfo($fixtureArchiveName, PATHINFO_EXTENSION) !== 'zip') { // zip allow delete files from encrypted archives 😮
             $this->expectException(ProcessFailedException::class);
@@ -571,13 +568,12 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @param string $fixtureArchiveName
-     * @param string $tmpArchiveName
      * @dataProvider delPasswdProvider
      */
-    public function testRenameEntryPasswd($fixtureArchiveName, $tmpArchiveName)
+    public function testRenameEntryPasswd($fixtureArchiveName)
     {
-        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $tmpArchiveName);
-        $obj = new Archive7z($this->tmpDir . '/' . $tmpArchiveName);
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $fixtureArchiveName);
+        $obj = new Archive7z($this->tmpDir . '/' . $fixtureArchiveName);
         $obj->setPassword('123');
 
         $resultSrc = $obj->getEntry('test/test.txt');
@@ -591,36 +587,6 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         self::assertNull($resultSrc);
         $resultDest = $obj->getEntry('test/newTest.txt');
         self::assertInstanceOf(Entry::class, $resultDest);
-    }
-
-    /**
-     * @param string $archiveName
-     * @dataProvider extractProvider
-     */
-    public function testChangeSystemLocale($archiveName)
-    {
-        //$file = iconv('UTF-8', $this->getCurrentFilesystemEncoding(), 'чавес.jpg');
-        $file = 'чавес.jpg';
-
-        $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
-        $obj->setChangeSystemLocale(true);
-        $obj->setOutputDirectory($this->tmpDir);
-        $obj->extractEntry($file);
-
-        self::assertFileExists($this->tmpDir . '/' . $file);
-    }
-
-
-    /**
-     * @param string $archiveName
-     * @dataProvider extractProvider
-     */
-    public function testChangeSystemLocaleFail($archiveName)
-    {
-        $new = new Archive7z($this->tmpDir . '/' . $archiveName);
-        $new->setChangeSystemLocale(true);
-        $this->expectException(ProcessFailedException::class);
-        $new->getContent('file.txt');
     }
 
 
