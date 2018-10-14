@@ -55,29 +55,26 @@ foreach ($obj->getEntries() as $entry) {
         /*
 Archive7z\Entry Object
 (
-    [path:Archive7z\Entry:private] => test/test.txt
-    [size:Archive7z\Entry:private] => 14
-    [packedSize:Archive7z\Entry:private] => 19
-    [modified:Archive7z\Entry:private] => 2013-10-23 16:28:51
+    [path:Archive7z\Entry:private] => 1.jpg
+    [size:Archive7z\Entry:private] => 91216
+    [packedSize:Archive7z\Entry:private] => 165102
+    [modified:Archive7z\Entry:private] => 2013-06-10 09:56:07
     [attributes:Archive7z\Entry:private] => A
-    [crc:Archive7z\Entry:private] => A346C3A7
+    [crc:Archive7z\Entry:private] => 871345C2
     [encrypted:Archive7z\Entry:private] => -
-    [method:Archive7z\Entry:private] => LZMA:16
-    [block:Archive7z\Entry:private] => 2
+    [method:Archive7z\Entry:private] => LZMA2:192k
+    [block:Archive7z\Entry:private] => 0
+    [comment:Archive7z\Entry:private] => 
+    [hostOs:Archive7z\Entry:private] => 
+    [folder:Archive7z\Entry:private] => 
     [archive:Archive7z\Entry:private] => Archive7z\Archive7z Object
         (
             [compressionLevel:protected] => 9
-            [cliLinux:protected] => /usr/bin/7za
-            [cliBsd:protected] => /usr/local/bin/7za
-            [cliWindows:protected] => C:\Program Files\7-Zip\7z.exe
-            [cli:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
-            [filename:Archive7z\Archive7z:private] => path_to_7z_file.7z
+            [binary7z:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
+            [filename:Archive7z\Archive7z:private] => s:\VCS\Git\Archive7z\tests/fixtures/7zip-18.05/test.7z
             [password:Archive7z\Archive7z:private] => 
             [outputDirectory:Archive7z\Archive7z:private] => ./
             [overwriteMode:Archive7z\Archive7z:private] => -aoa
-            [changeSystemLocale:protected] => 
-            [systemLocaleNix:protected] => en_US.utf8
-            [systemLocaleWin:protected] => 65001
         )
 
 )
