@@ -53,11 +53,7 @@ class Archive7z
     /**
      * @var string[]
      */
-    protected static $binary7zLinux = ['/usr/bin/7z', '/usr/bin/7za'];
-    /**
-     * @var string[]
-     */
-    protected static $binary7zBsd = ['/usr/local/bin/7z', '/usr/local/bin/7za'];
+    protected static $binary7zNix = ['/usr/bin/7z', '/usr/bin/7za', '/usr/local/bin/7z', '/usr/local/bin/7za'];
     /**
      * @var string[]
      */
@@ -122,27 +118,16 @@ class Archive7z
 
 
     /**
-     * @return string
-     */
-    protected static function isOsBsd()
-    {
-        return false !== \stripos(\PHP_OS, 'BSD') || false !== \stripos(\PHP_OS, 'Darwin');
-    }
-
-
-    /**
      * @return string|null
      */
     protected static function getAutoBinary7z()
     {
         $binary7zPath = null;
 
-        if (static::isOsBsd()) {
-            $binary7zPaths = static::$binary7zBsd;
-        } else if (static::isOsWin()) {
+        if (static::isOsWin()) {
             $binary7zPaths = static::$binary7zWindows;
         } else {
-            $binary7zPaths = static::$binary7zLinux;
+            $binary7zPaths = static::$binary7zNix;
         }
 
         foreach ($binary7zPaths as $binary7zPath) {
@@ -566,17 +551,10 @@ class Archive7z
     {
         if ($this->getChangeSystemLocale()) {
             if (static::isOsWin()) {
-                $localeProcess = new Process([
-                    'chcp',
-                    $this->systemLocaleWin,
-                ]);
+                $process->setCommandLine('chcp ' . $this->systemLocaleWin . ' & ' . $process->getCommandLine());
             } else {
-                $localeProcess = new Process([
-                    'LANG=' . $this->systemLocaleNix,
-                ]);
+                $process->setCommandLine('LANG=' . $this->systemLocaleNix . ' & ' . $process->getCommandLine());
             }
-
-            $process->setCommandLine($localeProcess->getCommandLine() . ' & ' . $process->getCommandLine());
         }
 
         $process->mustRun();
