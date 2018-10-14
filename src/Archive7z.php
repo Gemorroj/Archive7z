@@ -131,7 +131,7 @@ class Archive7z
         }
 
         foreach ($binary7zPaths as $binary7zPath) {
-            if (\is_file($binary7zPath)) {
+            if (\file_exists($binary7zPath)) {
                 break;
             }
         }
