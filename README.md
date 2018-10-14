@@ -25,10 +25,7 @@
 
 
 ### Notes:
-
- - List of files/directories is always in UTF-8
- - When unpacking, the names of the files/directories you need to specify the encoding of the current file system
- - When you unpack the archive, the file names/directories are written in the encoding of the current file system
+- https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
 
 
 ### Installation:
