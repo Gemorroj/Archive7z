@@ -98,7 +98,7 @@ class Archive7z
 
     /**
      * @param string $filename 7z archive filename
-     * @param string $binary7z &-zip binary path
+     * @param string $binary7z 7-zip binary path
      *
      * @throws Exception
      */
