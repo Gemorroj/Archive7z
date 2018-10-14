@@ -37,10 +37,22 @@ class Entry
      */
     private $method;
     /**
-     * @var string
+     * @var string|null
      */
     private $block;
-
+    /**
+     * @var string|null
+     */
+    private $comment;
+    /**
+     * @var string|null
+     * Unix|Win32|FAT
+     */
+    private $hostOs;
+    /**
+     * @var string|null
+     */
+    private $folder;
     /**
      * @var Archive7z
      */
@@ -86,12 +98,16 @@ class Entry
                 $this->attributes = $value;
                 break;
 
-            case 'CRC':
-                $this->crc = $value;
-                break;
-
             case 'Encrypted':
                 $this->encrypted = $value;
+                break;
+
+            case 'Comment':
+                $this->comment = $value;
+                break;
+
+            case 'CRC':
+                $this->crc = $value;
                 break;
 
             case 'Method':
@@ -100,6 +116,10 @@ class Entry
 
             case 'Block':
                 $this->block = $value;
+                break;
+
+            case 'Host OS':
+                $this->hostOs = $value;
                 break;
         }
     }
@@ -110,7 +130,7 @@ class Entry
      */
     public function isDirectory()
     {
-        return false !== \strpos($this->attributes, 'D');
+        return '+' === $this->folder || false !== \strpos($this->attributes, 'D');
     }
 
 
@@ -165,7 +185,7 @@ class Entry
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getBlock()
     {
@@ -237,5 +257,21 @@ class Entry
     public function getSize()
     {
         return $this->size;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getHostOs()
+    {
+        return $this->hostOs;
     }
 }
