@@ -78,6 +78,10 @@ class Archive7z
      * @var string
      */
     private $overwriteMode = self::OVERWRITE_MODE_A;
+    /**
+     * @var float|null
+     */
+    protected $timeout = 60;
 
 
     /**
@@ -530,6 +534,7 @@ class Archive7z
      */
     protected function execute(Process $process)
     {
+        $process->setTimeout($this->timeout);
         $process->mustRun();
     }
 }
