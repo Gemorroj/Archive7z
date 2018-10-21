@@ -32,7 +32,7 @@ composer require gemorroj/archive7z
 
 ### Notes:
 - https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
-- Correctly works only with filenames in UTF-8 encoding.
+- Correctly works only with filenames in UTF-8 encoding [#15](https://github.com/Gemorroj/Archive7z/issues/15).
 
 
 ### Recommendations:
