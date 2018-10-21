@@ -2,6 +2,7 @@
 namespace Archive7z\Tests;
 
 use Archive7z\Archive7z;
+use Archive7z\Entry;
 
 class EntryTest extends \PHPUnit_Framework_TestCase
 {
@@ -32,5 +33,24 @@ class EntryTest extends \PHPUnit_Framework_TestCase
         }
 
         self::assertEquals($expectedResults, $actualResults);
+    }
+
+
+    public function testExtractTo()
+    {
+        $archive = new Archive7z('fake.7z');
+        $entry = new Entry($archive, [
+            'Path' => 'some-path',
+        ]);
+
+        $originalOutputDirectory =  $archive->getOutputDirectory();
+        try {
+            $entry->extractTo(\sys_get_temp_dir());
+        } catch (\Exception $e) {
+            self::assertSame(\realpath($originalOutputDirectory), $archive->getOutputDirectory());
+            return;
+        }
+
+        self::fail('Not catch expected exception');
     }
 }

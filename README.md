@@ -24,14 +24,21 @@
 - **7-zip >= 7.30 (p7zip >= 9.38)**
 
 
-### Notes:
-- https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
-
-
 ### Installation:
 ```bash
 composer require gemorroj/archive7z
 ```
+
+
+### Notes:
+- https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
+- Correctly works only with filenames in UTF-8 encoding.
+
+
+### Recommendations:
+Archive7z focuses on wrapping up the original 7-zip features.
+But it is not always convenient to use in your application.
+Therefore, we recommend that you always create your own wrapper class over Archive7z with the addition of higher-level logic.
 
 
 ### Example:
@@ -40,10 +47,18 @@ composer require gemorroj/archive7z
 <?php
 use Archive7z\Archive7z;
 
-$obj = new Archive7z('path_to_7z_file.7z');
+class MyArchive7z extends Archive7z
+{
+    protected $timeout = 120;
+    protected $compressionLevel = 6;
+    protected $overwriteMode = self::OVERWRITE_MODE_S;
+    protected $outputDirectory = '/path/to/custom/output/directory';
+}
+
+$obj = new MyArchive7z('path_to_7z_file.7z');
 
 if (!$obj->isValid()) {
-    throw new Exception('Incorrect archive');
+    throw new \RuntimeException('Incorrect archive');
 }
 
 
@@ -51,30 +66,31 @@ foreach ($obj->getEntries() as $entry) {
         print_r($entry);
         /*
 Archive7z\Entry Object
-(
-    [path:Archive7z\Entry:private] => 1.jpg
-    [size:Archive7z\Entry:private] => 91216
-    [packedSize:Archive7z\Entry:private] => 165102
-    [modified:Archive7z\Entry:private] => 2013-06-10 09:56:07
-    [attributes:Archive7z\Entry:private] => A
-    [crc:Archive7z\Entry:private] => 871345C2
-    [encrypted:Archive7z\Entry:private] => -
-    [method:Archive7z\Entry:private] => LZMA2:192k
-    [block:Archive7z\Entry:private] => 0
-    [comment:Archive7z\Entry:private] => 
-    [hostOs:Archive7z\Entry:private] => 
-    [folder:Archive7z\Entry:private] => 
-    [archive:Archive7z\Entry:private] => Archive7z\Archive7z Object
-        (
-            [compressionLevel:protected] => 9
-            [binary7z:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
-            [filename:Archive7z\Archive7z:private] => s:\VCS\Git\Archive7z\tests/fixtures/7zip-18.05/test.7z
-            [password:Archive7z\Archive7z:private] => 
-            [outputDirectory:Archive7z\Archive7z:private] => ./
-            [overwriteMode:Archive7z\Archive7z:private] => -aoa
-        )
+    (
+        [path:Archive7z\Entry:private] => 1.jpg
+        [size:Archive7z\Entry:private] => 91216
+        [packedSize:Archive7z\Entry:private] => 165344
+        [modified:Archive7z\Entry:private] => 2013-06-10 09:56:07
+        [attributes:Archive7z\Entry:private] => A
+        [crc:Archive7z\Entry:private] => 871345C2
+        [encrypted:Archive7z\Entry:private] => +
+        [method:Archive7z\Entry:private] => LZMA:192k 7zAES:19
+        [block:Archive7z\Entry:private] => 0
+        [comment:Archive7z\Entry:private] => 
+        [hostOs:Archive7z\Entry:private] => 
+        [folder:Archive7z\Entry:private] => 
+        [archive:Archive7z\Entry:private] => Archive7z\Archive7z Object
+            (
+                [compressionLevel:protected] => 9
+                [binary7z:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
+                [filename:Archive7z\Archive7z:private] => S:\VCS\Git\Archive7z\tests/fixtures/testPasswd.7z
+                [password:Archive7z\Archive7z:private] => 123
+                [outputDirectory:Archive7z\Archive7z:private] => ./
+                [overwriteMode:Archive7z\Archive7z:private] => -aoa
+                [timeout:Archive7z\Archive7z:private] => 60
+            )
 
-)
+    )
          */
 
     if ($entry->getPath() === 'test/test.txt') {
@@ -83,9 +99,12 @@ Archive7z\Entry Object
 }
 
 echo $obj->getContent('test/test.txt'); // show content of the file
-
 $obj->setOutputDirectory('path_to_extract_folder/')->extract(); // extract archive
+$obj->setOutputDirectory('path_to_extract_pass_folder/')->setPassword('pass')->extractEntry('test/test.txt'); // extract password-protected entry
 
 $obj->addEntry(__FILE__); // add file to archive
 $obj->addEntry(__DIR__);  // add directory to archive (include subfolders)
+
+$obj->renameEntry(__FILE__, __FILE__.'new'); // rename file in archive
+$obj->delEntry(__FILE__.'new'); // remove file from archive
 ```

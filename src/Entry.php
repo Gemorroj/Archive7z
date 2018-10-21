@@ -144,7 +144,7 @@ class Entry
 
 
     /**
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return string
      */
     public function getContent()
@@ -154,7 +154,7 @@ class Entry
 
 
     /**
-     * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function extract()
     {
@@ -166,13 +166,17 @@ class Entry
      * @param string $directory
      *
      * @throws Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extractTo($directory = './')
+    public function extractTo($directory)
     {
         $oldDirectory = $this->archive->getOutputDirectory();
         $this->archive->setOutputDirectory($directory);
-        $this->archive->extractEntry($this->path);
-        $this->archive->setOutputDirectory($oldDirectory);
+        try {
+            $this->archive->extractEntry($this->path);
+        } finally {
+            $this->archive->setOutputDirectory($oldDirectory);
+        }
     }
 
 

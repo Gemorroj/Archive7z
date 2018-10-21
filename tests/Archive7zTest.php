@@ -49,31 +49,6 @@ class Archive7zTest extends \PHPUnit_Framework_TestCase
         \closedir($h);
     }
 
-    public function testSetGetBinary7z()
-    {
-        // todo rewrite
-        $binary = $this->mock->getBinary7z();
-
-        $result = $this->mock->setBinary7z($binary);
-        self::assertInstanceOf(Archive7z::class, $result);
-        self::assertEquals(\realpath($binary), $this->mock->getBinary7z());
-    }
-
-    public function testSetBinary7zFail()
-    {
-        $this->expectException(Exception::class);
-        $this->mock->setBinary7z('./fake_path');
-    }
-
-
-    public function testSetGetFilename()
-    {
-        $filename = '/custom_path/test.7z';
-        $result = $this->mock->setFilename($filename);
-        self::assertInstanceOf(Archive7z::class, $result);
-        self::assertEquals($filename, $this->mock->getFilename());
-    }
-
     public function testSetGetOutputDirectory()
     {
         $result = $this->mock->setOutputDirectory($this->tmpDir);

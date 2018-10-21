@@ -6,21 +6,7 @@ use Symfony\Component\Process\Process;
 
 class Archive7z
 {
-    /**
-     * Error codes
-     * 0 - Normal (no errors or warnings detected)
-     * 1 - Warning (Non fatal error(s)). For example, some files cannot be read during compressing. So they were not compressed
-     * 2 - Fatal error
-     * 7 - Bad command line parameters
-     * 8 - Not enough memory for operation
-     * 255 - User stopped the process with control-C (or similar)
-     */
-
-    /**
-     * 7z uses plugins (7z.so and Codecs/Rar.so) to handle archives.
-     * 7za is a stand-alone executable (7za handles less archive formats than 7z).
-     * 7zr is a light stand-alone executable that supports only 7z/LZMA/BCJ/BCJ2.
-     */
+    use Archive7zTrait;
 
     /**
      * Overwrite all existing files
@@ -47,18 +33,6 @@ class Archive7z
      */
     const OVERWRITE_MODE_T = '-aot';
     /**
-     * @var int (0-9)
-     */
-    protected $compressionLevel = 9;
-    /**
-     * @var string[]
-     */
-    protected static $binary7zNix = ['/usr/bin/7z', '/usr/bin/7za', '/usr/local/bin/7z', '/usr/local/bin/7za'];
-    /**
-     * @var string[]
-     */
-    protected static $binary7zWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
-    /**
      * @var string
      */
     private $binary7z;
@@ -71,15 +45,19 @@ class Archive7z
      */
     private $password;
     /**
-     * @var string
+     * @var int (0-9)
      */
-    private $outputDirectory = './';
+    protected $compressionLevel = 9;
     /**
      * @var string
      */
-    private $overwriteMode = self::OVERWRITE_MODE_A;
+    protected $outputDirectory = './';
     /**
-     * @var float|null
+     * @var string
+     */
+    protected $overwriteMode = self::OVERWRITE_MODE_A;
+    /**
+     * @var float|int
      */
     protected $timeout = 60;
 
@@ -87,112 +65,25 @@ class Archive7z
     /**
      * @param string $filename 7z archive filename
      * @param string $binary7z 7-zip binary path
+     * @param float|int|null $timeout
      *
      * @throws Exception
      */
-    public function __construct($filename, $binary7z = null)
+    public function __construct($filename, $binary7z = null, $timeout = null)
     {
-        if (null === $binary7z) {
-            $binary7z = static::getAutoBinary7z();
+        if (!\is_string($filename)) {
+            throw new Exception('Filename must be string');
         }
-
-        $this->setBinary7z($binary7z);
-        $this->setFilename($filename);
-    }
-
-    /**
-     * @return string
-     */
-    protected static function isOsWin()
-    {
-        return false !== \stripos(\PHP_OS, 'Win');
-    }
-
-
-    /**
-     * @return string|null
-     */
-    protected static function getAutoBinary7z()
-    {
-        $binary7zPath = null;
-
-        if (static::isOsWin()) {
-            $binary7zPaths = static::$binary7zWindows;
-        } else {
-            $binary7zPaths = static::$binary7zNix;
-        }
-
-        foreach ($binary7zPaths as $binary7zPath) {
-            if (\file_exists($binary7zPath)) {
-                break;
-            }
-        }
-
-        return $binary7zPath;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBinary7z()
-    {
-        return $this->binary7z;
-    }
-
-    /**
-     * @param string $path
-     *
-     * @throws Exception
-     * @return $this
-     */
-    public function setBinary7z($path)
-    {
-        $binary7z = \realpath($path);
-
-        if (false === $binary7z) {
-            throw new Exception('Binary of 7-zip is not available');
-        }
-
-        if (!\is_executable($binary7z)) {
-            throw new Exception('Binary of 7-zip is not executable');
-        }
-
-        $this->binary7z = $binary7z;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilename()
-    {
-        return $this->filename;
-    }
-
-    /**
-     * @param string $filename
-     *
-     * @throws Exception
-     * @return $this
-     */
-    public function setFilename($filename)
-    {
-        /*
-        $filename = \realpath($filename);
-
-        if (false === $filename) {
-            throw new Exception('Filename is not available');
-        }
-
-        if (!\is_readable($filename)) {
-            throw new Exception('Filename is not readable');
-        }
-        */
-
         $this->filename = $filename;
 
-        return $this;
+        $this->binary7z = static::makeBinary7z($binary7z);
+
+        if (null !== $timeout) {
+            if (!\is_numeric($timeout)) {
+                throw new Exception('Timeout must be a numeric');
+            }
+            $this->timeout = $timeout;
+        }
     }
 
     /**
@@ -209,7 +100,7 @@ class Archive7z
      * @throws Exception
      * @return $this
      */
-    public function setOutputDirectory($directory = './')
+    public function setOutputDirectory($directory)
     {
         $outputDirectory = \realpath($directory);
 
@@ -277,12 +168,17 @@ class Archive7z
     }
 
     /**
+     * @param string $command
      * @param array $arguments
      * @return Process
      */
-    private function makeProcess(array $arguments)
+    private function makeProcess($command, array $arguments)
     {
-        return new Process(\array_merge([\str_replace('\\', '/', $this->getBinary7z())], $arguments));
+        return new Process(\array_merge(
+            [\str_replace('\\', '/', $this->binary7z)],
+            [$command, $this->filename],
+            $arguments
+        ), null, null, null, $this->timeout);
     }
 
 
@@ -347,9 +243,7 @@ class Archive7z
      */
     public function extract()
     {
-        $process = $this->makeProcess(\array_merge([
-            'x',
-            $this->filename,
+        $process = $this->makeProcess('x', \array_merge([
             $this->overwriteMode,
             '-o' . $this->outputDirectory,
         ], $this->decorateCmdExtract()));
@@ -364,9 +258,7 @@ class Archive7z
      */
     public function extractEntry($path)
     {
-        $process = $this->makeProcess(\array_merge([
-            'x',
-            $this->filename,
+        $process = $this->makeProcess('x', \array_merge([
             $this->overwriteMode,
             '-o' . $this->outputDirectory,
         ], $this->decorateCmdExtract(), [$path]));
@@ -382,14 +274,12 @@ class Archive7z
      */
     public function getContent($path)
     {
-        $process = $this->makeProcess(\array_merge([
-            'x',
-            $this->filename,
+        $process = $this->makeProcess('x', \array_merge([
             '-so',
             $path,
         ], $this->decorateCmdExtract()));
 
-        return $process->mustRun()->getOutput();
+        return $this->execute($process)->getOutput();
     }
 
     /**
@@ -416,9 +306,7 @@ class Archive7z
      */
     public function getEntries()
     {
-        $process = $this->makeProcess(\array_merge([
-            'l',
-            $this->filename,
+        $process = $this->makeProcess('l', \array_merge([
             '-slt',
         ], $this->decorateCmdExtract()));
 
@@ -446,8 +334,6 @@ class Archive7z
     public function addEntry($path, $storePath = false)
     {
         $args = [];
-        $args[] = 'a';
-        $args[] = $this->filename;
         $args[] = '-mx=' . (int)$this->compressionLevel;
 
         if ($storePath) {
@@ -466,7 +352,7 @@ class Archive7z
             $args[] = $realPath;
         }
 
-        $process = $this->makeProcess(\array_merge($args, $this->decorateCmdCompress()));
+        $process = $this->makeProcess('a', \array_merge($args, $this->decorateCmdCompress()));
 
         $this->execute($process);
     }
@@ -478,9 +364,7 @@ class Archive7z
      */
     public function delEntry($path)
     {
-        $process = $this->makeProcess(\array_merge([
-            'd',
-            $this->filename,
+        $process = $this->makeProcess('d', \array_merge([
             $path,
         ], $this->decorateCmdExtract()));
 
@@ -497,9 +381,7 @@ class Archive7z
      */
     public function renameEntry($pathSrc, $pathDest)
     {
-        $process = $this->makeProcess(\array_merge([
-            'rn',
-            $this->filename,
+        $process = $this->makeProcess('rn', \array_merge([
             $pathSrc,
             $pathDest,
         ], $this->decorateCmdExtract()));
@@ -516,10 +398,7 @@ class Archive7z
      */
     public function isValid()
     {
-        $process = $this->makeProcess(\array_merge([
-            't',
-            $this->filename,
-        ], $this->decorateCmdExtract()));
+        $process = $this->makeProcess('t', $this->decorateCmdExtract());
 
         $this->execute($process);
 
@@ -528,13 +407,21 @@ class Archive7z
 
 
     /**
+     * Exit codes
+     * 0 - Normal (no errors or warnings detected)
+     * 1 - Warning (Non fatal error(s)). For example, some files cannot be read during compressing. So they were not compressed
+     * 2 - Fatal error
+     * 7 - Bad command line parameters
+     * 8 - Not enough memory for operation
+     * 255 - User stopped the process with control-C (or similar)
+     *
      * @param Process $process
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @return Process
      */
     protected function execute(Process $process)
     {
-        $process->setTimeout($this->timeout);
-        $process->mustRun();
+        return $process->mustRun();
     }
 }
