@@ -65,11 +65,11 @@ class Archive7z
     /**
      * @param string $filename 7z archive filename
      * @param string $binary7z 7-zip binary path
-     * @param float|int|null $timeout
+     * @param float|int|null $timeout Timeout of system process
      *
      * @throws Exception
      */
-    public function __construct($filename, $binary7z = null, $timeout = null)
+    public function __construct($filename, $binary7z = null, $timeout = 60)
     {
         if (!\is_string($filename)) {
             throw new Exception('Filename must be string');
@@ -78,12 +78,10 @@ class Archive7z
 
         $this->binary7z = static::makeBinary7z($binary7z);
 
-        if (null !== $timeout) {
-            if (!\is_numeric($timeout)) {
-                throw new Exception('Timeout must be a numeric');
-            }
-            $this->timeout = $timeout;
+        if (!\is_numeric($timeout) && $timeout !== null) {
+            throw new Exception('Timeout must be a numeric or null');
         }
+        $this->timeout = $timeout;
     }
 
     /**
