@@ -370,7 +370,7 @@ class Archive7z
     }
 
     /**
-     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
+     * 7-zip >= 9.30 alpha ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
      *
      * @param string $pathSrc
      * @param string $pathDest
