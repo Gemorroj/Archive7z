@@ -23,7 +23,7 @@ trait Archive7zTrait
      */
     protected static function isOsWin()
     {
-        return false !== \stripos(\PHP_OS, 'Win');
+        return '\\' === \DIRECTORY_SEPARATOR;
     }
 
     /**
