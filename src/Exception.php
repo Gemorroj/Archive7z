@@ -4,5 +4,4 @@ namespace Archive7z;
 
 class Exception extends \Exception
 {
-
 }

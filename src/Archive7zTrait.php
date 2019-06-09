@@ -2,7 +2,6 @@
 
 namespace Archive7z;
 
-
 trait Archive7zTrait
 {
     /**

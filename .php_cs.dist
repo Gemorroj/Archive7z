@@ -1,10 +1,12 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
+    ->exclude('fixtures')
     ->in(['src', 'tests']);
 
 return PhpCsFixer\Config::create()
     ->setRules([
+        '@PSR2' => true,
         'array_syntax' => ['syntax' => 'short'],
         'combine_consecutive_issets' => true,
         'combine_consecutive_unsets' => true,

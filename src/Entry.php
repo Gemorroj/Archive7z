@@ -252,7 +252,7 @@ class Entry
      */
     public function getUnixPath()
     {
-       return \str_replace('\\', '/', $this->getPath());
+        return \str_replace('\\', '/', $this->getPath());
     }
 
     /**
