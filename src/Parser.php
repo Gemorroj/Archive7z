@@ -40,9 +40,11 @@ class Parser
                 $i++;
                 continue;
             }
-
+            
             $entry = $this->parseEntry($value);
-            $list[$i][\key($entry)] = \current($entry);
+            if (!is_null($entry)) {
+                $list[$i][\key($entry)] = \current($entry);
+            }
         }
 
         return $list;
@@ -50,13 +52,18 @@ class Parser
 
     /**
      * @param string $line
-     * @return string[]
+     * @return string[]|null
      */
     protected function parseEntry($line)
     {
-        list($k, $v) = \explode(' =', $line, 2);
-        $v = \ltrim($v);
-
-        return [$k => $v];
+        $keyValue = \explode(' =', $line, 2);
+        if (sizeof($keyValue) < 2) {
+            return null;
+        } else {
+            list($k, $v) = $keyValue;
+            $v = \ltrim($v);
+    
+            return [$k => $v];
+        }
     }
 }
