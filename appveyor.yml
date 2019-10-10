@@ -19,8 +19,8 @@ install:
     - php -v
     - composer self-update
     - cd %APPVEYOR_BUILD_FOLDER%
-    - composer install
+    - composer update --no-interaction --ansi --no-progress --no-suggest --prefer-dist
 
 test_script:
     - cd %APPVEYOR_BUILD_FOLDER%
-    - vendor\bin\phpunit
+    - vendor\bin\phpunit --configuration phpunit.xml.dist
