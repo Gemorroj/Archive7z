@@ -27,7 +27,6 @@ class Archive7zTest extends TestCase
         $this->mock = new Archive7z('fake.7z');
     }
 
-
     protected function tearDown()
     {
         $this->cleanDir($this->tmpDir);
@@ -83,6 +82,7 @@ class Archive7zTest extends TestCase
     public function extractProvider(): array
     {
         return [
+            ['zip.7z'],
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -337,6 +337,7 @@ class Archive7zTest extends TestCase
     public function entryProvider(): array
     {
         return [
+            ['zip.7z'],
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -469,6 +470,7 @@ class Archive7zTest extends TestCase
     public function delProvider(): array
     {
         return [
+            ['zip.7z'],
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],

@@ -54,9 +54,13 @@ class Parser
      */
     protected function parseEntry(string $line): array
     {
-        [$k, $v] = \explode(' =', $line, 2);
-        $v = \ltrim($v);
+        if (0 === \strpos($line, 'Warnings:') || 0 === \strpos($line, 'Errors:')) {
+            [$k, $v] = \explode(': ', $line, 2);
+            return [$k => (int)$v];
+        }
 
-        return [$k => $v];
+        [$k, $v] = \explode(' =', $line, 2);
+
+        return [$k => \ltrim($v)];
     }
 }
