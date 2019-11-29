@@ -3,8 +3,9 @@ namespace Archive7z\Tests;
 
 use Archive7z\Archive7z;
 use Archive7z\Entry;
+use PHPUnit\Framework\TestCase;
 
-class EntryTest extends \PHPUnit_Framework_TestCase
+class EntryTest extends TestCase
 {
     protected $fixturesDir;
 
@@ -16,7 +17,7 @@ class EntryTest extends \PHPUnit_Framework_TestCase
     /**
      * @see https://github.com/Gemorroj/Archive7z/issues/5
      */
-    public function testPackedSize()
+    public function testPackedSize(): void
     {
         $expectedResults = [
             '0', // directory
@@ -36,7 +37,7 @@ class EntryTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testExtractTo()
+    public function testExtractTo(): void
     {
         $archive = new Archive7z('fake.7z');
         $entry = new Entry($archive, [

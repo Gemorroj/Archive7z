@@ -13,25 +13,25 @@ class Archive7z
      *
      * @const string
      */
-    const OVERWRITE_MODE_A = '-aoa';
+    public const OVERWRITE_MODE_A = '-aoa';
     /**
      * Skip extracting of existing files
      *
      * @const string
      */
-    const OVERWRITE_MODE_S = '-aos';
+    public const OVERWRITE_MODE_S = '-aos';
     /**
      * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt)
      *
      * @const string
      */
-    const OVERWRITE_MODE_U = '-aou';
+    public const OVERWRITE_MODE_U = '-aou';
     /**
      * Auto rename existing file (for example, name.txt will be renamed to name_1.txt)
      *
      * @const string
      */
-    const OVERWRITE_MODE_T = '-aot';
+    public const OVERWRITE_MODE_T = '-aot';
     /**
      * @var string
      */
@@ -41,7 +41,7 @@ class Archive7z
      */
     private $filename;
     /**
-     * @var string
+     * @var string|null
      */
     private $password;
     /**
@@ -57,37 +57,29 @@ class Archive7z
      */
     protected $overwriteMode = self::OVERWRITE_MODE_A;
     /**
-     * @var float|int
+     * @var float|null
      */
-    protected $timeout = 60;
+    protected $timeout;
 
 
     /**
      * @param string $filename 7z archive filename
-     * @param string $binary7z 7-zip binary path
-     * @param float|int|null $timeout Timeout of system process
+     * @param string|null $binary7z 7-zip binary path
+     * @param float|null $timeout Timeout of system process
      *
      * @throws Exception
      */
-    public function __construct($filename, $binary7z = null, $timeout = 60)
+    public function __construct(string $filename, ?string $binary7z = null, ?float $timeout = 60.0)
     {
-        if (!\is_string($filename)) {
-            throw new Exception('Filename must be string');
-        }
         $this->filename = $filename;
-
-        $this->binary7z = static::makeBinary7z($binary7z);
-
-        if (!\is_numeric($timeout) && $timeout !== null) {
-            throw new Exception('Timeout must be a numeric or null');
-        }
         $this->timeout = $timeout;
+        $this->binary7z = static::makeBinary7z($binary7z);
     }
 
     /**
      * @return string
      */
-    public function getOutputDirectory()
+    public function getOutputDirectory(): string
     {
         return $this->outputDirectory;
     }
@@ -98,7 +90,7 @@ class Archive7z
      * @throws Exception
      * @return $this
      */
-    public function setOutputDirectory($directory)
+    public function setOutputDirectory(string $directory): self
     {
         $outputDirectory = \realpath($directory);
 
@@ -116,19 +108,19 @@ class Archive7z
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
     /**
-     * @param string $password
+     * @param string|null $password
      *
      * @return $this
      */
-    public function setPassword($password)
+    public function setPassword(?string $password): self
     {
         $this->password = $password;
 
@@ -138,7 +130,7 @@ class Archive7z
     /**
      * @return string
      */
-    public function getOverwriteMode()
+    public function getOverwriteMode(): string
     {
         return $this->overwriteMode;
     }
@@ -149,7 +141,7 @@ class Archive7z
      * @throws Exception
      * @return $this
      */
-    public function setOverwriteMode($mode = Archive7z::OVERWRITE_MODE_A)
+    public function setOverwriteMode(string $mode = Archive7z::OVERWRITE_MODE_A): self
     {
         $this->overwriteMode = $mode;
 
@@ -170,7 +162,7 @@ class Archive7z
      * @param array $arguments
      * @return Process
      */
-    private function makeProcess($command, array $arguments)
+    private function makeProcess(string $command, array $arguments): Process
     {
         return new Process(\array_merge(
             [\str_replace('\\', '/', $this->binary7z)],
@@ -183,7 +175,7 @@ class Archive7z
     /**
      * @return array
      */
-    private function decorateCmdExtract()
+    private function decorateCmdExtract(): array
     {
         $out = [];
         $out[] = '-y';
@@ -212,7 +204,7 @@ class Archive7z
     /**
      * @return string[]
      */
-    private function decorateCmdCompress()
+    private function decorateCmdCompress(): array
     {
         $out = [];
         $out[] = '-y';
@@ -239,7 +231,7 @@ class Archive7z
     /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extract()
+    public function extract(): void
     {
         $process = $this->makeProcess('x', \array_merge([
             $this->overwriteMode,
@@ -254,7 +246,7 @@ class Archive7z
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extractEntry($path)
+    public function extractEntry(string $path): void
     {
         $process = $this->makeProcess('x', \array_merge([
             $this->overwriteMode,
@@ -270,7 +262,7 @@ class Archive7z
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return string
      */
-    public function getContent($path)
+    public function getContent(string $path): string
     {
         $process = $this->makeProcess('x', \array_merge([
             '-so',
@@ -285,7 +277,7 @@ class Archive7z
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return Entry|null
      */
-    public function getEntry($path)
+    public function getEntry(string $path): ?Entry
     {
         $path = \str_replace('\\', '/', $path);
 
@@ -302,7 +294,7 @@ class Archive7z
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return Entry[]
      */
-    public function getEntries()
+    public function getEntries(): array
     {
         $process = $this->makeProcess('l', \array_merge([
             '-slt',
@@ -329,7 +321,7 @@ class Archive7z
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
      */
-    public function addEntry($path, $storePath = false)
+    public function addEntry(string $path, bool $storePath = false): void
     {
         $args = [];
         $args[] = '-mx=' . (int)$this->compressionLevel;
@@ -360,7 +352,7 @@ class Archive7z
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function delEntry($path)
+    public function delEntry(string $path): void
     {
         $process = $this->makeProcess('d', \array_merge([
             $path,
@@ -377,7 +369,7 @@ class Archive7z
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function renameEntry($pathSrc, $pathDest)
+    public function renameEntry(string $pathSrc, string $pathDest): void
     {
         $process = $this->makeProcess('rn', \array_merge([
             $pathSrc,
@@ -394,7 +386,7 @@ class Archive7z
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return bool
      */
-    public function isValid()
+    public function isValid(): bool
     {
         $process = $this->makeProcess('t', $this->decorateCmdExtract());
 
@@ -418,7 +410,7 @@ class Archive7z
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return Process
      */
-    protected function execute(Process $process)
+    protected function execute(Process $process): Process
     {
         return $process->mustRun();
     }

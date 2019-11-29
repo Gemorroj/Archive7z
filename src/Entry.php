@@ -75,7 +75,7 @@ class Entry
      * @param string $key
      * @param string $value
      */
-    private function setData($key, $value)
+    private function setData(string $key, string $value): void
     {
         switch ($key) {
             case 'Path':
@@ -128,7 +128,7 @@ class Entry
     /**
      * @return bool
      */
-    public function isDirectory()
+    public function isDirectory(): bool
     {
         return '+' === $this->folder || false !== \strpos($this->attributes, 'D');
     }
@@ -137,7 +137,7 @@ class Entry
     /**
      * @return bool
      */
-    public function isEncrypted()
+    public function isEncrypted(): bool
     {
         return '+' === $this->encrypted;
     }
@@ -147,7 +147,7 @@ class Entry
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->archive->getContent($this->path);
     }
@@ -156,7 +156,7 @@ class Entry
     /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extract()
+    public function extract(): void
     {
         $this->archive->extractEntry($this->path);
     }
@@ -168,7 +168,7 @@ class Entry
      * @throws Exception
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extractTo($directory)
+    public function extractTo(string $directory): void
     {
         $oldDirectory = $this->archive->getOutputDirectory();
         $this->archive->setOutputDirectory($directory);
@@ -183,7 +183,7 @@ class Entry
     /**
      * @return string
      */
-    public function getAttributes()
+    public function getAttributes(): string
     {
         return $this->attributes;
     }
@@ -191,7 +191,7 @@ class Entry
     /**
      * @return string|null
      */
-    public function getBlock()
+    public function getBlock(): ?string
     {
         return $this->block;
     }
@@ -199,7 +199,7 @@ class Entry
     /**
      * @return string
      */
-    public function getCrc()
+    public function getCrc(): string
     {
         return $this->crc;
     }
@@ -207,7 +207,7 @@ class Entry
     /**
      * @return string
      */
-    public function getEncrypted()
+    public function getEncrypted(): string
     {
         return $this->encrypted;
     }
@@ -215,7 +215,7 @@ class Entry
     /**
      * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
@@ -223,7 +223,7 @@ class Entry
     /**
      * @return string
      */
-    public function getModified()
+    public function getModified(): string
     {
         return $this->modified;
     }
@@ -234,7 +234,7 @@ class Entry
      *
      * @return string
      */
-    public function getPackedSize()
+    public function getPackedSize(): string
     {
         return $this->packedSize;
     }
@@ -242,7 +242,7 @@ class Entry
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -250,7 +250,7 @@ class Entry
     /**
      * @return string
      */
-    public function getUnixPath()
+    public function getUnixPath(): string
     {
         return \str_replace('\\', '/', $this->getPath());
     }
@@ -258,7 +258,7 @@ class Entry
     /**
      * @return string
      */
-    public function getSize()
+    public function getSize(): string
     {
         return $this->size;
     }
@@ -266,7 +266,7 @@ class Entry
     /**
      * @return string|null
      */
-    public function getComment()
+    public function getComment(): ?string
     {
         return $this->comment;
     }
@@ -274,7 +274,7 @@ class Entry
     /**
      * @return string|null
      */
-    public function getHostOs()
+    public function getHostOs(): ?string
     {
         return $this->hostOs;
     }

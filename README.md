@@ -19,7 +19,7 @@
 
 ### Requirements:
 
-- PHP >= 5.6
+- PHP >= 7.1.3
 - shell
 - **7-zip >= 7.30 (p7zip >= 9.38)**
 

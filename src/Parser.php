@@ -20,7 +20,7 @@ class Parser
     /**
      * @return array
      */
-    public function parseEntries()
+    public function parseEntries(): array
     {
         $head = true;
         $list = [];
@@ -52,9 +52,9 @@ class Parser
      * @param string $line
      * @return string[]
      */
-    protected function parseEntry($line)
+    protected function parseEntry(string $line): array
     {
-        list($k, $v) = \explode(' =', $line, 2);
+        [$k, $v] = \explode(' =', $line, 2);
         $v = \ltrim($v);
 
         return [$k => $v];
