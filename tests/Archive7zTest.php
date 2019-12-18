@@ -71,6 +71,16 @@ class Archive7zTest extends TestCase
         self::assertEquals($password, $this->mock->getPassword());
     }
 
+    public function testSetGetEncryptFilenames(): void
+    {
+        $defaultValue = false;
+        self::assertEquals($defaultValue, $this->mock->getEncryptFilenames());
+        $encryptFilenames = true;
+        $result = $this->mock->setEncryptFilenames($encryptFilenames);
+        self::assertInstanceOf(Archive7z::class, $result);
+        self::assertEquals($encryptFilenames, $this->mock->getEncryptFilenames());
+    }
+
     public function testSetGetOverwriteMode(): void
     {
         $result = $this->mock->setOverwriteMode(Archive7z::OVERWRITE_MODE_U);
@@ -576,5 +586,129 @@ class Archive7zTest extends TestCase
     {
         $valid = new Archive7z($this->fixturesDir . '/' . $archiveName);
         self::assertTrue($valid->isValid());
+    }
+
+
+    public function extractPasswdEncFilesProvider(): array
+    {
+        return [
+            ['testPasswdEncFiles.7z'],
+        ];
+    }
+
+
+    /**
+     * @param string $archiveName
+     * @dataProvider extractPasswdEncFilesProvider
+     */
+    public function testExtractPasswdEncFiles(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
+        $obj->setOutputDirectory($this->tmpDir);
+        $obj->setPassword('abc123');
+        $obj->extract();
+
+        self::assertFileExists($this->tmpDir . '/file.txt');
+        self::assertFileExists($this->tmpDir . '/file1.txt');
+    }
+
+
+    /**
+     * @param string $archiveName
+     * @dataProvider extractPasswdEncFilesProvider
+     */
+    public function testGetEntriesPasswdEncFiles(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
+        $obj->setPassword('abc123');
+        $result = $obj->getEntries();
+
+        self::assertInternalType('array', $result);
+        self::assertCount(2, $result); // 2 files
+        self::assertInstanceOf(Entry::class, $result[0]);
+    }
+
+
+    /**
+     * @param string $archiveName
+     * @dataProvider extractPasswdEncFilesProvider
+     */
+    public function testCantGetEntriesPasswdEncFiles(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir . '/' . $archiveName);
+
+        try {
+            $obj->getEntries();
+            self::fail(sprintf("Expected '%s' Exception.", ProcessFailedException::class));
+        } catch (ProcessFailedException $e) {
+            self::assertInstanceOf(ProcessFailedException::class, $e);
+            self::assertRegExp('/Can not open encrypted archive\. Wrong password\?/', $e->getMessage());
+            self::assertEquals($e->getProcess()->getExitCode(), 2);
+        }
+    }
+
+
+    public function testAddEntryPasswdEncFiles(): void
+    {
+        \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '.7z';
+
+        $obj = new Archive7z($tempArchive);
+        $obj->setPassword('abc123');
+        $obj->setEncryptFilenames(true);
+        $obj->addEntry(\realpath($this->tmpDir . '/file.txt'));
+
+        $result = $obj->getEntry('file.txt');
+        self::assertInstanceOf(Entry::class, $result);
+        self::assertEquals('file.txt', $result->getPath());
+
+        $new = new Archive7z($tempArchive);
+        self::expectException(ProcessFailedException::class);
+        self::expectExceptionMessageRegExp('/Can not open encrypted archive\. Wrong password\?/');
+        $new->getEntry('file.txt');
+    }
+
+
+    /**
+     * @param string $archiveName
+     * @dataProvider extractPasswdEncFilesProvider
+     */
+    public function testIsValidPasswdEncFiles(string $archiveName): void
+    {
+        $valid = new Archive7z($this->fixturesDir . '/' . $archiveName);
+        $valid->setPassword('abc123');
+
+        self::assertTrue($valid->isValid());
+    }
+
+    /**
+     * @param string $fixtureArchiveName
+     * @dataProvider extractPasswdEncFilesProvider
+     */
+    public function testDelEntryPasswdEncFiles(string $fixtureArchiveName): void
+    {
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $fixtureArchiveName);
+        $obj = new Archive7z($this->tmpDir . '/' . $fixtureArchiveName);
+        $obj->setPassword('abc123');
+
+        self::assertInstanceOf(Entry::class, $obj->getEntry('file1.txt'));
+
+        $obj->delEntry('file1.txt');
+        self::assertNull($obj->getEntry('file1.txt'));
+    }
+
+    /**
+     * @param string $fixtureArchiveName
+     * @dataProvider extractPasswdEncFilesProvider
+     */
+    public function testDelEntryPasswdEncFilesFail(string $fixtureArchiveName): void
+    {
+        \copy($this->fixturesDir . '/' . $fixtureArchiveName, $this->tmpDir . '/' . $fixtureArchiveName);
+        $obj = new Archive7z($this->tmpDir . '/' . $fixtureArchiveName);
+
+        self::expectException(ProcessFailedException::class);
+        self::expectExceptionMessageRegExp('/Can not open encrypted archive\. Wrong password\?/');
+
+        $obj->delEntry('file1.txt');
     }
 }

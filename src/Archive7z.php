@@ -44,6 +44,15 @@ class Archive7z
      * @var string|null
      */
     private $password;
+
+    /**
+     * Encrypt archive header.
+     *
+     * Supported by 7z archives only.
+     *
+     * @var bool
+     */
+    protected $encryptFilenames = false;
     /**
      * @var int (0-9)
      */
@@ -123,6 +132,26 @@ class Archive7z
     public function setPassword(?string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEncryptFilenames(): bool
+    {
+        return $this->encryptFilenames;
+    }
+
+    /**
+     * @param bool $encrypt
+     *
+     * @return $this
+     */
+    public function setEncryptFilenames(bool $encrypt): self
+    {
+        $this->encryptFilenames = $encrypt;
 
         return $this;
     }
@@ -223,6 +252,11 @@ class Archive7z
 
         if (null !== $this->password) {
             $out[] = '-p' . $this->password;
+
+            // Encrypt archive header if 7z archive
+            if ($this->encryptFilenames && (pathinfo($this->filename, PATHINFO_EXTENSION) === '7z')) {
+                $out[] = '-mhe=on';
+            }
         }
 
         return $out;
