@@ -400,7 +400,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPathPasswd(): void
     {
         \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
-        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '.7z';
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('111');
@@ -417,7 +417,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPath(): void
     {
         \copy($this->fixturesDir . '/test.txt', $this->tmpDir . '/file.txt');
-        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '7z';
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_') . '.7z';
 
         $obj = new Archive7z($tempArchive);
         $obj->addEntry(\realpath($this->tmpDir . '/file.txt'));
