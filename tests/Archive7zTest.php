@@ -639,7 +639,7 @@ class Archive7zTest extends TestCase
 
         try {
             $obj->getEntries();
-            self::fail(sprintf("Expected '%s' Exception.", ProcessFailedException::class));
+            self::fail(\sprintf("Expected '%s' Exception.", ProcessFailedException::class));
         } catch (ProcessFailedException $e) {
             self::assertInstanceOf(ProcessFailedException::class, $e);
             self::assertRegExp('/Can not open encrypted archive\. Wrong password\?/', $e->getMessage());

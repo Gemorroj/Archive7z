@@ -254,7 +254,7 @@ class Archive7z
             $out[] = '-p' . $this->password;
 
             // Encrypt archive header if 7z archive
-            if ($this->encryptFilenames && (pathinfo($this->filename, PATHINFO_EXTENSION) === '7z')) {
+            if ($this->encryptFilenames && '7z' === \pathinfo($this->filename, PATHINFO_EXTENSION)) {
                 $out[] = '-mhe=on';
             }
         }
