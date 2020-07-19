@@ -216,7 +216,7 @@ class Archive7z
   { "utf-16le", MY__CP_UTF16 },
   { "utf-16be", MY__CP_UTF16BE }
          */
-        if (static::isOsWin()) { // not work for *nix
+        if (static::isOsWin()) { // doesn't work on *nix
             $out[] = '-sccUTF-8';
             $out[] = '-scsUTF-8';
         }
@@ -245,7 +245,7 @@ class Archive7z
   { "utf-16le", MY__CP_UTF16 },
   { "utf-16be", MY__CP_UTF16BE }
          */
-        if (static::isOsWin()) {  // not work for *nix
+        if (static::isOsWin()) {  // doesn't work on *nix
             $out[] = '-sccUTF-8';
             $out[] = '-scsUTF-8';
         }
