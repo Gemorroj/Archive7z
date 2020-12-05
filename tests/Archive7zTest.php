@@ -17,7 +17,7 @@ class Archive7zTest extends TestCase
      */
     protected $mock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fixturesDir = __DIR__ . '/fixtures';
 
@@ -27,7 +27,7 @@ class Archive7zTest extends TestCase
         $this->mock = new Archive7z('fake.7z');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->cleanDir($this->tmpDir);
         \rmdir($this->tmpDir);

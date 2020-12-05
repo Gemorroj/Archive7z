@@ -9,7 +9,7 @@ class EntryTest extends TestCase
 {
     protected $fixturesDir;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fixturesDir = __DIR__ . '/fixtures';
     }
