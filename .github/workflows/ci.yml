@@ -7,50 +7,43 @@ on:
 jobs:
   tests:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - operating-system: 'ubuntu-latest'
             php-version: '7.3'
             job-description: 'Ubuntu; PHP 7.3; latest-deps'
-            continue-on-error: true
 
           - operating-system: 'ubuntu-latest'
             php-version: '7.3'
             composer-flags: '--prefer-lowest'
             job-description: 'Ubuntu; PHP 7.3; lowest-deps'
-            continue-on-error: true
 
           - operating-system: 'ubuntu-latest'
             php-version: '7.4'
             job-description: 'Ubuntu; PHP 7.4; latest-deps'
-            continue-on-error: true
 
           - operating-system: 'ubuntu-latest'
             php-version: '7.4'
             composer-flags: '--prefer-lowest'
             job-description: 'Ubuntu; PHP 7.4; lowest-deps'
-            continue-on-error: true
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.0'
             job-description: 'Ubuntu; PHP 8.0; latest-deps'
-            continue-on-error: true
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.0'
             composer-flags: '--prefer-lowest'
             job-description: 'Ubuntu; PHP 8.0; lowest-deps'
-            continue-on-error: true
 
           - operating-system: 'windows-latest'
             php-version: '8.0'
             job-description: 'Windows; PHP 8.0; latest-deps'
-            continue-on-error: true
 
           - operating-system: 'macos-latest'
             php-version: '8.0'
             job-description: 'MacOS; PHP 8.0; latest-deps'
-            continue-on-error: true
 
 
     name: ${{ matrix.job-description }}
