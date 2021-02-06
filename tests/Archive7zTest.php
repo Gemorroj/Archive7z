@@ -596,7 +596,7 @@ class Archive7zTest extends TestCase
             self::fail(\sprintf("Expected '%s' Exception.", ProcessFailedException::class));
         } catch (ProcessFailedException $e) {
             self::assertInstanceOf(ProcessFailedException::class, $e);
-            self::assertMatchesRegularExpression('/Cannot open encrypted archive\. Wrong password\?/', $e->getMessage());
+            self::assertMatchesRegularExpression('/Can\s*not open encrypted archive\. Wrong password\?/', $e->getMessage());
             self::assertEquals($e->getProcess()->getExitCode(), 2);
         }
     }
@@ -617,7 +617,7 @@ class Archive7zTest extends TestCase
 
         $new = new Archive7z($tempArchive);
         $this->expectException(ProcessFailedException::class);
-        $this->expectExceptionMessageMatches('/Cannot open encrypted archive\. Wrong password\?/');
+        $this->expectExceptionMessageMatches('/Can\s*not open encrypted archive\. Wrong password\?/');
         $new->getEntry('file.txt');
     }
 
@@ -656,7 +656,7 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->tmpDir.'/'.$fixtureArchiveName);
 
         $this->expectException(ProcessFailedException::class);
-        $this->expectExceptionMessageMatches('/Cannot open encrypted archive\. Wrong password\?/');
+        $this->expectExceptionMessageMatches('/Can\s*not open encrypted archive\. Wrong password\?/');
 
         $obj->delEntry('file1.txt');
     }
