@@ -62,7 +62,7 @@ jobs:
       - name: Setup p7zip
         if: matrix.operating-system != 'windows-latest'
         run: |
-          apt-get purge p7zip-rar p7zip-full
+          sudo apt-get purge p7zip-rar p7zip-full
           curl -L https://github.com/jinfeihan57/p7zip/archive/v17.03.tar.gz > v17.03.tar.gz
           tar xzvf v17.03.tar.gz
           cd p7zip-17.03
