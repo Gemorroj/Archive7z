@@ -76,7 +76,7 @@ jobs:
           cd p7zip-17.03
           make all3
           sudo ./install.sh
-      - name: Setup 7zip
+      - name: Setup 7zip Windows
         if: matrix.operating-system == 'windows-latest'
         run: Install-Module 7Zip4PowerShell -Force
 
