@@ -11,41 +11,41 @@ jobs:
         include:
           - operating-system: 'ubuntu-latest'
             php-version: '7.3'
-            job-description: 'Linux; PHP 7.3; latest'
+            job-description: 'Ubuntu; PHP 7.3; latest-deps'
 
           - operating-system: 'ubuntu-latest'
             php-version: '7.3'
             composer-flags: '--prefer-lowest'
-            job-description: 'Linux; PHP 7.3; lowest'
+            job-description: 'Ubuntu; PHP 7.3; lowest-deps'
 
           - operating-system: 'ubuntu-latest'
             php-version: '7.4'
-            job-description: 'Linux; PHP 7.4; latest'
+            job-description: 'Ubuntu; PHP 7.4; latest-deps'
 
           - operating-system: 'ubuntu-latest'
             php-version: '7.4'
             composer-flags: '--prefer-lowest'
-            job-description: 'Linux; PHP 7.4; lowest'
+            job-description: 'Ubuntu; PHP 7.4; lowest-deps'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.0'
-            job-description: 'Linux; PHP 8.0; latest'
+            job-description: 'Ubuntu; PHP 8.0; latest-deps'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.0'
             composer-flags: '--prefer-lowest'
-            job-description: 'Linux; PHP 8.0; lowest'
+            job-description: 'Ubuntu; PHP 8.0; lowest-deps'
 
           - operating-system: 'windows-latest'
             php-version: '8.0'
-            job-description: 'Windows; PHP 8.0; latest'
+            job-description: 'Windows; PHP 8.0; latest-deps'
 
           - operating-system: 'macos-latest'
             php-version: '8.0'
-            job-description: 'MacOS; PHP 8.0; latest'
+            job-description: 'MacOS; PHP 8.0; latest-deps'
 
 
-    name: PHP ${{ matrix.php-version }} ${{ matrix.job-description }}
+    name: ${{ matrix.job-description }}
 
     runs-on: ${{ matrix.operating-system }}
 
