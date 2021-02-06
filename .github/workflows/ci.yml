@@ -102,5 +102,5 @@ jobs:
             composer update --optimize-autoloader --no-interaction --ansi --no-progress --prefer-dist ${{ matrix.composer-flags }}
             composer info -D
 
-      - name: Run tests
-        run: vendor/bin/phpunit ${{ matrix.phpunit-flags }}
+      - name: Tests
+        run: vendor/bin/phpunit --configuration phpunit.xml.dist
