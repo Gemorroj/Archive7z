@@ -2,8 +2,7 @@
 
 [![License](https://poser.pugx.org/gemorroj/archive7z/license)](https://packagist.org/packages/gemorroj/archive7z)
 [![Latest Stable Version](https://poser.pugx.org/gemorroj/archive7z/v/stable)](https://packagist.org/packages/gemorroj/archive7z)
-[![Build Status Travis](https://secure.travis-ci.org/Gemorroj/Archive7z.png?branch=master)](https://travis-ci.org/Gemorroj/Archive7z)
-[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/3i7po8fka1eqdb8a?svg=true)](https://ci.appveyor.com/project/Gemorroj/archive7z)
+[![Continuous Integration](https://github.com/Gemorroj/Archive7z/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/Gemorroj/Archive7z/actions?query=workflow%3A%22Continuous+Integration%22)
 
 
 ### Features:
