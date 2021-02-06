@@ -17,17 +17,11 @@ trait Archive7zTrait
      */
     protected static $binary7zWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
 
-    /**
-     * @return bool
-     */
     protected static function isOsWin(): bool
     {
         return '\\' === \DIRECTORY_SEPARATOR;
     }
 
-    /**
-     * @return string|null
-     */
     protected static function getAutoBinary7z(): ?string
     {
         $binary7zPath = null;
@@ -48,9 +42,7 @@ trait Archive7zTrait
     }
 
     /**
-     * @param null|string $binary7z
      * @throws Exception
-     * @return string
      */
     protected static function makeBinary7z(?string $binary7z = null): string
     {

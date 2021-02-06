@@ -9,25 +9,25 @@ class Archive7z
     use Archive7zTrait;
 
     /**
-     * Overwrite all existing files
+     * Overwrite all existing files.
      *
      * @const string
      */
     public const OVERWRITE_MODE_A = '-aoa';
     /**
-     * Skip extracting of existing files
+     * Skip extracting of existing files.
      *
      * @const string
      */
     public const OVERWRITE_MODE_S = '-aos';
     /**
-     * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt)
+     * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt).
      *
      * @const string
      */
     public const OVERWRITE_MODE_U = '-aou';
     /**
-     * Auto rename existing file (for example, name.txt will be renamed to name_1.txt)
+     * Auto rename existing file (for example, name.txt will be renamed to name_1.txt).
      *
      * @const string
      */
@@ -70,11 +70,10 @@ class Archive7z
      */
     protected $timeout;
 
-
     /**
-     * @param string $filename 7z archive filename
+     * @param string      $filename 7z archive filename
      * @param string|null $binary7z 7-zip binary path
-     * @param float|null $timeout Timeout of system process
+     * @param float|null  $timeout  Timeout of system process
      *
      * @throws Exception
      */
@@ -85,18 +84,14 @@ class Archive7z
         $this->binary7z = static::makeBinary7z($binary7z);
     }
 
-    /**
-     * @return string
-     */
     public function getOutputDirectory(): string
     {
         return $this->outputDirectory;
     }
 
     /**
-     * @param string $directory
-     *
      * @throws Exception
+     *
      * @return $this
      */
     public function setOutputDirectory(string $directory): self
@@ -116,17 +111,12 @@ class Archive7z
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
     /**
-     * @param string|null $password
-     *
      * @return $this
      */
     public function setPassword(?string $password): self
@@ -136,17 +126,12 @@ class Archive7z
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function getEncryptFilenames(): bool
     {
         return $this->encryptFilenames;
     }
 
     /**
-     * @param bool $encrypt
-     *
      * @return $this
      */
     public function setEncryptFilenames(bool $encrypt): self
@@ -156,18 +141,14 @@ class Archive7z
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getOverwriteMode(): string
     {
         return $this->overwriteMode;
     }
 
     /**
-     * @param string $mode
-     *
      * @throws Exception
+     *
      * @return $this
      */
     public function setOverwriteMode(string $mode = Archive7z::OVERWRITE_MODE_A): self
@@ -186,11 +167,6 @@ class Archive7z
         return $this;
     }
 
-    /**
-     * @param string $command
-     * @param array $arguments
-     * @return Process
-     */
     private function makeProcess(string $command, array $arguments): Process
     {
         return new Process(\array_merge(
@@ -200,10 +176,6 @@ class Archive7z
         ), null, null, null, $this->timeout);
     }
 
-
-    /**
-     * @return array
-     */
     private function decorateCmdExtract(): array
     {
         $out = [];
@@ -222,7 +194,7 @@ class Archive7z
         }
 
         if (null !== $this->password) {
-            $out[] = '-p' . $this->password;
+            $out[] = '-p'.$this->password;
         } else {
             $out[] = '-p '; //todo
         }
@@ -251,10 +223,10 @@ class Archive7z
         }
 
         if (null !== $this->password) {
-            $out[] = '-p' . $this->password;
+            $out[] = '-p'.$this->password;
 
             // Encrypt archive header if 7z archive
-            if ($this->encryptFilenames && '7z' === \pathinfo($this->filename, PATHINFO_EXTENSION)) {
+            if ($this->encryptFilenames && '7z' === \pathinfo($this->filename, \PATHINFO_EXTENSION)) {
                 $out[] = '-mhe=on';
             }
         }
@@ -269,32 +241,27 @@ class Archive7z
     {
         $process = $this->makeProcess('x', \array_merge([
             $this->overwriteMode,
-            '-o' . $this->outputDirectory,
+            '-o'.$this->outputDirectory,
         ], $this->decorateCmdExtract()));
 
         $this->execute($process);
     }
 
     /**
-     * @param string $path
-     *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function extractEntry(string $path): void
     {
         $process = $this->makeProcess('x', \array_merge([
             $this->overwriteMode,
-            '-o' . $this->outputDirectory,
+            '-o'.$this->outputDirectory,
         ], $this->decorateCmdExtract(), [$path]));
 
         $this->execute($process);
     }
 
     /**
-     * @param string $path
-     *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     * @return string
      */
     public function getContent(string $path): string
     {
@@ -307,9 +274,7 @@ class Archive7z
     }
 
     /**
-     * @param string $path
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     * @return Entry|null
      */
     public function getEntry(string $path): ?Entry
     {
@@ -326,6 +291,7 @@ class Archive7z
 
     /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     *
      * @return Entry[]
      */
     public function getEntries(): array
@@ -348,9 +314,8 @@ class Archive7z
     }
 
     /**
-     * 7-zip >= 7.25
+     * 7-zip >= 7.25.
      *
-     * @param string $path
      * @param bool $storePath store real filesystem path in archive
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
@@ -358,7 +323,7 @@ class Archive7z
     public function addEntry(string $path, bool $storePath = false): void
     {
         $args = [];
-        $args[] = '-mx=' . (int)$this->compressionLevel;
+        $args[] = '-mx='.(int) $this->compressionLevel;
 
         if ($storePath) {
             $args[] = '-spf';
@@ -366,7 +331,7 @@ class Archive7z
         } else {
             $realPath = \realpath($path);
             if (false === $realPath) {
-                throw new Exception('Can not resolve absolute path for "' . $path . '"');
+                throw new Exception('Can not resolve absolute path for "'.$path.'"');
             }
 
             if (\is_dir($realPath)) {
@@ -382,8 +347,6 @@ class Archive7z
     }
 
     /**
-     * @param string $path
-     *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function delEntry(string $path): void
@@ -396,10 +359,7 @@ class Archive7z
     }
 
     /**
-     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ )
-     *
-     * @param string $pathSrc
-     * @param string $pathDest
+     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ ).
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
@@ -413,12 +373,10 @@ class Archive7z
         $this->execute($process);
     }
 
-
     /**
      * Is valid archive?
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     * @return bool
      */
     public function isValid(): bool
     {
@@ -429,7 +387,6 @@ class Archive7z
         return false !== \strpos($process->getOutput(), 'Everything is Ok');
     }
 
-
     /**
      * Exit codes
      * 0 - Normal (no errors or warnings detected)
@@ -437,12 +394,9 @@ class Archive7z
      * 2 - Fatal error
      * 7 - Bad command line parameters
      * 8 - Not enough memory for operation
-     * 255 - User stopped the process with control-C (or similar)
-     *
-     * @param Process $process
+     * 255 - User stopped the process with control-C (or similar).
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     * @return Process
      */
     protected function execute(Process $process): Process
     {

@@ -23,10 +23,9 @@ cache:
 
 before_install:
     # Install p7zip
-    #  - sudo apt-get install p7zip-full
-    - curl -L http://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2 > p7zip_16.02_src_all.tar.bz2
-    - tar xjvf p7zip_16.02_src_all.tar.bz2
-    - cd p7zip_16.02
+    - curl -L https://github.com/jinfeihan57/p7zip/archive/v17.03.tar.gz > v17.03.tar.gz
+    - tar xzvf v17.03.tar.gz
+    - cd p7zip-17.03
     - make all3
     - sudo ./install.sh
     - sudo ln /usr/local/bin/7za /usr/bin/7za

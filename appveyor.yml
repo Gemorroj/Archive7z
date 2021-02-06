@@ -1,4 +1,4 @@
-build: off
+build: false
 clone_depth: 1
 clone_folder: c:\projects\archive7z
 

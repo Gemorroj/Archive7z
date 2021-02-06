@@ -17,9 +17,6 @@ class Parser
         $this->data = $data;
     }
 
-    /**
-     * @return array
-     */
     public function parseEntries(): array
     {
         $head = true;
@@ -37,7 +34,7 @@ class Parser
             }
 
             if ($value === $this->listToken) {
-                $i++;
+                ++$i;
                 continue;
             }
 
@@ -49,14 +46,14 @@ class Parser
     }
 
     /**
-     * @param string $line
      * @return string[]
      */
     protected function parseEntry(string $line): array
     {
         if (0 === \strpos($line, 'Warnings:') || 0 === \strpos($line, 'Errors:')) {
             [$k, $v] = \explode(': ', $line, 2);
-            return [$k => (int)$v];
+
+            return [$k => (int) $v];
         }
 
         [$k, $v] = \explode(' =', $line, 2);

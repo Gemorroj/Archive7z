@@ -45,8 +45,9 @@ class Entry
      */
     private $comment;
     /**
+     * Unix|Win32|FAT.
+     *
      * @var string|null
-     * Unix|Win32|FAT
      */
     private $hostOs;
     /**
@@ -58,10 +59,9 @@ class Entry
      */
     private $archive;
 
-
     /**
      * @param Archive7z $archive Archive7z object
-     * @param array $data parsed entry data
+     * @param array     $data    parsed entry data
      */
     public function __construct(Archive7z $archive, array $data)
     {
@@ -71,10 +71,6 @@ class Entry
         }
     }
 
-    /**
-     * @param string $key
-     * @param string $value
-     */
     private function setData(string $key, string $value): void
     {
         switch ($key) {
@@ -124,34 +120,23 @@ class Entry
         }
     }
 
-
-    /**
-     * @return bool
-     */
     public function isDirectory(): bool
     {
         return '+' === $this->folder || false !== \strpos($this->attributes, 'D');
     }
 
-
-    /**
-     * @return bool
-     */
     public function isEncrypted(): bool
     {
         return '+' === $this->encrypted;
     }
 
-
     /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     * @return string
      */
     public function getContent(): string
     {
         return $this->archive->getContent($this->path);
     }
-
 
     /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
@@ -161,10 +146,7 @@ class Entry
         $this->archive->extractEntry($this->path);
     }
 
-
     /**
-     * @param string $directory
-     *
      * @throws Exception
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
@@ -179,101 +161,66 @@ class Entry
         }
     }
 
-
-    /**
-     * @return string
-     */
     public function getAttributes(): string
     {
         return $this->attributes;
     }
 
-    /**
-     * @return string|null
-     */
     public function getBlock(): ?string
     {
         return $this->block;
     }
 
-    /**
-     * @return string
-     */
     public function getCrc(): string
     {
         return $this->crc;
     }
 
-    /**
-     * @return string
-     */
     public function getEncrypted(): string
     {
         return $this->encrypted;
     }
 
-    /**
-     * @return string
-     */
     public function getMethod(): string
     {
         return $this->method;
     }
 
-    /**
-     * @return string
-     */
     public function getModified(): string
     {
         return $this->modified;
     }
 
     /**
-     * return size only for first file of solid block
-     * @see https://github.com/Gemorroj/Archive7z/issues/5
+     * return size only for first file of solid block.
      *
-     * @return string
+     * @see https://github.com/Gemorroj/Archive7z/issues/5
      */
     public function getPackedSize(): string
     {
         return $this->packedSize;
     }
 
-    /**
-     * @return string
-     */
     public function getPath(): string
     {
         return $this->path;
     }
 
-    /**
-     * @return string
-     */
     public function getUnixPath(): string
     {
         return \str_replace('\\', '/', $this->getPath());
     }
 
-    /**
-     * @return string
-     */
     public function getSize(): string
     {
         return $this->size;
     }
 
-    /**
-     * @return string|null
-     */
     public function getComment(): ?string
     {
         return $this->comment;
     }
 
-    /**
-     * @return string|null
-     */
     public function getHostOs(): ?string
     {
         return $this->hostOs;

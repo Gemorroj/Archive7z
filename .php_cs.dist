@@ -6,7 +6,8 @@ $finder = PhpCsFixer\Finder::create()
 
 return PhpCsFixer\Config::create()
     ->setRules([
-        '@PSR2' => true,
+        '@Symfony' => true,
+        '@PHP73Migration' => true,
         'array_syntax' => ['syntax' => 'short'],
         'combine_consecutive_issets' => true,
         'combine_consecutive_unsets' => true,
@@ -15,12 +16,14 @@ return PhpCsFixer\Config::create()
         'list_syntax' => ['syntax' => 'short'],
         // 'mb_str_functions' => true,
         'native_function_invocation' => true,
+        'native_constant_invocation' => true,
         'no_null_property_initialization' => true,
         'no_useless_else' => true,
         'no_useless_return' => true,
         'ordered_imports' => ['sortAlgorithm' => 'alpha'],
         'phpdoc_order' => true,
         'strict_comparison' => true,
+        'combine_nested_dirname' => true,
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)

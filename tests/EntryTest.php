@@ -1,4 +1,5 @@
 <?php
+
 namespace Archive7z\Tests;
 
 use Archive7z\Archive7z;
@@ -11,7 +12,7 @@ class EntryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fixturesDir = __DIR__ . '/fixtures';
+        $this->fixturesDir = __DIR__.'/fixtures';
     }
 
     /**
@@ -28,14 +29,13 @@ class EntryTest extends TestCase
         ];
         $actualResults = [];
 
-        $archive = new Archive7z($this->fixturesDir . '/7zip-18.05/test.7z');
+        $archive = new Archive7z($this->fixturesDir.'/7zip-18.05/test.7z');
         foreach ($archive->getEntries() as $entry) {
             $actualResults[] = $entry->getPackedSize();
         }
 
         self::assertEquals($expectedResults, $actualResults);
     }
-
 
     public function testExtractTo(): void
     {
@@ -44,11 +44,12 @@ class EntryTest extends TestCase
             'Path' => 'some-path',
         ]);
 
-        $originalOutputDirectory =  $archive->getOutputDirectory();
+        $originalOutputDirectory = $archive->getOutputDirectory();
         try {
             $entry->extractTo(\sys_get_temp_dir());
         } catch (\Exception $e) {
             self::assertSame(\realpath($originalOutputDirectory), $archive->getOutputDirectory());
+
             return;
         }
 
