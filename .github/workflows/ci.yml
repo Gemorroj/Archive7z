@@ -59,8 +59,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup p7zip
-        if: matrix.operating-system != 'windows-latest'
+      - name: Setup p7zip Ubuntu
+        if: matrix.operating-system == 'ubuntu-latest'
         run: |
           sudo apt-get purge p7zip-rar p7zip-full
           curl -L https://github.com/jinfeihan57/p7zip/archive/v17.03.tar.gz > v17.03.tar.gz
@@ -68,8 +68,14 @@ jobs:
           cd p7zip-17.03
           make all3
           sudo ./install.sh
-          sudo ln /usr/local/bin/7za /usr/bin/7za
-          sudo ln /usr/local/bin/7z /usr/bin/7z
+      - name: Setup p7zip MacOs
+        if: matrix.operating-system == 'macos-latest'
+        run: |
+          curl -L https://github.com/jinfeihan57/p7zip/archive/v17.03.tar.gz > v17.03.tar.gz
+          tar xzvf v17.03.tar.gz
+          cd p7zip-17.03
+          make all3
+          sudo ./install.sh
       - name: Setup 7zip
         if: matrix.operating-system == 'windows-latest'
         run: Install-Module 7Zip4PowerShell -Force
