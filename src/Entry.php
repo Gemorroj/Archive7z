@@ -117,6 +117,10 @@ class Entry
             case 'Host OS':
                 $this->hostOs = $value;
                 break;
+
+            case 'Folder':
+                $this->folder = $value;
+                break;
         }
     }
 
