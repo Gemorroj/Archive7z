@@ -55,4 +55,19 @@ class EntryTest extends TestCase
 
         self::fail('Not catch expected exception');
     }
+
+    /**
+     * @see https://github.com/Gemorroj/Archive7z/pull/24
+     */
+    public function testDirectory(): void
+    {
+        $archive = new Archive7z($this->fixturesDir.'/7zip-18.05/test.tar');
+
+        $folder = $archive->getEntry('test');
+        $ref = new \ReflectionObject($folder);
+        $property = $ref->getProperty('folder');
+        $property->setAccessible(true);
+
+        self::assertSame('+', $property->getValue($folder));
+    }
 }
