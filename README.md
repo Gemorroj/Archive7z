@@ -19,8 +19,9 @@
 ### Requirements:
 
 - PHP >= 7.3
-- shell
-- **7-zip >= 7.30 (p7zip >= 9.38)**
+- allow [proc_open](https://www.php.net/proc_open) function
+- for Windows: 7-zip >= 7.30 (https://www.7-zip.org/)
+- for Linux/MacOs: p7zip >= 9.38 (https://github.com/jinfeihan57/p7zip)
 
 
 ### Installation:
@@ -93,17 +94,17 @@ Archive7z\Entry Object
          */
 
     if ($entry->getPath() === 'test/test.txt') {
-        $entry->extractTo('path_to_extract_folder/'); // extract file
+        $entry->extractTo('path_to_extract_folder/'); // extract the file
     }
 }
 
 echo $obj->getContent('test/test.txt'); // show content of the file
-$obj->setOutputDirectory('path_to_extract_folder/')->extract(); // extract archive
-$obj->setOutputDirectory('path_to_extract_pass_folder/')->setPassword('pass')->extractEntry('test/test.txt'); // extract password-protected entry
+$obj->setOutputDirectory('path_to_extract_folder/')->extract(); // extract the archive
+$obj->setOutputDirectory('path_to_extract_pass_folder/')->setPassword('pass')->extractEntry('test/test.txt'); // extract the password-protected entry
 
-$obj->addEntry(__FILE__); // add file to archive
-$obj->addEntry(__DIR__);  // add directory to archive (include subfolders)
+$obj->addEntry(__FILE__); // add file to the archive
+$obj->addEntry(__DIR__);  // add directory to the archive (include subfolders)
 
-$obj->renameEntry(__FILE__, __FILE__.'new'); // rename file in archive
-$obj->delEntry(__FILE__.'new'); // remove file from archive
+$obj->renameEntry(__FILE__, __FILE__.'new'); // rename the file in the archive
+$obj->delEntry(__FILE__.'new'); // remove the file from the archive
 ```
