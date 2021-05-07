@@ -167,15 +167,24 @@ class Archive7z
         return $this;
     }
 
+    /**
+     * @param string[] $arguments
+     */
     private function makeProcess(string $command, array $arguments): Process
     {
-        return new Process(\array_merge(
-            [\str_replace('\\', '/', $this->binary7z)],
-            [$command, $this->filename],
-            $arguments
-        ), null, null, null, $this->timeout);
+        $cmd = [
+            \str_replace('\\', '/', $this->binary7z),
+            $command,
+            $this->filename,
+        ];
+        \array_push($cmd, ...$arguments);
+
+        return new Process($cmd, null, null, null, $this->timeout);
     }
 
+    /**
+     * @return string[]
+     */
     private function decorateCmdExtract(): array
     {
         $out = [];

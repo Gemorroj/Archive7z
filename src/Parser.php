@@ -4,9 +4,17 @@ namespace Archive7z;
 
 class Parser
 {
+    /**
+     * @var string
+     */
     protected $headToken = '----------';
+    /**
+     * @var string
+     */
     protected $listToken = '';
-
+    /**
+     * @var string[]
+     */
     protected $data;
 
     /**
@@ -17,19 +25,22 @@ class Parser
         $this->data = $data;
     }
 
+    /**
+     * @return array<int, array<string, string>>
+     */
     public function parseEntries(): array
     {
-        $head = true;
+        $isHead = true;
         $list = [];
         $i = 0;
 
         foreach ($this->data as $value) {
             if ($value === $this->headToken) {
-                $head = false;
+                $isHead = false;
                 continue;
             }
 
-            if (true === $head) {
+            if (true === $isHead) {
                 continue;
             }
 
@@ -39,6 +50,10 @@ class Parser
             }
 
             $entry = $this->parseEntry($value);
+            if (!$entry) {
+                break; // ends of list
+            }
+
             $list[$i][\key($entry)] = \current($entry);
         }
 
@@ -46,14 +61,12 @@ class Parser
     }
 
     /**
-     * @return string[]
+     * @return array<string, string>|null
      */
-    protected function parseEntry(string $line): array
+    protected function parseEntry(string $line): ?array
     {
         if (0 === \strpos($line, 'Warnings:') || 0 === \strpos($line, 'Errors:')) {
-            [$k, $v] = \explode(': ', $line, 2);
-
-            return [$k => (int) $v];
+            return null;
         }
 
         [$k, $v] = \explode(' =', $line, 2);

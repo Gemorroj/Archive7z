@@ -10,7 +10,13 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class Archive7zTest extends TestCase
 {
+    /**
+     * @var string
+     */
     protected $tmpDir;
+    /**
+     * @var string
+     */
     protected $fixturesDir;
 
     /**
@@ -37,6 +43,10 @@ class Archive7zTest extends TestCase
     protected function cleanDir(string $dir): void
     {
         $h = \opendir($dir);
+        if (!$h) {
+            return;
+        }
+
         while (($file = \readdir($h)) !== false) {
             if ('.' !== $file && '..' !== $file) {
                 if (\is_dir($dir.'/'.$file)) {
@@ -89,6 +99,9 @@ class Archive7zTest extends TestCase
         self::assertEquals(Archive7z::OVERWRITE_MODE_U, $this->mock->getOverwriteMode());
     }
 
+    /**
+     * @return string[][]
+     */
     public function extractProvider(): array
     {
         return [
@@ -130,6 +143,9 @@ class Archive7zTest extends TestCase
         self::assertFileExists($dirCyrillic.'/test/test.txt');
     }
 
+    /**
+     * @return string[][]
+     */
     public function extractPasswdProvider(): array
     {
         return [
@@ -175,7 +191,7 @@ class Archive7zTest extends TestCase
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_A);
         \copy($sourceFile, $targetFile);
         $obj->extract();
-        self::assertFileEquals($archiveFile, $targetFile);
+        self::assertFileEquals($archiveFile, $targetFile, $archiveName);
 
         $obj->setOverwriteMode(Archive7z::OVERWRITE_MODE_S);
         \copy($sourceFile, $targetFile);
@@ -316,6 +332,9 @@ class Archive7zTest extends TestCase
         self::assertInstanceOf(Entry::class, $result);
     }
 
+    /**
+     * @return string[][]
+     */
     public function entryProvider(): array
     {
         return [
@@ -357,6 +376,7 @@ class Archive7zTest extends TestCase
      */
     public function testAddEntryNew(string $archiveName): void
     {
+        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'_'.\str_replace('/', '_', $archiveName);
 
         $obj = new Archive7z($tempArchive);
@@ -369,6 +389,7 @@ class Archive7zTest extends TestCase
 
     public function testAddEntryRar(): void
     {
+        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'_archive.rar';
 
         $obj = new Archive7z($tempArchive);
@@ -379,11 +400,14 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPathPasswd(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
+        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+        /** @var string $fullPath */
+        $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('111');
-        $obj->addEntry(\realpath($this->tmpDir.'/file.txt'));
+        $obj->addEntry($fullPath);
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals('file.txt', $result->getPath());
@@ -396,10 +420,13 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPath(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
+        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+        /** @var string $fullPath */
+        $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
-        $obj->addEntry(\realpath($this->tmpDir.'/file.txt'));
+        $obj->addEntry($fullPath);
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
         self::assertEquals('file.txt', $result->getPath());
@@ -408,6 +435,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPathStore(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
+        /** @var string $fullPath */
         $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
@@ -420,6 +448,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryLocalPath(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/test.txt');
+        /** @var string $localPath */
         $localPath = \realpath($this->tmpDir.'/test.txt');
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
@@ -437,6 +466,7 @@ class Archive7zTest extends TestCase
         }
 
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/test/test.txt');
+        /** @var string $localPath */
         $localPath = \realpath($this->tmpDir);
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
@@ -446,6 +476,9 @@ class Archive7zTest extends TestCase
         self::assertEquals($localPath, $result->getPath());
     }
 
+    /**
+     * @return string[][]
+     */
     public function delProvider(): array
     {
         return [
@@ -480,6 +513,9 @@ class Archive7zTest extends TestCase
         self::assertNull($obj->getEntry('test/test.txt'));
     }
 
+    /**
+     * @return string[][]
+     */
     public function delPasswdProvider(): array
     {
         return [
@@ -549,6 +585,9 @@ class Archive7zTest extends TestCase
         self::assertTrue($valid->isValid());
     }
 
+    /**
+     * @return string[][]
+     */
     public function extractPasswdEncFilesProvider(): array
     {
         return [
@@ -604,12 +643,15 @@ class Archive7zTest extends TestCase
     public function testAddEntryPasswdEncFiles(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
+        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+        /** @var string $fullPath */
+        $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('abc123');
         $obj->setEncryptFilenames(true);
-        $obj->addEntry(\realpath($this->tmpDir.'/file.txt'));
+        $obj->addEntry($fullPath);
 
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);

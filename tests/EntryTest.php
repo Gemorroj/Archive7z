@@ -8,6 +8,9 @@ use PHPUnit\Framework\TestCase;
 
 class EntryTest extends TestCase
 {
+    /**
+     * @var string
+     */
     protected $fixturesDir;
 
     protected function setUp(): void
@@ -22,7 +25,7 @@ class EntryTest extends TestCase
     {
         $expectedResults = [
             '0', // directory
-            '165102', // solid архив
+            '165102', // solid archive
             '',
             '',
             '',
