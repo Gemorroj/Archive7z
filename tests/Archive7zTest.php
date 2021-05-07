@@ -482,7 +482,7 @@ class Archive7zTest extends TestCase
     public function delProvider(): array
     {
         return [
-            ['zip.7z'],
+            ['zip.7z'], // 7-Zip 21.02 swears now at this
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
