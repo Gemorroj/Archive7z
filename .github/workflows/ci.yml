@@ -63,9 +63,9 @@ jobs:
       - name: Setup p7zip MacOs
         if: matrix.operating-system == 'macos-latest'
         run: |
-          curl -L https://github.com/jinfeihan57/p7zip/archive/v17.03.tar.gz > v17.03.tar.gz
-          tar xzvf v17.03.tar.gz
-          cd p7zip-17.03
+          curl -L https://github.com/jinfeihan57/p7zip/archive/v17.04.tar.gz > v17.04.tar.gz
+          tar xzvf v17.04.tar.gz
+          cd p7zip-17.04
           make all3
           sudo ./install.sh
       - name: Setup 7zip Windows
@@ -76,21 +76,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-
-      - name: Get Composer cache directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ runner.os }}-${{ matrix.php-version }}-${{ hashFiles('**/composer.*') }}-${{ matrix.composer-flags }}
-          restore-keys: |
-            composer-${{ runner.os }}-${{ matrix.php-version }}-${{ hashFiles('**/composer.*') }}-
-            composer-${{ runner.os }}-${{ matrix.php-version }}-
-            composer-${{ runner.os }}-
-            composer-
+          coverage: none
+          tools: composer:v2
 
       - name: Install dependencies
         uses: nick-invision/retry@v2

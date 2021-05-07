@@ -19,7 +19,7 @@ trait Archive7zTrait
 
     protected static function isOsWin(): bool
     {
-        return '\\' === \DIRECTORY_SEPARATOR;
+        return 'Windows' === \PHP_OS_FAMILY;
     }
 
     protected static function getAutoBinary7z(): ?string
