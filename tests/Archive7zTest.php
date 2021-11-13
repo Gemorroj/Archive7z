@@ -482,7 +482,7 @@ class Archive7zTest extends TestCase
     public function delProvider(): array
     {
         return [
-            ['zip.7z'], // 7-Zip 21.02 swears now at this
+            ['zip.7z'], // 7-Zip 21.02+ swears now at this
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -583,6 +583,28 @@ class Archive7zTest extends TestCase
     {
         $valid = new Archive7z($this->fixturesDir.'/'.$archiveName);
         self::assertTrue($valid->isValid());
+    }
+
+    public function testLongName(): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/longName.zip');
+        $result = $obj->getEntries();
+
+        self::assertIsArray($result);
+        self::assertCount(3, $result);
+        foreach ($result as $entry) {
+            self::assertInstanceOf(Entry::class, $entry);
+            self::assertIsString($entry->getPath());
+            self::assertIsString($entry->getAttributes());
+            self::assertIsString($entry->getContent());
+            self::assertIsString($entry->getCrc());
+            self::assertIsString($entry->getEncrypted());
+            self::assertIsString($entry->getMethod());
+            self::assertIsString($entry->getModified());
+            self::assertIsString($entry->getPackedSize());
+            self::assertIsString($entry->getSize());
+            self::assertIsString($entry->getUnixPath());
+        }
     }
 
     /**
