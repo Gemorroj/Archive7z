@@ -397,6 +397,35 @@ class Archive7z
     }
 
     /**
+     * List archive warnings.
+     *
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     *
+     * @return string[]
+     */
+    public function getWarnings(): array
+    {
+        $process = $this->makeProcess('t', $this->decorateCmdExtract());
+
+        $this->execute($process);
+
+        $output = $process->getOutput();
+
+        $pos = \strpos($output, \PHP_EOL.'--');
+        $header = \substr($output, 0, $pos);
+        $warningsHeader = \PHP_EOL.'WARNINGS:';
+        $warningsPos = \strrpos($header, $warningsHeader);
+        if (false === $warningsPos) {
+            return [];
+        }
+
+        $warningsStr = \substr($header, $warningsPos + \strlen($warningsHeader));
+        $warningsStr = \trim($warningsStr);
+
+        return \explode(\PHP_EOL, $warningsStr);
+    }
+
+    /**
      * Exit codes
      * 0 - Normal (no errors or warnings detected)
      * 1 - Warning (Non fatal error(s)). For example, some files cannot be read during compressing. So they were not compressed

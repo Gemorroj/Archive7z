@@ -106,6 +106,7 @@ class Archive7zTest extends TestCase
     {
         return [
             ['zip.7z'],
+            ['warnings.zip'],
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -339,6 +340,7 @@ class Archive7zTest extends TestCase
     {
         return [
             ['zip.7z'],
+            ['warnings.zip'],
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -483,6 +485,7 @@ class Archive7zTest extends TestCase
     {
         return [
             ['zip.7z'], // 7-Zip 21.02+ swears now at this
+            //['warnings.zip'], // not supported
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -585,26 +588,17 @@ class Archive7zTest extends TestCase
         self::assertTrue($valid->isValid());
     }
 
-    public function testLongName(): void
+    public function testGetWarnings(): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/longName.zip');
-        $result = $obj->getEntries();
+        $obj = new Archive7z($this->fixturesDir.'/warnings.zip');
+        $warnings = $obj->getWarnings();
 
-        self::assertIsArray($result);
-        self::assertCount(3, $result);
-        foreach ($result as $entry) {
-            self::assertInstanceOf(Entry::class, $entry);
-            self::assertIsString($entry->getPath());
-            self::assertIsString($entry->getAttributes());
-            self::assertIsString($entry->getContent());
-            self::assertIsString($entry->getCrc());
-            self::assertIsString($entry->getEncrypted());
-            self::assertIsString($entry->getMethod());
-            self::assertIsString($entry->getModified());
-            self::assertIsString($entry->getPackedSize());
-            self::assertIsString($entry->getSize());
-            self::assertIsString($entry->getUnixPath());
-        }
+        self::assertCount(1, $warnings);
+        self::assertSame('There are data after the end of archive', $warnings[0]);
+
+        $obj = new Archive7z($this->fixturesDir.'/zip.7z');
+        $noWarnings = $obj->getWarnings();
+        self::assertEmpty($noWarnings);
     }
 
     /**
