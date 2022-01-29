@@ -54,6 +54,7 @@ class Archive7z
      *
      * Supported by 7z archives only.
      *
+     * @see https://documentation.help/7-Zip/method.htm#HeaderEncrypt
      * @var bool
      */
     protected $encryptFilenames = false;
