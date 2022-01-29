@@ -5,6 +5,7 @@ namespace Archive7z\Tests;
 use Archive7z\Archive7z;
 use Archive7z\Entry;
 use Archive7z\Exception;
+use Archive7z\SolidMode;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -13,16 +14,16 @@ class Archive7zTest extends TestCase
     /**
      * @var string
      */
-    protected $tmpDir;
+    private $tmpDir;
     /**
      * @var string
      */
-    protected $fixturesDir;
+    private $fixturesDir;
 
     /**
      * @var Archive7z
      */
-    protected $mock;
+    private $mock;
 
     protected function setUp(): void
     {
@@ -36,8 +37,8 @@ class Archive7zTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->cleanDir($this->tmpDir);
-        \rmdir($this->tmpDir);
+        //$this->cleanDir($this->tmpDir);
+        //\rmdir($this->tmpDir);
     }
 
     protected function cleanDir(string $dir): void
@@ -717,5 +718,91 @@ class Archive7zTest extends TestCase
         $this->expectExceptionMessageMatches('/Can\s*not open encrypted archive\. Wrong password\?/');
 
         $obj->delEntry('file1.txt');
+    }
+
+    public function testCreateSolidArchive(): void
+    {
+        \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
+        \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
+        /** @var string $tempArchive */
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+
+        $obj = new Archive7z($tempArchive);
+
+        $solidMode = new SolidMode();
+        $solidMode->setMode(SolidMode::ON);
+        $obj->setSolidMode($solidMode);
+        $obj->addEntry($this->tmpDir);
+
+        self::assertTrue($obj->getInfo()->isSolid());
+    }
+
+    public function testCreateNonSolidArchive(): void
+    {
+        \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
+        \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
+        /** @var string $tempArchive */
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+
+        $obj = new Archive7z($tempArchive);
+
+        $solidMode = new SolidMode();
+        $solidMode->setMode(SolidMode::OFF);
+        $obj->setSolidMode($solidMode);
+        $obj->addEntry($this->tmpDir);
+
+        self::assertFalse($obj->getInfo()->isSolid());
+    }
+
+    public function testCreateLimitSolidArchive(): void
+    {
+        \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
+        \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
+        /** @var string $tempArchive */
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+
+        $obj = new Archive7z($tempArchive);
+
+        $solidMode = new SolidMode();
+        $solidMode->setFilesLimit(2);
+        $solidMode->setTotalSizeLimit(1024);
+        $obj->setSolidMode($solidMode);
+        $obj->addEntry($this->tmpDir);
+
+        self::assertTrue($obj->getInfo()->isSolid());
+    }
+
+    public function testCreateMixedSolidArchive(): void
+    {
+        \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
+        \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
+        /** @var string $tempArchive */
+        $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
+
+        $obj = new Archive7z($tempArchive);
+
+        $solidMode = new SolidMode();
+        $solidMode->setMode(SolidMode::ON);
+        $obj->setSolidMode($solidMode);
+        $obj->addEntry($this->tmpDir);
+
+        \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file3.txt');
+
+        $obj->addEntry($this->tmpDir.'/file3.txt');
+
+        self::assertTrue($obj->getInfo()->isSolid());
+    }
+
+    /**
+     * @dataProvider extractProvider
+     */
+    public function testInfo(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+        $info = $obj->getInfo();
+
+        self::assertIsString($info->getPath());
+        self::assertIsString($info->getType());
+        self::assertGreaterThan(0, $info->getPhysicalSize());
     }
 }

@@ -11,7 +11,7 @@ class EntryTest extends TestCase
     /**
      * @var string
      */
-    protected $fixturesDir;
+    private $fixturesDir;
 
     protected function setUp(): void
     {

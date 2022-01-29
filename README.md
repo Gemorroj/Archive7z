@@ -61,6 +61,22 @@ if (!$obj->isValid()) {
     throw new \RuntimeException('Incorrect archive');
 }
 
+print_r($obj->getInfo());
+/*
+Archive7z\Info Object
+(
+    [path:Archive7z\Info:private] => /full_path_to/test.7z
+    [type:Archive7z\Info:private] => 7z
+    [physicalSize:Archive7z\Info:private] => 165343
+    [headersSize:Archive7z\Info:private] => 241
+    [method:Archive7z\Info:private] => LZMA2:192k
+    [solid:Archive7z\Info:private] => +
+    [blocks:Archive7z\Info:private] => 1
+    [codePage:Archive7z\Info:private] => 
+)
+*/
+
+
 // $obj->setPassword('123');
 
 foreach ($obj->getEntries() as $entry) {
@@ -105,8 +121,11 @@ echo $obj->getContent('test/test.txt'); // show content of the file
 $obj->setOutputDirectory('path_to_extract_folder/')->extract(); // extract the archive
 $obj->setOutputDirectory('path_to_extract_pass_folder/')->setPassword('pass')->extractEntry('test/test.txt'); // extract the password-protected entry
 
-$obj->addEntry(__FILE__); // add file to the archive
+$solidMode = new SolidMode();
+$solidMode->setMode(SolidMode::OFF);
+$obj->setSolidMode($solidMode);
 $obj->addEntry(__DIR__);  // add directory to the archive (include subfolders)
+$obj->addEntry(__FILE__); // add file to the archive
 
 $obj->renameEntry(__FILE__, __FILE__.'new'); // rename the file in the archive
 $obj->delEntry(__FILE__.'new'); // remove the file from the archive

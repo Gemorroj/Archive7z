@@ -7,11 +7,19 @@ class Parser
     /**
      * @var string
      */
-    protected $headToken = '----------';
+    protected $headTokenStart = '--';
     /**
      * @var string
      */
-    protected $listToken = '';
+    protected $headTokenEnd = '';
+    /**
+     * @var string
+     */
+    protected $listTokenStart = '----------';
+    /**
+     * @var string
+     */
+    protected $newFileListToken = '';
     /**
      * @var string[]
      */
@@ -26,6 +34,39 @@ class Parser
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function parseHeader(): array
+    {
+        $isMess = true;
+        $list = [];
+
+        foreach ($this->data as $value) {
+            if ($value === $this->headTokenStart) {
+                $isMess = false;
+                continue;
+            }
+
+            if (true === $isMess) {
+                continue;
+            }
+
+            if ($value === $this->headTokenEnd) {
+                break;
+            }
+
+            $entry = $this->parseHeaderLine($value);
+            if (!$entry) {
+                continue;
+            }
+
+            $list[\key($entry)] = \current($entry);
+        }
+
+        return $list;
+    }
+
+    /**
      * @return array<int, array<string, string>>
      */
     public function parseEntries(): array
@@ -35,7 +76,7 @@ class Parser
         $i = 0;
 
         foreach ($this->data as $value) {
-            if ($value === $this->headToken) {
+            if ($value === $this->listTokenStart) {
                 $isHead = false;
                 continue;
             }
@@ -44,7 +85,7 @@ class Parser
                 continue;
             }
 
-            if ($value === $this->listToken) {
+            if ($value === $this->newFileListToken) {
                 ++$i;
                 continue;
             }
@@ -66,6 +107,28 @@ class Parser
     protected function parseEntry(string $line): ?array
     {
         if (0 === \strpos($line, 'Warnings:') || 0 === \strpos($line, 'Errors:')) {
+            return null;
+        }
+
+        [$k, $v] = \explode(' =', $line, 2);
+
+        return [$k => \ltrim($v)];
+    }
+
+    /**
+     * @return array<string, string>|null
+     */
+    protected function parseHeaderLine(string $line): ?array
+    {
+        if (0 === \strpos($line, 'ERROR:') || 0 === \strpos($line, 'Open WARNING:')) {
+            return null;
+        }
+
+        /*
+WARNINGS:
+There are data after the end of archive
+         */
+        if (0 === \strpos($line, 'WARNINGS:') || false === \strpos($line, ' = ')) {
             return null;
         }
 

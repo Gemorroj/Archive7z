@@ -50,11 +50,19 @@ class Archive7z
     private $password;
 
     /**
+     * @see https://documentation.help/7-Zip/method.htm#Solid
+     *
+     * @var SolidMode|null
+     */
+    private $solidMode;
+
+    /**
      * Encrypt archive header.
      *
      * Supported by 7z archives only.
      *
      * @see https://documentation.help/7-Zip/method.htm#HeaderEncrypt
+     *
      * @var bool
      */
     protected $encryptFilenames = false;
@@ -124,6 +132,23 @@ class Archive7z
         return $this;
     }
 
+    /**
+     * @throws Exception
+     *
+     * @return $this
+     */
+    public function setSolidMode(?SolidMode $solidMode): self
+    {
+        $this->solidMode = $solidMode;
+
+        return $this;
+    }
+
+    public function getSolidMode(): ?SolidMode
+    {
+        return $this->solidMode;
+    }
+
     public function getPassword(): ?string
     {
         return $this->password;
@@ -164,11 +189,9 @@ class Archive7z
      *
      * @return $this
      */
-    public function setOverwriteMode(string $mode = Archive7z::OVERWRITE_MODE_A): self
+    public function setOverwriteMode(string $mode): self
     {
-        $this->overwriteMode = $mode;
-
-        if (false === \in_array($this->overwriteMode, [
+        if (!\in_array($mode, [
             self::OVERWRITE_MODE_A,
             self::OVERWRITE_MODE_S,
             self::OVERWRITE_MODE_T,
@@ -176,6 +199,8 @@ class Archive7z
         ], true)) {
             throw new Exception('Overwrite mode is not available');
         }
+
+        $this->overwriteMode = $mode;
 
         return $this;
     }
@@ -253,6 +278,10 @@ class Archive7z
             if ($this->encryptFilenames && '7z' === \pathinfo($this->filename, \PATHINFO_EXTENSION)) {
                 $out[] = '-mhe=on';
             }
+        }
+
+        if ($this->solidMode) {
+            $out[] = '-ms='.((string) $this->solidMode);
         }
 
         return $out;
@@ -335,6 +364,25 @@ class Archive7z
         }
 
         return $list;
+    }
+
+    /**
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     */
+    public function getInfo(): Info
+    {
+        $process = $this->makeProcess('l', \array_merge([
+            '-slt',
+        ], $this->decorateCmdExtract()));
+
+        $this->execute($process);
+
+        $out = \explode(\PHP_EOL, $process->getOutput());
+
+        $parser = new Parser($out);
+        $data = $parser->parseHeader();
+
+        return new Info($data);
     }
 
     /**
