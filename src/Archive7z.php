@@ -11,24 +11,28 @@ class Archive7z
     /**
      * Overwrite all existing files.
      *
+     * @see https://documentation.help/7-Zip/overwrite.htm
      * @const string
      */
     public const OVERWRITE_MODE_A = '-aoa';
     /**
      * Skip extracting of existing files.
      *
+     * @see https://documentation.help/7-Zip/overwrite.htm
      * @const string
      */
     public const OVERWRITE_MODE_S = '-aos';
     /**
      * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt).
      *
+     * @see https://documentation.help/7-Zip/overwrite.htm
      * @const string
      */
     public const OVERWRITE_MODE_U = '-aou';
     /**
      * Auto rename existing file (for example, name.txt will be renamed to name_1.txt).
      *
+     * @see https://documentation.help/7-Zip/overwrite.htm
      * @const string
      */
     public const OVERWRITE_MODE_T = '-aot';
@@ -54,6 +58,10 @@ class Archive7z
      */
     protected $encryptFilenames = false;
     /**
+     * @see https://documentation.help/7-Zip/method.htm#ZipX
+     * @see https://documentation.help/7-Zip/method.htm#BZip2X
+     * @see https://documentation.help/7-Zip/method.htm#SevenZipX
+     *
      * @var int (0-9)
      */
     protected $compressionLevel = 9;
@@ -62,10 +70,14 @@ class Archive7z
      */
     protected $outputDirectory = './';
     /**
+     * @see https://documentation.help/7-Zip/overwrite.htm
+     *
      * @var string
      */
     protected $overwriteMode = self::OVERWRITE_MODE_A;
     /**
+     * Cli process timeout in seconds.
+     *
      * @var float|null
      */
     protected $timeout;
