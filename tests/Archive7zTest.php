@@ -37,8 +37,8 @@ class Archive7zTest extends TestCase
 
     protected function tearDown(): void
     {
-        //$this->cleanDir($this->tmpDir);
-        //\rmdir($this->tmpDir);
+        $this->cleanDir($this->tmpDir);
+        \rmdir($this->tmpDir);
     }
 
     protected function cleanDir(string $dir): void
