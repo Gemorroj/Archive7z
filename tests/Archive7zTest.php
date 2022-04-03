@@ -349,8 +349,8 @@ class Archive7zTest extends TestCase
             ['totalcommander-9.21a/test.tar'],
             ['totalcommander-9.21a/test.zip'],
             ['winrar-5.61/test.zip'],
-            //['winrar-5.61/test4.rar'], // not supported
-            //['winrar-5.61/test5.rar'], // not supported
+            // ['winrar-5.61/test4.rar'], // not supported
+            // ['winrar-5.61/test5.rar'], // not supported
             ['linux/zip-0.3/test.zip'],
             ['linux/p7zip-16.02/test.7z'],
             ['linux/p7zip-16.02/test.tar'],
@@ -485,8 +485,8 @@ class Archive7zTest extends TestCase
     public function delProvider(): array
     {
         return [
-            //['zip.7z'], // 7-Zip 21.02+ swears now at this
-            //['warnings.zip'], // not supported
+            // ['zip.7z'], // 7-Zip 21.02+ swears now at this
+            // ['warnings.zip'], // not supported
             ['7zip-18.05/test.7z'],
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
@@ -494,8 +494,8 @@ class Archive7zTest extends TestCase
             ['totalcommander-9.21a/test.tar'],
             ['totalcommander-9.21a/test.zip'],
             ['winrar-5.61/test.zip'],
-            //['winrar-5.61/test4.rar'], // not supported
-            //['winrar-5.61/test5.rar'], // not supported
+            // ['winrar-5.61/test4.rar'], // not supported
+            // ['winrar-5.61/test5.rar'], // not supported
             ['linux/zip-0.3/test.zip'],
             ['linux/p7zip-16.02/test.7z'],
             ['linux/p7zip-16.02/test.tar'],
@@ -804,5 +804,62 @@ class Archive7zTest extends TestCase
         self::assertIsString($info->getPath());
         self::assertIsString($info->getType());
         self::assertGreaterThan(0, $info->getPhysicalSize());
+    }
+
+    /**
+     * @dataProvider extractProvider
+     */
+    public function testGetEntriesLimit(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+        $entries = $obj->getEntries(null, 2);
+
+        self::assertIsArray($entries);
+        self::assertCount(2, $entries);
+        self::assertInstanceOf(Entry::class, $entries[0]);
+        self::assertInstanceOf(Entry::class, $entries[1]);
+    }
+
+    /**
+     * @dataProvider extractProvider
+     */
+    public function testGetEntriesPathMask(string $archiveName): void
+    {
+        $path = 'test/test.txt';
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+        $entries = $obj->getEntries($path);
+
+        self::assertIsArray($entries);
+        self::assertCount(1, $entries);
+        self::assertInstanceOf(Entry::class, $entries[0]);
+        self::assertSame($path, $entries[0]->getUnixPath());
+    }
+
+    /**
+     * @dataProvider extractProvider
+     */
+    public function testGetEntriesPathMaskCyrillic(string $archiveName): void
+    {
+        $path = 'чавес.jpg';
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+        $entries = $obj->getEntries($path);
+
+        self::assertIsArray($entries);
+        self::assertCount(1, $entries);
+        self::assertInstanceOf(Entry::class, $entries[0]);
+        self::assertSame($path, $entries[0]->getUnixPath());
+    }
+
+    /**
+     * @dataProvider extractProvider
+     */
+    public function testGetEntriesPathMaskWildcard(string $archiveName): void
+    {
+        $path = 'test';
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+        $entries = $obj->getEntries($path);
+
+        self::assertIsArray($entries);
+        self::assertCount(3, $entries); // 1 folder + 2 files in the folder
     }
 }

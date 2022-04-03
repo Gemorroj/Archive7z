@@ -244,7 +244,7 @@ class Archive7z
         if (null !== $this->password) {
             $out[] = '-p'.$this->password;
         } else {
-            $out[] = '-p '; //todo
+            $out[] = '-p '; // todo
         }
 
         return $out;
@@ -331,15 +331,9 @@ class Archive7z
      */
     public function getEntry(string $path): ?Entry
     {
-        $path = \str_replace('\\', '/', $path);
+        $entries = $this->getEntries($path, 1);
 
-        foreach ($this->getEntries() as $v) {
-            if ($v->getUnixPath() === $path) {
-                return $v;
-            }
-        }
-
-        return null;
+        return $entries ? $entries[0] : null;
     }
 
     /**
@@ -347,11 +341,13 @@ class Archive7z
      *
      * @return Entry[]
      */
-    public function getEntries(): array
+    public function getEntries(?string $pathMask = null, ?int $limit = null): array
     {
-        $process = $this->makeProcess('l', \array_merge([
-            '-slt',
-        ], $this->decorateCmdExtract()));
+        $process = $this->makeProcess('l', \array_merge(
+            ['-slt'],
+            $this->decorateCmdExtract(),
+            null !== $pathMask ? [$pathMask] : [],
+        ));
 
         $this->execute($process);
 
@@ -359,7 +355,7 @@ class Archive7z
 
         $list = [];
         $parser = new Parser($out);
-        foreach ($parser->parseEntries() as $v) {
+        foreach ($parser->parseEntries($limit) as $v) {
             $list[] = new Entry($this, $v);
         }
 
@@ -373,7 +369,7 @@ class Archive7z
     {
         $process = $this->makeProcess('l', \array_merge([
             '-slt',
-        ], $this->decorateCmdExtract()));
+        ], $this->decorateCmdExtract(), ['Archive7z fake path']));
 
         $this->execute($process);
 

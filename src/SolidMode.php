@@ -5,7 +5,7 @@ namespace Archive7z;
 /**
  * @see https://documentation.help/7-Zip/method.htm#Solid
  */
-class SolidMode /* implements \Stringable*/
+class SolidMode /* implements \Stringable */
 {
     public const ON = 'on';
     public const OFF = 'off';

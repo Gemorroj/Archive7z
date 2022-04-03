@@ -79,6 +79,7 @@ Archive7z\Info Object
 
 // $obj->setPassword('123');
 
+// $obj->getEntries('test', 100)
 foreach ($obj->getEntries() as $entry) {
         print_r($entry);
 /*

@@ -69,7 +69,7 @@ class Parser
     /**
      * @return array<int, array<string, string>>
      */
-    public function parseEntries(): array
+    public function parseEntries(?int $limit = null): array
     {
         $isHead = true;
         $list = [];
@@ -85,6 +85,9 @@ class Parser
                 continue;
             }
 
+            if (null !== $limit && $i >= $limit) {
+                break;
+            }
             if ($value === $this->newFileListToken) {
                 ++$i;
                 continue;
