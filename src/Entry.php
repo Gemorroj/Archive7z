@@ -45,6 +45,18 @@ Host OS = Unix
 Version = 10
 Volume Index = 0
 Offset = 146577
+
+p7zip: iso
+Path = folder/subdoc
+Folder = -
+Size = 6
+Packed Size = 6
+Modified = 2018-06-17 19:22:27
+
+p7zip: xz
+Size = 3
+Packed Size = 60
+Method = LZMA2:23 CRC64
  */
 class Entry
 {
@@ -61,7 +73,7 @@ class Entry
      */
     private $packedSize;
     /**
-     * @var string
+     * @var string|null
      */
     private $modified;
     /**
@@ -69,19 +81,19 @@ class Entry
      */
     private $created;
     /**
-     * @var string
+     * @var string|null
      */
     private $attributes;
     /**
-     * @var string
+     * @var string|null
      */
     private $crc;
     /**
-     * @var string
+     * @var string|null
      */
     private $encrypted;
     /**
-     * @var string
+     * @var string|null
      */
     private $method;
     /**
@@ -186,7 +198,7 @@ class Entry
 
     public function isDirectory(): bool
     {
-        return '+' === $this->folder || false !== \strpos($this->attributes, 'D');
+        return '+' === $this->folder || false !== \strpos((string) $this->attributes, 'D');
     }
 
     public function isEncrypted(): bool
@@ -225,7 +237,7 @@ class Entry
         }
     }
 
-    public function getAttributes(): string
+    public function getAttributes(): ?string
     {
         return $this->attributes;
     }
@@ -235,7 +247,7 @@ class Entry
         return $this->block;
     }
 
-    public function getCrc(): string
+    public function getCrc(): ?string
     {
         return $this->crc;
     }
@@ -243,17 +255,17 @@ class Entry
     /**
      * @deprecated use isEncrypted instead
      */
-    public function getEncrypted(): string
+    public function getEncrypted(): ?string
     {
         return $this->encrypted;
     }
 
-    public function getMethod(): string
+    public function getMethod(): ?string
     {
         return $this->method;
     }
 
-    public function getModified(): string
+    public function getModified(): ?string
     {
         return $this->modified;
     }
