@@ -60,68 +60,37 @@ Method = LZMA2:23 CRC64
  */
 class Entry
 {
-    /**
-     * @var string
-     */
-    private $path;
-    /**
-     * @var string
-     */
-    private $size;
-    /**
-     * @var string
-     */
-    private $packedSize;
-    /**
-     * @var string|null
-     */
-    private $modified;
-    /**
-     * @var string|null
-     */
-    private $created;
-    /**
-     * @var string|null
-     */
-    private $attributes;
-    /**
-     * @var string|null
-     */
-    private $crc;
-    /**
-     * @var string|null
-     */
-    private $encrypted;
-    /**
-     * @var string|null
-     */
-    private $method;
-    /**
-     * @var string|null
-     */
-    private $block;
-    /**
-     * @var string|null
-     */
-    private $comment;
+    private string $path;
+
+    private string $size;
+
+    private string $packedSize;
+
+    private ?string $modified = null;
+
+    private ?string $created = null;
+
+    private ?string $attributes = null;
+
+    private ?string $crc = null;
+
+    private ?string $encrypted = null;
+
+    private ?string $method = null;
+
+    private ?string $block = null;
+
+    private ?string $comment = null;
     /**
      * Unix|Win32|FAT.
-     *
-     * @var string|null
      */
-    private $hostOs;
-    /**
-     * @var string|null
-     */
-    private $characteristics;
-    /**
-     * @var string|null
-     */
-    private $folder;
-    /**
-     * @var Archive7z
-     */
-    private $archive;
+    private ?string $hostOs = null;
+
+    private ?string $characteristics = null;
+
+    private ?string $folder = null;
+
+    private Archive7z $archive;
 
     /**
      * @param Archive7z             $archive Archive7z object

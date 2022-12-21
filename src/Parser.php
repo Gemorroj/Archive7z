@@ -4,26 +4,17 @@ namespace Archive7z;
 
 class Parser
 {
-    /**
-     * @var string
-     */
-    protected $headTokenStart = '--';
-    /**
-     * @var string
-     */
-    protected $headTokenEnd = '';
-    /**
-     * @var string
-     */
-    protected $listTokenStart = '----------';
-    /**
-     * @var string
-     */
-    protected $newFileListToken = '';
+    protected string $headTokenStart = '--';
+
+    protected string $headTokenEnd = '';
+
+    protected string $listTokenStart = '----------';
+
+    protected string $newFileListToken = '';
     /**
      * @var string[]
      */
-    protected $data;
+    protected array $data;
 
     /**
      * @param string[] $data cli output

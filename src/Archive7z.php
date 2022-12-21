@@ -12,6 +12,7 @@ class Archive7z
      * Overwrite all existing files.
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
+     *
      * @const string
      */
     public const OVERWRITE_MODE_A = '-aoa';
@@ -19,6 +20,7 @@ class Archive7z
      * Skip extracting of existing files.
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
+     *
      * @const string
      */
     public const OVERWRITE_MODE_S = '-aos';
@@ -26,6 +28,7 @@ class Archive7z
      * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt).
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
+     *
      * @const string
      */
     public const OVERWRITE_MODE_U = '-aou';
@@ -33,28 +36,21 @@ class Archive7z
      * Auto rename existing file (for example, name.txt will be renamed to name_1.txt).
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
+     *
      * @const string
      */
     public const OVERWRITE_MODE_T = '-aot';
-    /**
-     * @var string
-     */
-    private $binary7z;
-    /**
-     * @var string
-     */
-    private $filename;
-    /**
-     * @var string|null
-     */
-    private $password;
+
+    private string $binary7z;
+
+    private string $filename;
+
+    private ?string $password = null;
 
     /**
      * @see https://documentation.help/7-Zip/method.htm#Solid
-     *
-     * @var SolidMode|null
      */
-    private $solidMode;
+    private ?SolidMode $solidMode = null;
 
     /**
      * Encrypt archive header.
@@ -62,34 +58,29 @@ class Archive7z
      * Supported by 7z archives only.
      *
      * @see https://documentation.help/7-Zip/method.htm#HeaderEncrypt
-     *
-     * @var bool
      */
-    protected $encryptFilenames = false;
+    protected bool $encryptFilenames = false;
+
     /**
+     * From 0 to 9.
+     *
      * @see https://documentation.help/7-Zip/method.htm#ZipX
      * @see https://documentation.help/7-Zip/method.htm#BZip2X
      * @see https://documentation.help/7-Zip/method.htm#SevenZipX
-     *
-     * @var int (0-9)
      */
-    protected $compressionLevel = 9;
-    /**
-     * @var string
-     */
-    protected $outputDirectory = './';
+    protected int $compressionLevel = 9;
+
+    protected string $outputDirectory = './';
+
     /**
      * @see https://documentation.help/7-Zip/overwrite.htm
-     *
-     * @var string
      */
-    protected $overwriteMode = self::OVERWRITE_MODE_A;
+    protected string $overwriteMode = self::OVERWRITE_MODE_A;
+
     /**
      * Cli process timeout in seconds.
-     *
-     * @var float|null
      */
-    protected $timeout;
+    protected ?float $timeout = 60.0;
 
     /**
      * @param string      $filename 7z archive filename
@@ -112,8 +103,6 @@ class Archive7z
 
     /**
      * @throws Exception
-     *
-     * @return $this
      */
     public function setOutputDirectory(string $directory): self
     {
@@ -132,11 +121,6 @@ class Archive7z
         return $this;
     }
 
-    /**
-     * @throws Exception
-     *
-     * @return $this
-     */
     public function setSolidMode(?SolidMode $solidMode): self
     {
         $this->solidMode = $solidMode;
@@ -154,9 +138,6 @@ class Archive7z
         return $this->password;
     }
 
-    /**
-     * @return $this
-     */
     public function setPassword(?string $password): self
     {
         $this->password = $password;
@@ -169,9 +150,6 @@ class Archive7z
         return $this->encryptFilenames;
     }
 
-    /**
-     * @return $this
-     */
     public function setEncryptFilenames(bool $encrypt): self
     {
         $this->encryptFilenames = $encrypt;
@@ -186,8 +164,6 @@ class Archive7z
 
     /**
      * @throws Exception
-     *
-     * @return $this
      */
     public function setOverwriteMode(string $mode): self
     {

@@ -14,24 +14,14 @@ class SolidMode /* implements \Stringable */
      */
     public const E = 'e';
 
-    /**
-     * @var string|null
-     */
-    private $mode = self::ON;
+    private ?string $mode = self::ON;
 
-    /**
-     * @var int|null
-     */
-    private $filesLimit;
-    /**
-     * @var int|null
-     */
-    private $totalSizeLimit;
+    private ?int $filesLimit = null;
+
+    private ?int $totalSizeLimit = null;
 
     /**
      * @throws Exception
-     *
-     * @return $this
      */
     public function setMode(string $mode): self
     {
@@ -46,9 +36,6 @@ class SolidMode /* implements \Stringable */
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function setFilesLimit(int $limit): self
     {
         $this->filesLimit = $limit;
@@ -59,8 +46,6 @@ class SolidMode /* implements \Stringable */
 
     /**
      * Limit in bytes.
-     *
-     * @return $this
      */
     public function setTotalSizeLimit(int $limit): self
     {

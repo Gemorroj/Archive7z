@@ -11,19 +11,9 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class Archive7zTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $tmpDir;
-    /**
-     * @var string
-     */
-    private $fixturesDir;
-
-    /**
-     * @var Archive7z
-     */
-    private $mock;
+    private string $tmpDir;
+    private string $fixturesDir;
+    private Archive7z $mock;
 
     protected function setUp(): void
     {
@@ -63,8 +53,7 @@ class Archive7zTest extends TestCase
 
     public function testSetGetOutputDirectory(): void
     {
-        $result = $this->mock->setOutputDirectory($this->tmpDir);
-        self::assertInstanceOf(Archive7z::class, $result);
+        $this->mock->setOutputDirectory($this->tmpDir);
         self::assertEquals(\realpath($this->tmpDir), $this->mock->getOutputDirectory());
     }
 
@@ -78,8 +67,7 @@ class Archive7zTest extends TestCase
     public function testSetGetPassword(): void
     {
         $password = 'passw';
-        $result = $this->mock->setPassword($password);
-        self::assertInstanceOf(Archive7z::class, $result);
+        $this->mock->setPassword($password);
         self::assertEquals($password, $this->mock->getPassword());
     }
 
@@ -88,15 +76,13 @@ class Archive7zTest extends TestCase
         $defaultValue = false;
         self::assertEquals($defaultValue, $this->mock->getEncryptFilenames());
         $encryptFilenames = true;
-        $result = $this->mock->setEncryptFilenames($encryptFilenames);
-        self::assertInstanceOf(Archive7z::class, $result);
+        $this->mock->setEncryptFilenames($encryptFilenames);
         self::assertEquals($encryptFilenames, $this->mock->getEncryptFilenames());
     }
 
     public function testSetGetOverwriteMode(): void
     {
-        $result = $this->mock->setOverwriteMode(Archive7z::OVERWRITE_MODE_U);
-        self::assertInstanceOf(Archive7z::class, $result);
+        $this->mock->setOverwriteMode(Archive7z::OVERWRITE_MODE_U);
         self::assertEquals(Archive7z::OVERWRITE_MODE_U, $this->mock->getOverwriteMode());
     }
 
@@ -379,7 +365,6 @@ class Archive7zTest extends TestCase
      */
     public function testAddEntryNew(string $archiveName): void
     {
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'_'.\str_replace('/', '_', $archiveName);
 
         $obj = new Archive7z($tempArchive);
@@ -392,7 +377,6 @@ class Archive7zTest extends TestCase
 
     public function testAddEntryRar(): void
     {
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'_archive.rar';
 
         $obj = new Archive7z($tempArchive);
@@ -403,9 +387,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPathPasswd(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
-        /** @var string $fullPath */
         $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
@@ -423,9 +405,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPath(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
-        /** @var string $fullPath */
         $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
@@ -438,7 +418,6 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPathStore(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
-        /** @var string $fullPath */
         $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
@@ -451,7 +430,6 @@ class Archive7zTest extends TestCase
     public function testAddEntryLocalPath(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/test.txt');
-        /** @var string $localPath */
         $localPath = \realpath($this->tmpDir.'/test.txt');
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
@@ -469,7 +447,6 @@ class Archive7zTest extends TestCase
         }
 
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/test/test.txt');
-        /** @var string $localPath */
         $localPath = \realpath($this->tmpDir);
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
@@ -660,9 +637,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryPasswdEncFiles(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
-        /** @var string $fullPath */
         $fullPath = \realpath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
@@ -724,7 +699,6 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
         \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
 
         $obj = new Archive7z($tempArchive);
@@ -741,7 +715,6 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
         \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
 
         $obj = new Archive7z($tempArchive);
@@ -758,7 +731,6 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
         \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
 
         $obj = new Archive7z($tempArchive);
@@ -776,7 +748,6 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file1.txt');
         \copy($this->fixturesDir.'/testArchive.txt', $this->tmpDir.'/file2.txt');
-        /** @var string $tempArchive */
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
 
         $obj = new Archive7z($tempArchive);

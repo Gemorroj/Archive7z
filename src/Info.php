@@ -24,38 +24,21 @@ Physical Size = 165038
  */
 class Info
 {
-    /**
-     * @var string
-     */
-    private $path;
-    /**
-     * @var string
-     */
-    private $type;
-    /**
-     * @var int
-     */
-    private $physicalSize;
-    /**
-     * @var int|null
-     */
-    private $headersSize;
-    /**
-     * @var string|null
-     */
-    private $method;
-    /**
-     * @var string|null
-     */
-    private $solid;
-    /**
-     * @var int|null
-     */
-    private $blocks;
-    /**
-     * @var string|null
-     */
-    private $codePage;
+    private string $path;
+
+    private string $type;
+
+    private int $physicalSize;
+
+    private ?int $headersSize = null;
+
+    private ?string $method = null;
+
+    private ?string $solid = null;
+
+    private ?int $blocks = null;
+
+    private ?string $codePage = null;
 
     /**
      * @param array<string, string> $data parsed data

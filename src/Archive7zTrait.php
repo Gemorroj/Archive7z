@@ -11,11 +11,11 @@ trait Archive7zTrait
      *
      * @var string[]
      */
-    protected static $binary7zNix = ['/usr/bin/7z', '/usr/bin/7za', '/usr/local/bin/7z', '/usr/local/bin/7za'];
+    protected static array $binary7zNix = ['/usr/bin/7z', '/usr/bin/7za', '/usr/local/bin/7z', '/usr/local/bin/7za'];
     /**
      * @var string[]
      */
-    protected static $binary7zWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
+    protected static array $binary7zWindows = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
 
     protected static function isOsWin(): bool
     {

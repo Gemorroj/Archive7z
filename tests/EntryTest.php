@@ -8,10 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class EntryTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $fixturesDir;
+    private string $fixturesDir;
 
     protected function setUp(): void
     {
