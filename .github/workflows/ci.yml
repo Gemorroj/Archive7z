@@ -71,9 +71,9 @@ jobs:
       - name: Setup p7zip MacOs
         if: matrix.operating-system == 'macos-latest'
         run: |
-          curl -L https://github.com/jinfeihan57/p7zip/archive/v17.04.tar.gz > v17.04.tar.gz
-          tar xzvf v17.04.tar.gz
-          cd p7zip-17.04
+          curl -L https://github.com/jinfeihan57/p7zip/archive/v17.05.tar.gz > v17.05.tar.gz
+          tar xzvf v17.05.tar.gz
+          cd p7zip-17.05
           make all3
           sudo ./install.sh
       - name: Setup 7zip Windows

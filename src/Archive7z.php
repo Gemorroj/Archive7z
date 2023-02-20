@@ -204,7 +204,7 @@ class Archive7z
         $out = [];
         $out[] = '-y';
 
-        // https://github.com/jinfeihan57/p7zip/blob/v17.04/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
+        // https://github.com/jinfeihan57/p7zip/blob/v17.05/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
         /*
   { "utf-8", CP_UTF8 },
   { "win", CP_ACP },
@@ -234,7 +234,7 @@ class Archive7z
         $out = [];
         $out[] = '-y';
 
-        // https://github.com/jinfeihan57/p7zip/blob/v17.04/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
+        // https://github.com/jinfeihan57/p7zip/blob/v17.05/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
         /*
   { "utf-8", CP_UTF8 },
   { "win", CP_ACP },
