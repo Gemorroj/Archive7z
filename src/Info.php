@@ -21,6 +21,10 @@ Characteristics = UTF8 MaxUnicode=1095
 Path = test.zip
 Type = zip
 Physical Size = 165038
+
+Path = test.tgz
+Type = gzip
+Headers Size = 19
  */
 class Info
 {
@@ -40,13 +44,18 @@ class Info
 
     private ?string $codePage = null;
 
-    /**
-     * @param array<string, string> $data parsed data
-     */
-    public function __construct(array $data)
+    public function __construct(Parser $parser)
     {
+        $data = $parser->parseHeader();
+
         foreach ($data as $k => $v) {
             $this->setData($k, $v);
+        }
+
+        if (!isset($this->physicalSize)) {
+            $info = $parser->parseInfo();
+            \preg_match('/\d+ file, (\d+) bytes/', $info, $match);
+            $this->physicalSize = (int) $match[1];
         }
     }
 

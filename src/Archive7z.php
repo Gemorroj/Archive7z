@@ -352,9 +352,8 @@ class Archive7z
         $out = \explode(\PHP_EOL, $process->getOutput());
 
         $parser = new Parser($out);
-        $data = $parser->parseHeader();
 
-        return new Info($data);
+        return new Info($parser);
     }
 
     /**
@@ -367,7 +366,7 @@ class Archive7z
     public function addEntry(string $path, bool $storePath = false): void
     {
         $args = [];
-        $args[] = '-mx='.(int) $this->compressionLevel;
+        $args[] = '-mx='.$this->compressionLevel;
 
         if ($storePath) {
             $args[] = '-spf';

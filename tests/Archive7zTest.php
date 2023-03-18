@@ -111,6 +111,31 @@ class Archive7zTest extends TestCase
     }
 
     /**
+     * @return string[][]
+     */
+    public function basicProvider(): array
+    {
+        return [
+            ['zip.7z'],
+            ['warnings.zip'],
+            ['7zip-18.05/test.7z'],
+            ['7zip-18.05/test.tar'],
+            ['7zip-18.05/test.wim'],
+            ['7zip-18.05/test.zip'],
+            ['7zip-18.05/test.tgz'],
+            ['totalcommander-9.21a/test.tar'],
+            ['totalcommander-9.21a/test.zip'],
+            ['winrar-5.61/test.zip'],
+            ['winrar-5.61/test4.rar'],
+            ['winrar-5.61/test5.rar'],
+            ['linux/zip-0.3/test.zip'],
+            ['linux/p7zip-16.02/test.7z'],
+            ['linux/p7zip-16.02/test.tar'],
+            ['linux/p7zip-16.02/test.zip'],
+        ];
+    }
+
+    /**
      * @dataProvider extractProvider
      */
     public function testExtractCyrillic(string $archiveName): void
@@ -332,6 +357,7 @@ class Archive7zTest extends TestCase
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
             ['7zip-18.05/test.zip'],
+            ['7zip-18.05/test.tgz'],
             ['totalcommander-9.21a/test.tar'],
             ['totalcommander-9.21a/test.zip'],
             ['winrar-5.61/test.zip'],
@@ -468,6 +494,7 @@ class Archive7zTest extends TestCase
             ['7zip-18.05/test.tar'],
             ['7zip-18.05/test.wim'],
             ['7zip-18.05/test.zip'],
+            // ['7zip-18.05/test.tgz'],
             ['totalcommander-9.21a/test.tar'],
             ['totalcommander-9.21a/test.zip'],
             ['winrar-5.61/test.zip'],
@@ -558,7 +585,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @dataProvider extractProvider
+     * @dataProvider basicProvider
      */
     public function testIsValid(string $archiveName): void
     {
@@ -765,7 +792,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @dataProvider extractProvider
+     * @dataProvider basicProvider
      */
     public function testInfo(string $archiveName): void
     {

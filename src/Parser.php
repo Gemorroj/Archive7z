@@ -24,6 +24,21 @@ class Parser
         $this->data = $data;
     }
 
+    public function parseInfo(): string
+    {
+        $data = '';
+
+        foreach ($this->data as $value) {
+            if ($value === $this->headTokenStart) {
+                break;
+            }
+
+            $data .= $value."\n";
+        }
+
+        return $data;
+    }
+
     /**
      * @return array<string, string>
      */
