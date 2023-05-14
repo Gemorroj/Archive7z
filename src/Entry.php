@@ -82,7 +82,7 @@ class Entry
 
     private ?string $comment = null;
     /**
-     * Unix|Win32|FAT.
+     * Unix|Win32|FAT|NTFS|Windows|Mac OS.
      */
     private ?string $hostOs = null;
 
