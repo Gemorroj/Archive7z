@@ -70,4 +70,36 @@ class EntryTest extends TestCase
 
         self::assertSame('+', $property->getValue($folder));
     }
+
+    public function testData(): void
+    {
+        $expectedResultsFirst = [
+            'Path = test',
+            'Size = 0',
+            'Packed Size = 0',
+            'Modified = 2018-10-14 15:41:42.5198371',
+            'Attributes = D',
+            'CRC = ',
+            'Encrypted = -',
+            'Method = ',
+            'Block = ',
+        ];
+        $expectedResultsSecond = [
+            'Path = 1.jpg',
+            'Size = 91216',
+            'Packed Size = 165102',
+            'Modified = 2013-06-10 09:56:07.0000000',
+            'Attributes = A',
+            'CRC = 871345C2',
+            'Encrypted = -',
+            'Method = LZMA2:192k',
+            'Block = 0',
+        ];
+
+        $archive = new Archive7z($this->fixturesDir.'/7zip-18.05/test.7z');
+        [$firstEntry, $secondEntry] = $archive->getEntries();
+
+        self::assertSame($expectedResultsFirst, $firstEntry->getData());
+        self::assertSame($expectedResultsSecond, $secondEntry->getData());
+    }
 }

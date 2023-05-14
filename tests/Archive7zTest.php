@@ -802,6 +802,12 @@ class Archive7zTest extends TestCase
         self::assertIsString($info->getPath());
         self::assertIsString($info->getType());
         self::assertGreaterThan(0, $info->getPhysicalSize());
+
+        // p7zip: 7-Zip [64] 17.04 : Copyright (c) 1999-2021 Igor Pavlov : 2017-08-28
+        // 7-zip: 7-Zip 23.00 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-05-07
+        $versionLine = $info->getData()[1];
+
+        self::assertMatchesRegularExpression('/^7\-Zip .+/', $versionLine);
     }
 
     /**

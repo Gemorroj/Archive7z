@@ -60,6 +60,12 @@ Method = LZMA2:23 CRC64
  */
 class Entry
 {
+    /**
+     * Raw data.
+     *
+     * @var string[]
+     */
+    private array $data;
     private string $path;
 
     private string $size;
@@ -93,76 +99,90 @@ class Entry
     private Archive7z $archive;
 
     /**
-     * @param Archive7z             $archive Archive7z object
-     * @param array<string, string> $data    parsed entry data
+     * @param array<string, string|string[]> $data
      */
     public function __construct(Archive7z $archive, array $data)
     {
         $this->archive = $archive;
-        foreach ($data as $k => $v) {
-            $this->setData($k, $v);
+        $this->parseData($data);
+    }
+
+    /**
+     * @param array<string, string|string[]> $data
+     */
+    private function parseData(array $data): void
+    {
+        foreach ($data as $key => $value) {
+            switch ($key) {
+                case '':
+                    $this->data = $value;
+                    break;
+
+                case 'Path':
+                    $this->path = $value;
+                    break;
+
+                case 'Folder':
+                    $this->folder = $value;
+                    break;
+
+                case 'Size':
+                    $this->size = $value;
+                    break;
+
+                case 'Packed Size':
+                    $this->packedSize = $value;
+                    break;
+
+                case 'Modified':
+                    $this->modified = $value;
+                    break;
+
+                case 'Created':
+                    $this->created = $value;
+                    break;
+
+                case 'Attributes':
+                    $this->attributes = $value;
+                    break;
+
+                case 'Encrypted':
+                    $this->encrypted = $value;
+                    break;
+
+                case 'Comment':
+                    $this->comment = $value;
+                    break;
+
+                case 'CRC':
+                    $this->crc = $value;
+                    break;
+
+                case 'Method':
+                    $this->method = $value;
+                    break;
+
+                case 'Block':
+                    $this->block = $value;
+                    break;
+
+                case 'Host OS':
+                    $this->hostOs = $value;
+                    break;
+
+                case 'Characteristics':
+                    $this->characteristics = $value;
+                    break;
+            }
         }
     }
 
-    private function setData(string $key, string $value): void
+    /**
+     * @return string[] raw data
+     */
+    public function getData(): array
     {
-        switch ($key) {
-            case 'Path':
-                $this->path = $value;
-                break;
-
-            case 'Folder':
-                $this->folder = $value;
-                break;
-
-            case 'Size':
-                $this->size = $value;
-                break;
-
-            case 'Packed Size':
-                $this->packedSize = $value;
-                break;
-
-            case 'Modified':
-                $this->modified = $value;
-                break;
-
-            case 'Created':
-                $this->created = $value;
-                break;
-
-            case 'Attributes':
-                $this->attributes = $value;
-                break;
-
-            case 'Encrypted':
-                $this->encrypted = $value;
-                break;
-
-            case 'Comment':
-                $this->comment = $value;
-                break;
-
-            case 'CRC':
-                $this->crc = $value;
-                break;
-
-            case 'Method':
-                $this->method = $value;
-                break;
-
-            case 'Block':
-                $this->block = $value;
-                break;
-
-            case 'Host OS':
-                $this->hostOs = $value;
-                break;
-
-            case 'Characteristics':
-                $this->characteristics = $value;
-                break;
-        }
+        return $this->data;
     }
 
     public function isDirectory(): bool

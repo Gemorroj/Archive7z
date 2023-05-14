@@ -28,6 +28,12 @@ Headers Size = 19
  */
 class Info
 {
+    /**
+     * Raw data.
+     *
+     * @var string[]
+     */
+    private array $data;
     private string $path;
 
     private string $type;
@@ -46,11 +52,9 @@ class Info
 
     public function __construct(Parser $parser)
     {
-        $data = $parser->parseHeader();
-
-        foreach ($data as $k => $v) {
-            $this->setData($k, $v);
-        }
+        $this->data = $parser->getData();
+        $headerData = $parser->parseHeader();
+        $this->parseHeader($headerData);
 
         if (!isset($this->physicalSize)) {
             $info = $parser->parseInfo();
@@ -59,41 +63,51 @@ class Info
         }
     }
 
-    private function setData(string $key, string $value): void
+    private function parseHeader(array $headerData): void
     {
-        switch ($key) {
-            case 'Path':
-                $this->path = $value;
-                break;
+        foreach ($headerData as $key => $value) {
+            switch ($key) {
+                case 'Path':
+                    $this->path = $value;
+                    break;
 
-            case 'Type':
-                $this->type = $value;
-                break;
+                case 'Type':
+                    $this->type = $value;
+                    break;
 
-            case 'Physical Size':
-                $this->physicalSize = $value;
-                break;
+                case 'Physical Size':
+                    $this->physicalSize = $value;
+                    break;
 
-            case 'Headers Size':
-                $this->headersSize = $value;
-                break;
+                case 'Headers Size':
+                    $this->headersSize = $value;
+                    break;
 
-            case 'Method':
-                $this->method = $value;
-                break;
+                case 'Method':
+                    $this->method = $value;
+                    break;
 
-            case 'Solid':
-                $this->solid = $value;
-                break;
+                case 'Solid':
+                    $this->solid = $value;
+                    break;
 
-            case 'Blocks':
-                $this->blocks = $value;
-                break;
+                case 'Blocks':
+                    $this->blocks = $value;
+                    break;
 
-            case 'Code Page':
-                $this->codePage = $value;
-                break;
+                case 'Code Page':
+                    $this->codePage = $value;
+                    break;
+            }
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getData(): array
+    {
+        return $this->data;
     }
 
     public function isSolid(): bool

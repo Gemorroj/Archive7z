@@ -12,16 +12,26 @@ class Parser
 
     protected string $newFileListToken = '';
     /**
+     * raw cli output.
+     *
      * @var string[]
      */
     protected array $data;
 
     /**
-     * @param string[] $data cli output
+     * @param string[] $data raw cli output
      */
     public function __construct(array $data)
     {
         $this->data = $data;
+    }
+
+    /**
+     * @return string[] raw cli output
+     */
+    public function getData(): array
+    {
+        return $this->data;
     }
 
     public function parseInfo(): string
@@ -73,7 +83,7 @@ class Parser
     }
 
     /**
-     * @return array<int, array<string, string>>
+     * @return array<int, array<string, string|string[]>>
      */
     public function parseEntries(?int $limit = null): array
     {
@@ -105,6 +115,7 @@ class Parser
             }
 
             $list[$i][\key($entry)] = \current($entry);
+            $list[$i][''][] = $value;
         }
 
         return $list;
