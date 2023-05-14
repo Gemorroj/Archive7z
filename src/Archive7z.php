@@ -446,6 +446,9 @@ class Archive7z
         $output = $process->getOutput();
 
         $pos = \strpos($output, \PHP_EOL.'--');
+        if (false === $pos) {
+            return [];
+        }
         $header = \substr($output, 0, $pos);
         $warningsHeader = \PHP_EOL.'WARNINGS:';
         $warningsPos = \strrpos($header, $warningsHeader);
