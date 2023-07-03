@@ -44,7 +44,7 @@ trait Archive7zTrait
     /**
      * @throws Exception
      */
-    protected static function makeBinary7z(?string $binary7z = null): string
+    protected static function makeBinary7z(string $binary7z = null): string
     {
         if (null === $binary7z) {
             $binary7z = static::getAutoBinary7z();

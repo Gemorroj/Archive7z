@@ -89,7 +89,7 @@ class Archive7z
      *
      * @throws Exception
      */
-    public function __construct(string $filename, ?string $binary7z = null, ?float $timeout = 60.0)
+    public function __construct(string $filename, string $binary7z = null, ?float $timeout = 60.0)
     {
         $this->filename = $filename;
         $this->timeout = $timeout;
@@ -317,7 +317,7 @@ class Archive7z
      *
      * @return Entry[]
      */
-    public function getEntries(?string $pathMask = null, ?int $limit = null): array
+    public function getEntries(string $pathMask = null, int $limit = null): array
     {
         $process = $this->makeProcess('l', \array_merge(
             ['-slt'],
@@ -427,7 +427,7 @@ class Archive7z
 
         $this->execute($process);
 
-        return false !== \strpos($process->getOutput(), 'Everything is Ok');
+        return \str_contains($process->getOutput(), 'Everything is Ok');
     }
 
     /**

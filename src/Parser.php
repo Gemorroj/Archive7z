@@ -85,7 +85,7 @@ class Parser
     /**
      * @return array<int, array<string, string|string[]>>
      */
-    public function parseEntries(?int $limit = null): array
+    public function parseEntries(int $limit = null): array
     {
         $isHead = true;
         $list = [];
@@ -126,7 +126,7 @@ class Parser
      */
     protected function parseEntry(string $line): ?array
     {
-        if (0 === \strpos($line, 'Warnings:') || 0 === \strpos($line, 'Errors:')) {
+        if (\str_starts_with($line, 'Warnings:') || \str_starts_with($line, 'Errors:')) {
             return null;
         }
 
@@ -140,7 +140,7 @@ class Parser
      */
     protected function parseHeaderLine(string $line): ?array
     {
-        if (0 === \strpos($line, 'ERROR:') || 0 === \strpos($line, 'Open WARNING:')) {
+        if (\str_starts_with($line, 'ERROR:') || \str_starts_with($line, 'Open WARNING:')) {
             return null;
         }
 
@@ -148,7 +148,7 @@ class Parser
 WARNINGS:
 There are data after the end of archive
          */
-        if (0 === \strpos($line, 'WARNINGS:') || false === \strpos($line, ' = ')) {
+        if (\str_starts_with($line, 'WARNINGS:') || !\str_contains($line, ' = ')) {
             return null;
         }
 
