@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
+        "php": ">=8.0.2",
         "symfony/process": "^5.4||^6.0"
     },
     "require-dev": {
