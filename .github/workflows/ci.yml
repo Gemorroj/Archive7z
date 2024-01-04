@@ -46,28 +46,28 @@ jobs:
           - operating-system: 'ubuntu-latest'
             php-version: '8.3'
             p7zip: '7zip'
-            job-description: 'Ubuntu; PHP 8.2; latest-deps; 7zip'
+            job-description: 'Ubuntu; PHP 8.3; latest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.3'
             p7zip: '7zip'
             composer-flags: '--prefer-lowest'
-            job-description: 'Ubuntu; PHP 8.2; lowest-deps; 7zip'
+            job-description: 'Ubuntu; PHP 8.3; lowest-deps; 7zip'
 
           - operating-system: 'windows-latest'
             php-version: '8.3'
             p7zip: '7zip'
-            job-description: 'Windows; PHP 8.2; latest-deps; 7zip'
+            job-description: 'Windows; PHP 8.3; latest-deps; 7zip'
 
           - operating-system: 'macos-latest'
             php-version: '8.3'
             p7zip: '7zip'
-            job-description: 'MacOS; PHP 8.2; latest-deps; 7zip'
+            job-description: 'MacOS; PHP 8.3; latest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.3'
             p7zip: 'p7zip'
-            job-description: 'Ubuntu; PHP 8.2; latest-deps; p7zip'
+            job-description: 'Ubuntu; PHP 8.3; latest-deps; p7zip'
 
     name: ${{ matrix.job-description }}
 
