@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Archive7z;
 
 /*
@@ -63,6 +65,9 @@ class Info
         }
     }
 
+    /**
+     * @param string[] $headerData
+     */
     private function parseHeader(array $headerData): void
     {
         foreach ($headerData as $key => $value) {
@@ -76,11 +81,11 @@ class Info
                     break;
 
                 case 'Physical Size':
-                    $this->physicalSize = $value;
+                    $this->physicalSize = (int) $value;
                     break;
 
                 case 'Headers Size':
-                    $this->headersSize = $value;
+                    $this->headersSize = (int) $value;
                     break;
 
                 case 'Method':
@@ -92,7 +97,7 @@ class Info
                     break;
 
                 case 'Blocks':
-                    $this->blocks = $value;
+                    $this->blocks = (int) $value;
                     break;
 
                 case 'Code Page':

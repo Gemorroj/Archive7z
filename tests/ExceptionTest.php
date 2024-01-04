@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Archive7z\Tests;
 
 use Archive7z\Exception;
