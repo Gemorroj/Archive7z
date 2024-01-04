@@ -12,47 +12,62 @@ jobs:
         include:
           - operating-system: 'ubuntu-latest'
             php-version: '8.0'
-            job-description: 'Ubuntu; PHP 8.0; latest-deps'
+            7zip: '7zip'
+            job-description: 'Ubuntu; PHP 8.0; latest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.0'
+            7zip: '7zip'
             composer-flags: '--prefer-lowest'
-            job-description: 'Ubuntu; PHP 8.0; lowest-deps'
+            job-description: 'Ubuntu; PHP 8.0; lowest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.1'
-            job-description: 'Ubuntu; PHP 8.1; latest-deps'
+            7zip: '7zip'
+            job-description: 'Ubuntu; PHP 8.1; latest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.1'
+            7zip: '7zip'
             composer-flags: '--prefer-lowest'
-            job-description: 'Ubuntu; PHP 8.1; lowest-deps'
+            job-description: 'Ubuntu; PHP 8.1; lowest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.2'
-            job-description: 'Ubuntu; PHP 8.2; latest-deps'
+            7zip: '7zip'
+            job-description: 'Ubuntu; PHP 8.2; latest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.2'
+            7zip: '7zip'
             composer-flags: '--prefer-lowest'
-            job-description: 'Ubuntu; PHP 8.2; lowest-deps'
+            job-description: 'Ubuntu; PHP 8.2; lowest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.3'
-            job-description: 'Ubuntu; PHP 8.2; latest-deps'
+            7zip: '7zip'
+            job-description: 'Ubuntu; PHP 8.2; latest-deps; 7zip'
 
           - operating-system: 'ubuntu-latest'
             php-version: '8.3'
+            7zip: '7zip'
             composer-flags: '--prefer-lowest'
-            job-description: 'Ubuntu; PHP 8.2; lowest-deps'
+            job-description: 'Ubuntu; PHP 8.2; lowest-deps; 7zip'
 
           - operating-system: 'windows-latest'
             php-version: '8.3'
-            job-description: 'Windows; PHP 8.2; latest-deps'
+            7zip: '7zip'
+            job-description: 'Windows; PHP 8.2; latest-deps; 7zip'
 
           - operating-system: 'macos-latest'
             php-version: '8.3'
-            job-description: 'MacOS; PHP 8.2; latest-deps'
+            7zip: '7zip'
+            job-description: 'MacOS; PHP 8.2; latest-deps; 7zip'
+
+          - operating-system: 'ubuntu-latest'
+            php-version: '8.3'
+            7zip: 'p7zip'
+            job-description: 'Ubuntu; PHP 8.2; latest-deps; p7zip'
 
     name: ${{ matrix.job-description }}
 
@@ -65,17 +80,20 @@ jobs:
           git config --global core.eol lf
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      #- name: Setup p7zip Ubuntu. already installed
-      - name: Setup p7zip MacOs
+      - name: Setup p7zip Ubuntu
+        if: ${{ matrix.operating-system == 'ubuntu-latest' && matrix.7zip == 'p7zip' }}
+        run: apt install p7zip-full p7zip-rar
+      - name: Setup 7zip Ubuntu
+        if: ${{ matrix.operating-system == 'ubuntu-latest' && matrix.7zip == '7zip' }}
+        run: apt install 7zip
+      - name: Setup 7zip MacOs
         if: matrix.operating-system == 'macos-latest'
         run: |
-          curl -L https://github.com/p7zip-project/p7zip/archive/v17.05.tar.gz > v17.05.tar.gz
-          tar xzvf v17.05.tar.gz
-          cd p7zip-17.05
-          make all3
-          sudo ./install.sh
+          curl -L https://7-zip.org/a/7z2301-mac.tar.xz > 7z2301-mac.tar.xz
+          tar xJvf 7z2301-mac.tar.xz
+          cp 7zz /usr/local/bin/7zz
       - name: Setup 7zip Windows
         if: matrix.operating-system == 'windows-latest'
         run: Install-Module 7Zip4PowerShell -Force
@@ -88,7 +106,7 @@ jobs:
           tools: composer:v2
 
       - name: Install dependencies
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 5
           max_attempts: 5
