@@ -53,6 +53,12 @@ class Archive7zTest extends TestCase
         \closedir($h);
     }
 
+    public function testGet7zipInformation(): void
+    {
+        $info = Archive7z::get7zipInformation();
+        self::assertStringContainsString('7-Zip', $info);
+    }
+
     public function testSetGetOutputDirectory(): void
     {
         $this->mock->setOutputDirectory($this->tmpDir);
