@@ -84,10 +84,10 @@ jobs:
 
       - name: Setup p7zip Ubuntu
         if: ${{ matrix.operating-system == 'ubuntu-latest' && matrix.p7zip == 'p7zip' }}
-        run: apt install p7zip-full p7zip-rar
+        run: sudo apt install p7zip-full p7zip-rar
       - name: Setup 7zip Ubuntu
         if: ${{ matrix.operating-system == 'ubuntu-latest' && matrix.p7zip == '7zip' }}
-        run: apt install 7zip
+        run: sudo apt install 7zip
       - name: Setup 7zip MacOs
         if: matrix.operating-system == 'macos-latest'
         run: |
