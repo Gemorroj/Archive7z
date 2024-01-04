@@ -90,15 +90,15 @@ jobs:
         run: |
           curl -L https://7-zip.org/a/7z2301-linux-x64.tar.xz > 7z2301-linux-x64.tar.xz
           tar xJvf 7z2301-linux-x64.tar.xz
-          cp 7zz /usr/bin/7zz
-          cp 7zzs /usr/bin/7zzs
+          sudo cp 7zz /usr/bin/7zz
+          sudo cp 7zzs /usr/bin/7zzs
       - name: Setup 7zip MacOs
         if: matrix.operating-system == 'macos-latest'
         run: |
           curl -L https://7-zip.org/a/7z2301-mac.tar.xz > 7z2301-mac.tar.xz
           tar xJvf 7z2301-mac.tar.xz
-          cp 7zz /usr/local/bin/7zz
-          cp 7zzs /usr/local/bin/7zzs
+          sudo cp 7zz /usr/local/bin/7zz
+          sudo cp 7zzs /usr/local/bin/7zzs
       - name: Setup 7zip Windows
         if: matrix.operating-system == 'windows-latest'
         run: Install-Module 7Zip4PowerShell -Force
