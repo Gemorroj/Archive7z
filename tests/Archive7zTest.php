@@ -874,4 +874,13 @@ class Archive7zTest extends TestCase
         self::assertIsArray($entries);
         self::assertCount(3, $entries); // 1 folder + 2 files in the folder
     }
+
+    public function testPartialRar(): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/winrar-7.0/partial/WinRAR.part1.rar');
+        $entries = $obj->getEntries();
+
+        self::assertIsArray($entries);
+        self::assertCount(1, $entries);
+    }
 }
