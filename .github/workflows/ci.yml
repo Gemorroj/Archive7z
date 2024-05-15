@@ -88,15 +88,15 @@ jobs:
       - name: Setup 7zip Ubuntu
         if: ${{ matrix.operating-system == 'ubuntu-latest' && matrix.p7zip == '7zip' }}
         run: |
-          curl -L https://7-zip.org/a/7z2301-linux-x64.tar.xz > 7z2301-linux-x64.tar.xz
-          tar xJvf 7z2301-linux-x64.tar.xz
+          curl -L https://7-zip.org/a/7z2405-linux-x64.tar.xz > 7z2405-linux-x64.tar.xz
+          tar xJvf 7z2405-linux-x64.tar.xz
           sudo cp 7zz /usr/bin/7zz
           sudo cp 7zzs /usr/bin/7zzs
       - name: Setup 7zip MacOs
         if: matrix.operating-system == 'macos-latest'
         run: |
-          curl -L https://7-zip.org/a/7z2301-mac.tar.xz > 7z2301-mac.tar.xz
-          tar xJvf 7z2301-mac.tar.xz
+          curl -L https://7-zip.org/a/7z2405-mac.tar.xz > 7z2405-mac.tar.xz
+          tar xJvf 7z2405-mac.tar.xz
           sudo cp 7zz /usr/local/bin/7zz
       - name: Setup 7zip Windows
         if: matrix.operating-system == 'windows-latest'
