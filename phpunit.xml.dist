@@ -2,8 +2,9 @@
 
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-         beStrictAboutTestsThatDoNotTestAnything="false"
+         backupGlobals="false"
          colors="true"
+         failOnWarning="true"
          bootstrap="vendor/autoload.php"
 >
     <php>
