@@ -15,7 +15,7 @@ class Archive7z
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
      *
-     * @const string
+     * @var string
      */
     public const OVERWRITE_MODE_A = '-aoa';
     /**
@@ -23,7 +23,7 @@ class Archive7z
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
      *
-     * @const string
+     * @var string
      */
     public const OVERWRITE_MODE_S = '-aos';
     /**
@@ -31,7 +31,7 @@ class Archive7z
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
      *
-     * @const string
+     * @var string
      */
     public const OVERWRITE_MODE_U = '-aou';
     /**
@@ -39,7 +39,7 @@ class Archive7z
      *
      * @see https://documentation.help/7-Zip/overwrite.htm
      *
-     * @const string
+     * @var string
      */
     public const OVERWRITE_MODE_T = '-aot';
 
