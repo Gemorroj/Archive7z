@@ -8,6 +8,7 @@ use Archive7z\Archive7z;
 use Archive7z\Entry;
 use Archive7z\Exception;
 use Archive7z\SolidMode;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -97,7 +98,7 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function extractProvider(): array
+    public static function extractProvider(): array
     {
         return [
             ['zip.7z'],
@@ -121,7 +122,7 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function basicProvider(): array
+    public static function basicProvider(): array
     {
         return [
             ['zip.7z'],
@@ -143,9 +144,7 @@ class Archive7zTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testExtractCyrillic(string $archiveName): void
     {
         $dirCyrillic = $this->tmpDir.'/папка';
@@ -167,7 +166,7 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function extractPasswdProvider(): array
+    public static function extractPasswdProvider(): array
     {
         return [
             ['testPasswd.7z'],
@@ -176,9 +175,7 @@ class Archive7zTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider extractPasswdProvider
-     */
+    #[DataProvider('extractPasswdProvider')]
     public function testExtractPasswdCyrillic(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -193,9 +190,7 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/test/test.txt');
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testExtractOverwrite(string $archiveName): void
     {
         if (!\mkdir($this->tmpDir.'/test')) {
@@ -236,9 +231,7 @@ class Archive7zTest extends TestCase
         \unlink($this->tmpDir.'/test/test_1.txt');
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testExtractEntry(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -247,9 +240,7 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/test/2.jpg');
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testExtractEntryOverwrite(string $archiveName): void
     {
         if (!\mkdir($this->tmpDir.'/test')) {
@@ -290,9 +281,7 @@ class Archive7zTest extends TestCase
         \unlink($this->tmpDir.'/test/test_1.txt');
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testExtractEntryCyrillic(string $archiveName): void
     {
         $file = 'чавес.jpg';
@@ -304,9 +293,7 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/'.$file);
     }
 
-    /**
-     * @dataProvider extractPasswdProvider
-     */
+    #[DataProvider('extractPasswdProvider')]
     public function testExtractEntryPasswd(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -315,9 +302,7 @@ class Archive7zTest extends TestCase
         $obj->extractEntry('1.jpg');
     }
 
-    /**
-     * @dataProvider extractPasswdProvider
-     */
+    #[DataProvider('extractPasswdProvider')]
     public function testGetContentPasswd(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -327,9 +312,7 @@ class Archive7zTest extends TestCase
         self::assertStringEqualsFile($this->fixturesDir.'/testArchive.txt', $result);
     }
 
-    /**
-     * @dataProvider extractPasswdProvider
-     */
+    #[DataProvider('extractPasswdProvider')]
     public function testGetEntriesPasswd(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -341,9 +324,7 @@ class Archive7zTest extends TestCase
         self::assertInstanceOf(Entry::class, $result[0]);
     }
 
-    /**
-     * @dataProvider extractPasswdProvider
-     */
+    #[DataProvider('extractPasswdProvider')]
     public function testGetEntryPasswd(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -356,7 +337,7 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function entryProvider(): array
+    public static function entryProvider(): array
     {
         return [
             ['zip.7z'],
@@ -378,9 +359,7 @@ class Archive7zTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider entryProvider
-     */
+    #[DataProvider('entryProvider')]
     public function testAddEntryExists(string $archiveName): void
     {
         \copy($this->fixturesDir.'/'.$archiveName, $this->tmpDir.'/'.\str_replace('/', '_', $archiveName));
@@ -394,9 +373,7 @@ class Archive7zTest extends TestCase
         self::assertTrue($obj->isValid());
     }
 
-    /**
-     * @dataProvider entryProvider
-     */
+    #[DataProvider('entryProvider')]
     public function testAddEntryNew(string $archiveName): void
     {
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'_'.\str_replace('/', '_', $archiveName);
@@ -493,7 +470,7 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function delProvider(): array
+    public static function delProvider(): array
     {
         return [
             // ['zip.7z'], // 7-Zip 21.02+ swears now at this
@@ -515,9 +492,7 @@ class Archive7zTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider delProvider
-     */
+    #[DataProvider('delProvider')]
     public function testDelEntry(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
@@ -532,7 +507,7 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function delPasswdProvider(): array
+    public static function delPasswdProvider(): array
     {
         return [
             ['testPasswd.7z'],
@@ -540,9 +515,7 @@ class Archive7zTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider delPasswdProvider
-     */
+    #[DataProvider('delPasswdProvider')]
     public function testDelEntryPasswd(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
@@ -555,9 +528,7 @@ class Archive7zTest extends TestCase
         self::assertNull($obj->getEntry('test/test.txt'));
     }
 
-    /**
-     * @dataProvider delPasswdProvider
-     */
+    #[DataProvider('delPasswdProvider')]
     public function testDelEntryPasswdFail(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
@@ -570,9 +541,7 @@ class Archive7zTest extends TestCase
         $obj->delEntry('test/test.txt');
     }
 
-    /**
-     * @dataProvider delPasswdProvider
-     */
+    #[DataProvider('delPasswdProvider')]
     public function testRenameEntryPasswd(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
@@ -592,9 +561,7 @@ class Archive7zTest extends TestCase
         self::assertInstanceOf(Entry::class, $resultDest);
     }
 
-    /**
-     * @dataProvider basicProvider
-     */
+    #[DataProvider('basicProvider')]
     public function testIsValid(string $archiveName): void
     {
         $valid = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -617,16 +584,14 @@ class Archive7zTest extends TestCase
     /**
      * @return string[][]
      */
-    public function extractPasswdEncFilesProvider(): array
+    public static function extractPasswdEncFilesProvider(): array
     {
         return [
             ['testPasswdEncFiles.7z'],
         ];
     }
 
-    /**
-     * @dataProvider extractPasswdEncFilesProvider
-     */
+    #[DataProvider('extractPasswdEncFilesProvider')]
     public function testExtractPasswdEncFiles(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -638,9 +603,7 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/file1.txt');
     }
 
-    /**
-     * @dataProvider extractPasswdEncFilesProvider
-     */
+    #[DataProvider('extractPasswdEncFilesProvider')]
     public function testGetEntriesPasswdEncFiles(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -652,9 +615,7 @@ class Archive7zTest extends TestCase
         self::assertInstanceOf(Entry::class, $result[0]);
     }
 
-    /**
-     * @dataProvider extractPasswdEncFilesProvider
-     */
+    #[DataProvider('extractPasswdEncFilesProvider')]
     public function testCantGetEntriesPasswdEncFiles(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -690,9 +651,7 @@ class Archive7zTest extends TestCase
         $new->getEntry('file.txt');
     }
 
-    /**
-     * @dataProvider extractPasswdEncFilesProvider
-     */
+    #[DataProvider('extractPasswdEncFilesProvider')]
     public function testIsValidPasswdEncFiles(string $archiveName): void
     {
         $valid = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -701,9 +660,7 @@ class Archive7zTest extends TestCase
         self::assertTrue($valid->isValid());
     }
 
-    /**
-     * @dataProvider extractPasswdEncFilesProvider
-     */
+    #[DataProvider('extractPasswdEncFilesProvider')]
     public function testDelEntryPasswdEncFiles(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
@@ -716,9 +673,7 @@ class Archive7zTest extends TestCase
         self::assertNull($obj->getEntry('file1.txt'));
     }
 
-    /**
-     * @dataProvider extractPasswdEncFilesProvider
-     */
+    #[DataProvider('extractPasswdEncFilesProvider')]
     public function testDelEntryPasswdEncFilesFail(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
@@ -799,9 +754,7 @@ class Archive7zTest extends TestCase
         self::assertTrue($obj->getInfo()->isSolid());
     }
 
-    /**
-     * @dataProvider basicProvider
-     */
+    #[DataProvider('basicProvider')]
     public function testInfo(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -818,9 +771,7 @@ class Archive7zTest extends TestCase
         self::assertMatchesRegularExpression('/^7\-Zip .+/', $versionLine);
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testGetEntriesLimit(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -832,9 +783,7 @@ class Archive7zTest extends TestCase
         self::assertInstanceOf(Entry::class, $entries[1]);
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testGetEntriesPathMask(string $archiveName): void
     {
         $path = 'test/test.txt';
@@ -847,9 +796,7 @@ class Archive7zTest extends TestCase
         self::assertSame($path, $entries[0]->getUnixPath());
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testGetEntriesPathMaskCyrillic(string $archiveName): void
     {
         $path = 'чавес.jpg';
@@ -862,9 +809,7 @@ class Archive7zTest extends TestCase
         self::assertSame($path, $entries[0]->getUnixPath());
     }
 
-    /**
-     * @dataProvider extractProvider
-     */
+    #[DataProvider('extractProvider')]
     public function testGetEntriesPathMaskWildcard(string $archiveName): void
     {
         $path = 'test';

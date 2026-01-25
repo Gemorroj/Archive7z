@@ -11,17 +11,6 @@ jobs:
       matrix:
         include:
           - operating-system: 'ubuntu-latest'
-            php-version: '8.1'
-            p7zip: '7zip'
-            job-description: 'Ubuntu; PHP 8.1; latest-deps; 7zip'
-
-          - operating-system: 'ubuntu-latest'
-            php-version: '8.1'
-            p7zip: '7zip'
-            composer-flags: '--prefer-lowest'
-            job-description: 'Ubuntu; PHP 8.1; lowest-deps; 7zip'
-
-          - operating-system: 'ubuntu-latest'
             php-version: '8.2'
             p7zip: '7zip'
             job-description: 'Ubuntu; PHP 8.2; latest-deps; 7zip'

@@ -18,7 +18,7 @@
 
 ### Requirements:
 
-- PHP >= 8.1
+- PHP >= 8.2
 - allow [proc_open](https://www.php.net/proc_open) function
 - for Windows: 7-zip >= 7.30 (https://www.7-zip.org/)
 - for Linux/MacOs: 7-zip >= 21.01 or p7zip >= 9.38 (https://github.com/p7zip-project/p7zip)
