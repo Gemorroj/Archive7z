@@ -67,12 +67,12 @@ class Entry
      *
      * @var string[]
      */
-    private array $data;
-    private string $path;
+    private array $data = [];
+    private ?string $path = null;
 
-    private string $size;
+    private ?string $size = null;
 
-    private string $packedSize;
+    private ?string $packedSize = null;
 
     private ?string $modified = null;
 
@@ -117,7 +117,9 @@ class Entry
         foreach ($data as $key => $value) {
             switch ($key) {
                 case '':
-                    $this->data = $value;
+                    if (\is_array($value)) {
+                        $this->data = $value;
+                    }
                     break;
 
                 case 'Path':
@@ -198,18 +200,28 @@ class Entry
     }
 
     /**
+     * @throws Exception
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function getContent(): string
     {
+        if (null === $this->path) {
+            throw new Exception('Entry path is not available');
+        }
+
         return $this->archive->getContent($this->path);
     }
 
     /**
+     * @throws Exception
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function extract(): void
     {
+        if (null === $this->path) {
+            throw new Exception('Entry path is not available');
+        }
+
         $this->archive->extractEntry($this->path);
     }
 
@@ -219,6 +231,10 @@ class Entry
      */
     public function extractTo(string $directory): void
     {
+        if (null === $this->path) {
+            throw new Exception('Entry path is not available');
+        }
+
         $oldDirectory = $this->archive->getOutputDirectory();
         $this->archive->setOutputDirectory($directory);
         try {
@@ -271,22 +287,26 @@ class Entry
      *
      * @see https://github.com/Gemorroj/Archive7z/issues/5
      */
-    public function getPackedSize(): string
+    public function getPackedSize(): ?string
     {
         return $this->packedSize;
     }
 
-    public function getPath(): string
+    public function getPath(): ?string
     {
         return $this->path;
     }
 
-    public function getUnixPath(): string
+    public function getUnixPath(): ?string
     {
-        return \str_replace('\\', '/', $this->getPath());
+        $path = $this->getPath();
+        if (null === $path) {
+            return null;
+        }
+        return \str_replace('\\', '/', $path);
     }
 
-    public function getSize(): string
+    public function getSize(): ?string
     {
         return $this->size;
     }
