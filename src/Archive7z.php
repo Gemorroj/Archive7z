@@ -124,6 +124,8 @@ class Archive7z
     }
 
     /**
+     * Directory must exist and be writable.
+     *
      * @throws Exception
      */
     public function setOutputDirectory(string $directory): self
