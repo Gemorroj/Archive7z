@@ -28,8 +28,6 @@ trait Archive7zTrait
 
     protected static function getAutoBinary7z(): ?string
     {
-        $binary7zPath = null;
-
         if (static::isOsWin()) {
             $binary7zPaths = static::$binary7zWindows;
         } else {
@@ -38,11 +36,12 @@ trait Archive7zTrait
 
         foreach ($binary7zPaths as $binary7zPath) {
             if (\file_exists($binary7zPath)) {
+                return $binary7zPath;
                 break;
             }
         }
 
-        return $binary7zPath;
+        return null;
     }
 
     /**
