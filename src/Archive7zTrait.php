@@ -37,7 +37,6 @@ trait Archive7zTrait
         foreach ($binary7zPaths as $binary7zPath) {
             if (\file_exists($binary7zPath)) {
                 return $binary7zPath;
-                break;
             }
         }
 

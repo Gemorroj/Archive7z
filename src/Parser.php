@@ -128,7 +128,7 @@ class Parser
      */
     protected function parseEntry(string $line): ?array
     {
-        if (\str_starts_with($line, 'Warnings:') || \str_starts_with($line, 'Errors:')) {
+        if (!\str_contains($line, ' =')) {
             return null;
         }
 
