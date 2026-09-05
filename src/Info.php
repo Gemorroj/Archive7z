@@ -36,11 +36,11 @@ class Info
      * @var string[]
      */
     private array $data;
-    private string $path;
+    private ?string $path = null;
 
-    private string $type;
+    private ?string $type = null;
 
-    private int $physicalSize;
+    private ?int $physicalSize = null;
 
     private ?int $headersSize = null;
 
@@ -58,10 +58,11 @@ class Info
         $headerData = $parser->parseHeader();
         $this->parseHeader($headerData);
 
-        if (!isset($this->physicalSize)) {
+        if (null === $this->physicalSize) {
             $info = $parser->parseInfo();
-            \preg_match('/\d+ file, (\d+) bytes/', $info, $match);
-            $this->physicalSize = (int) $match[1];
+            if (\preg_match('/\d+ file, (\d+) bytes/', $info, $match)) {
+                $this->physicalSize = (int) $match[1];
+            }
         }
     }
 
@@ -120,17 +121,17 @@ class Info
         return '+' === $this->solid;
     }
 
-    public function getPath(): string
+    public function getPath(): ?string
     {
         return $this->path;
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function getPhysicalSize(): int
+    public function getPhysicalSize(): ?int
     {
         return $this->physicalSize;
     }
