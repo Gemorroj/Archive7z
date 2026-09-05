@@ -98,6 +98,12 @@ class Entry
 
     private ?string $folder = null;
 
+    /**
+     * Live reference to the mutable archive instance.
+     *
+     * Changes to the archive (password, output directory, etc.) made
+     * after fetching entries affect this entry as well.
+     */
     private Archive7z $archive;
 
     /**
