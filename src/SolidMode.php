@@ -71,6 +71,6 @@ class SolidMode implements \Stringable
             return $mode;
         }
 
-        return $this->mode;
+        return $this->mode ?? '';
     }
 }
