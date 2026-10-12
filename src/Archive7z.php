@@ -130,12 +130,21 @@ final class Archive7z
      */
     public function getContent(string $path): string
     {
-        $process = $this->processFactory->create('x', \array_merge([
-            '-so',
+        [$arguments, $maskFile] = $this->processFactory->withMask(
+            \array_merge(['-so'], $this->processFactory->decorateExtract($this->options)),
+            $this->options,
             $this->nameMapping->encode($path),
-        ], $this->processFactory->decorateExtract($this->options)));
+        );
 
-        return $this->processFactory->run($process)->getOutput();
+        $process = $this->processFactory->create('x', $arguments);
+
+        try {
+            return $this->processFactory->run($process)->getOutput();
+        } finally {
+            if (null !== $maskFile) {
+                $maskFile->delete();
+            }
+        }
     }
 
     /**
@@ -209,11 +218,21 @@ final class Archive7z
      */
     public function delEntry(string $path): void
     {
-        $process = $this->processFactory->create('d', \array_merge([
+        [$arguments, $maskFile] = $this->processFactory->withMask(
+            $this->processFactory->decorateExtract($this->options),
+            $this->options,
             $this->nameMapping->encode($path),
-        ], $this->processFactory->decorateExtract($this->options)));
+        );
 
-        $this->processFactory->run($process);
+        $process = $this->processFactory->create('d', $arguments);
+
+        try {
+            $this->processFactory->run($process);
+        } finally {
+            if (null !== $maskFile) {
+                $maskFile->delete();
+            }
+        }
     }
 
     /**

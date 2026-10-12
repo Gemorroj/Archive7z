@@ -32,9 +32,30 @@ class NameRepairerTest extends TestCase
 
     public function testRenameOverwrite(): void
     {
-        $this->requireRawNames();
+        \file_put_contents($this->directory.'/старое.txt', 'content');
 
-        $from = \mb_convert_encoding('чавес.jpg', 'Windows-1251', 'UTF-8');
+        (new NameRepairer(ArchiveOptions::OVERWRITE_MODE_A))
+            ->rename($this->directory, [['from' => 'старое.txt', 'to' => 'новое.txt']]);
+
+        self::assertFileExists($this->directory.'/новое.txt');
+        self::assertFileDoesNotExist($this->directory.'/старое.txt');
+    }
+
+    public function testRenameSkipExisting(): void
+    {
+        \file_put_contents($this->directory.'/старое.txt', 'extracted');
+        \file_put_contents($this->directory.'/новое.txt', 'existing');
+
+        (new NameRepairer(ArchiveOptions::OVERWRITE_MODE_S))
+            ->rename($this->directory, [['from' => 'старое.txt', 'to' => 'новое.txt']]);
+
+        self::assertFileExists($this->directory.'/старое.txt');
+        self::assertSame('existing', \file_get_contents($this->directory.'/новое.txt'));
+    }
+
+    public function testRenameNonUtf8Name(): void
+    {
+        $from = $this->rawName('чавес.jpg');
         \file_put_contents($this->directory.'/'.$from, 'content');
 
         (new NameRepairer(ArchiveOptions::OVERWRITE_MODE_A))
@@ -42,21 +63,6 @@ class NameRepairerTest extends TestCase
 
         self::assertFileExists($this->directory.'/чавес.jpg');
         self::assertFileDoesNotExist($this->directory.'/'.$from);
-    }
-
-    public function testRenameSkipExisting(): void
-    {
-        $this->requireRawNames();
-
-        $from = \mb_convert_encoding('чавес.jpg', 'Windows-1251', 'UTF-8');
-        \file_put_contents($this->directory.'/'.$from, 'raw');
-        \file_put_contents($this->directory.'/чавес.jpg', 'utf8');
-
-        (new NameRepairer(ArchiveOptions::OVERWRITE_MODE_S))
-            ->rename($this->directory, [['from' => $from, 'to' => 'чавес.jpg']]);
-
-        self::assertFileExists($this->directory.'/'.$from);
-        self::assertSame('utf8', \file_get_contents($this->directory.'/чавес.jpg'));
     }
 
     public function testRenameAutoRenameExtracted(): void
@@ -92,10 +98,26 @@ class NameRepairerTest extends TestCase
         self::assertFileExists($this->directory.'/file.txt');
     }
 
-    private function requireRawNames(): void
+    /**
+     * Returns a legacy-encoded (non-UTF-8) name, skipping the test when the
+     * filesystem cannot store it as a name distinct from its UTF-8 form
+     * (Windows colates raw bytes into UTF-16, macOS rejects invalid UTF-8).
+     */
+    private function rawName(string $utf8): string
     {
-        if ('Windows' === \PHP_OS_FAMILY) {
-            self::markTestSkipped('Test environment limitation: Windows file names are UTF-16, so a raw non-UTF-8 name cannot be created on disk.');
+        $raw = \mb_convert_encoding($utf8, 'Windows-1251', 'UTF-8');
+
+        if (false === @\file_put_contents($this->directory.'/'.$raw, '')) {
+            self::markTestSkipped('The filesystem cannot store a raw non-UTF-8 name.');
         }
+
+        $distinct = !\file_exists($this->directory.'/'.$utf8);
+        \unlink($this->directory.'/'.$raw);
+
+        if (!$distinct) {
+            self::markTestSkipped('The filesystem does not distinguish raw non-UTF-8 names from their UTF-8 form.');
+        }
+
+        return $raw;
     }
 }

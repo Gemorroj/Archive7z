@@ -25,6 +25,44 @@ final class ProcessFactory
     }
 
     /**
+     * Builds the arguments selecting a single encoded entry name/mask.
+     *
+     * When the fallback encoding defines a code page, the mask is passed through
+     * a temporary list file with an explicit -scs code page, so 8-bit names are
+     * matched the same way on every platform. Otherwise it is a regular argument.
+     *
+     * @param string[] $arguments
+     *
+     * @return array{0: string[], 1: MaskListFile|null}
+     */
+    public function withMask(array $arguments, ArchiveOptions $options, ?string $encodedMask): array
+    {
+        if (null === $encodedMask) {
+            return [$arguments, null];
+        }
+
+        $codepage = $options->getFallbackEncoding()->getCodepage();
+        if (null === $codepage) {
+            $arguments[] = $encodedMask;
+
+            return [$arguments, null];
+        }
+
+        $filtered = [];
+        foreach ($arguments as $argument) {
+            if (!\str_starts_with($argument, '-scs')) {
+                $filtered[] = $argument;
+            }
+        }
+
+        $maskFile = new MaskListFile($encodedMask);
+        $filtered[] = '-scs'.$codepage;
+        $filtered[] = '@'.$maskFile->getPath();
+
+        return [$filtered, $maskFile];
+    }
+
+    /**
      * @param string[] $arguments
      */
     public function create(string $command, array $arguments): Process

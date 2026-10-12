@@ -31,12 +31,21 @@ final class ArchiveLister
     {
         $mask = null === $pathMask ? null : $this->nameMapping->encode($pathMask);
 
-        $process = $this->processFactory->create('l', \array_merge(
-            ['-slt'],
-            $this->processFactory->decorateExtract($this->options),
-            null !== $mask ? [$mask] : [],
-        ));
-        $this->processFactory->run($process);
+        [$arguments, $maskFile] = $this->processFactory->withMask(
+            \array_merge(['-slt'], $this->processFactory->decorateExtract($this->options)),
+            $this->options,
+            $mask,
+        );
+
+        $process = $this->processFactory->create('l', $arguments);
+
+        try {
+            $this->processFactory->run($process);
+        } finally {
+            if (null !== $maskFile) {
+                $maskFile->delete();
+            }
+        }
 
         $parser = new Parser(\explode(\PHP_EOL, $this->nameMapping->decodeOutput($process->getOutput())));
         $entries = $parser->parseEntries($limit);

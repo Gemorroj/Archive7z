@@ -39,13 +39,24 @@ final class ArchiveExtractor
      */
     private function run(string $directory, ?string $mask): void
     {
-        $process = $this->processFactory->create('x', \array_merge(
-            [$this->options->getOverwriteMode(), '-o'.$directory],
-            $this->processFactory->decorateExtract($this->options),
-            null !== $mask ? [$mask] : [],
-        ));
+        [$arguments, $maskFile] = $this->processFactory->withMask(
+            \array_merge(
+                [$this->options->getOverwriteMode(), '-o'.$directory],
+                $this->processFactory->decorateExtract($this->options),
+            ),
+            $this->options,
+            $mask,
+        );
 
-        $this->processFactory->run($process);
+        $process = $this->processFactory->create('x', $arguments);
+
+        try {
+            $this->processFactory->run($process);
+        } finally {
+            if (null !== $maskFile) {
+                $maskFile->delete();
+            }
+        }
     }
 
     /**
@@ -59,12 +70,21 @@ final class ArchiveExtractor
             return;
         }
 
-        $process = $this->processFactory->create('l', \array_merge(
-            ['-slt'],
-            $this->processFactory->decorateExtract($this->options),
-            null !== $mask ? [$mask] : [],
-        ));
-        $this->processFactory->run($process);
+        [$arguments, $maskFile] = $this->processFactory->withMask(
+            \array_merge(['-slt'], $this->processFactory->decorateExtract($this->options)),
+            $this->options,
+            $mask,
+        );
+
+        $process = $this->processFactory->create('l', $arguments);
+
+        try {
+            $this->processFactory->run($process);
+        } finally {
+            if (null !== $maskFile) {
+                $maskFile->delete();
+            }
+        }
 
         // Raw output: these are the names 7-Zip actually wrote to disk.
         $parser = new Parser(\explode(\PHP_EOL, $process->getOutput()));
