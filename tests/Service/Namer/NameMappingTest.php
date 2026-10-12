@@ -20,7 +20,7 @@ class NameMappingTest extends TestCase
 
     public function testAsIs(): void
     {
-        $mapping = $this->mapping('windows/7zip-18.05/sample.zip', FallbackEncoding::asIs());
+        $mapping = $this->mapping('zip/windows/7zip-18.05/sample.zip', FallbackEncoding::asIs());
 
         self::assertTrue($mapping->isAsIs());
         self::assertSame('чавес.jpg', $mapping->encode('чавес.jpg'));
@@ -36,14 +36,14 @@ class NameMappingTest extends TestCase
 
     public function testEncodeDetectFromContainer(): void
     {
-        $mapping = $this->mapping('windows/totalcommander-9.21a/sample.tar', FallbackEncoding::detect());
+        $mapping = $this->mapping('tar/windows/totalcommander-9.21a/sample.tar', FallbackEncoding::detect());
 
         self::assertSame(\mb_convert_encoding('чавес.jpg', 'Windows-1251', 'UTF-8'), $mapping->encode('чавес.jpg'));
     }
 
     public function testNamesFromContainer(): void
     {
-        $mapping = $this->mapping('windows/7zip-18.05/sample.zip', FallbackEncoding::codepage('CP866'));
+        $mapping = $this->mapping('zip/windows/7zip-18.05/sample.zip', FallbackEncoding::codepage('CP866'));
 
         $names = $mapping->names(['1.jpg', 'test', 'test/2.jpg', 'test/test.txt', 'x.jpg']);
 

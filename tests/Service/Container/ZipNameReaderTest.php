@@ -16,9 +16,9 @@ class ZipNameReaderTest extends TestCase
         $this->fixturesDir = \dirname(__DIR__, 2).'/fixtures';
     }
 
-    public function testRawLegacyNames(): void
+    public function testRawNonUtf8Names(): void
     {
-        $names = (new ZipNameReader())->read($this->fixturesDir.'/windows/7zip-18.05/sample.zip');
+        $names = (new ZipNameReader())->read($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip');
 
         self::assertCount(5, $names);
         self::assertSame('1.jpg', $names[0]->value);
@@ -32,7 +32,7 @@ class ZipNameReaderTest extends TestCase
 
     public function testUnicodeNames(): void
     {
-        $names = (new ZipNameReader())->read($this->fixturesDir.'/linux/bsdtar-3.6.2/sample.zip');
+        $names = (new ZipNameReader())->read($this->fixturesDir.'/zip/linux/bsdtar-3.6.2/sample.zip');
 
         $last = $names[\count($names) - 1];
         self::assertTrue($last->utf8);

@@ -11,7 +11,7 @@ use Archive7z\Exception\InvalidArgumentException;
  *
  * 7-Zip already produces proper UTF-8 whenever the archive carries an exact
  * encoding (ZIP UTF-8 flag, Info-ZIP Unicode path, UTF-16 names in 7z, ...).
- * Only legacy names without such metadata (for example CP866/CP1251 in a ZIP
+ * Only non-UTF-8 names without such metadata (for example CP866/CP1251 in a ZIP
  * or TAR) reach this fallback.
  */
 final readonly class FallbackEncoding

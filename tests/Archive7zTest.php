@@ -71,7 +71,7 @@ class Archive7zTest extends TestCase
     public function testFallbackEncodingCodepage(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
 
@@ -86,7 +86,7 @@ class Archive7zTest extends TestCase
     public function testFallbackEncodingDetect(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect()),
         );
 
@@ -101,7 +101,7 @@ class Archive7zTest extends TestCase
     public function testFallbackEncodingCodepageZip(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/7zip-18.05/sample.zip',
+            $this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')),
         );
 
@@ -113,10 +113,10 @@ class Archive7zTest extends TestCase
         self::assertContains('чавес.jpg', $paths);
     }
 
-    public function testExtractRepairsLegacyNames(): void
+    public function testExtractRepairsNonUtf8Names(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
         $obj->extract($this->tmpDir);
@@ -126,10 +126,10 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/test/test.txt');
     }
 
-    public function testExtractDetectLegacyNames(): void
+    public function testExtractDetectNonUtf8Names(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect()),
         );
         $obj->extract($this->tmpDir);
@@ -140,7 +140,7 @@ class Archive7zTest extends TestCase
     public function testFallbackEncodingCodepageMask(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
 
@@ -153,7 +153,7 @@ class Archive7zTest extends TestCase
     public function testFallbackEncodingCodepageExtractEntry(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
         $obj->extractEntry('чавес.jpg', $this->tmpDir);
@@ -164,7 +164,7 @@ class Archive7zTest extends TestCase
     public function testFallbackEncodingCodepageGetContent(): void
     {
         $obj = new Archive7z(
-            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
             new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
 
@@ -179,24 +179,54 @@ class Archive7zTest extends TestCase
     public static function extractProvider(): array
     {
         return [
-            ['windows/7zip-26.04/misnamed.7z'],
-            ['windows/7zip-26.04/warnings.zip'],
-            ['windows/7zip-18.05/sample.7z'],
-            ['windows/7zip-18.05/sample.tar'],
-            ['windows/7zip-18.05/sample.wim'],
-            ['windows/7zip-18.05/sample.zip'],
-            ['windows/totalcommander-9.21a/sample.tar'],
-            ['windows/totalcommander-9.21a/sample.zip'],
-            ['windows/winrar-5.61/sample.zip'],
-            ['windows/winrar-5.61/sample-rar4.rar'],
-            ['windows/winrar-5.61/sample-rar5.rar'],
-            ['linux/zip-0.3/sample.zip'],
-            ['linux/p7zip-16.02/sample.7z'],
-            ['linux/p7zip-16.02/sample.tar'],
-            ['linux/p7zip-16.02/sample.zip'],
-            ['linux/gnutar-1.34/sample.tar'],
-            ['linux/bsdtar-3.6.2/sample.tar'],
-            ['linux/bsdtar-3.6.2/sample.zip'],
+            ['zip/windows/7zip-26.04/misnamed.7z'],
+            ['zip/windows/7zip-26.04/warnings.zip'],
+            ['7z/windows/7zip-18.05/sample.7z'],
+            ['tar/windows/7zip-18.05/sample.tar'],
+            ['wim/windows/7zip-18.05/sample.wim'],
+            ['zip/windows/7zip-18.05/sample.zip'],
+            ['tar/windows/totalcommander-9.21a/sample.tar'],
+            ['zip/windows/totalcommander-9.21a/sample.zip'],
+            ['zip/windows/winrar-5.61/sample.zip'],
+            ['rar/windows/winrar-5.61/sample-rar4.rar'],
+            ['rar/windows/winrar-5.61/sample-rar5.rar'],
+            ['zip/linux/zip-0.3/sample.zip'],
+            ['7z/linux/p7zip-16.02/sample.7z'],
+            ['7z/linux/7zip-26.04/sample.7z'],
+            ['tar/linux/p7zip-16.02/sample.tar'],
+            ['zip/linux/p7zip-16.02/sample.zip'],
+            ['tar/linux/gnutar-1.34/sample.tar'],
+            ['tar/linux/bsdtar-3.6.2/sample.tar'],
+            ['zip/linux/bsdtar-3.6.2/sample.zip'],
+        ];
+    }
+
+    /**
+     * Archives whose non-ASCII names are decodable with the default (UTF-8)
+     * encoding. Archives whose names use a non-UTF-8 8-bit encoding live in the
+     * KnownIssues suite, see tests/KnownIssues/NonUtf8NamesTest.php.
+     *
+     * @return string[][]
+     */
+    public static function utf8Provider(): array
+    {
+        return [
+            ['zip/windows/7zip-26.04/misnamed.7z'],
+            ['zip/windows/7zip-26.04/warnings.zip'],
+            ['7z/windows/7zip-18.05/sample.7z'],
+            ['tar/windows/7zip-18.05/sample.tar'],
+            ['wim/windows/7zip-18.05/sample.wim'],
+            ['zip/windows/winrar-5.61/sample.zip'],
+            ['rar/windows/winrar-5.61/sample-rar4.rar'],
+            ['rar/windows/winrar-5.61/sample-rar5.rar'],
+            ['zip/linux/zip-0.3/sample.zip'],
+            ['7z/linux/p7zip-16.02/sample.7z'],
+            ['7z/linux/7zip-26.04/sample.7z'],
+            ['tar/linux/p7zip-16.02/sample.tar'],
+            ['zip/linux/p7zip-16.02/sample.zip'],
+            ['tar/linux/gnutar-1.34/sample.tar'],
+            ['tar/linux/bsdtar-3.6.2/sample.tar'],
+            ['zip/linux/bsdtar-3.6.2/sample.zip'],
         ];
     }
 
@@ -206,48 +236,50 @@ class Archive7zTest extends TestCase
     public static function basicProvider(): array
     {
         return [
-            ['windows/7zip-26.04/misnamed.7z'],
-            ['windows/7zip-26.04/warnings.zip'],
-            ['windows/7zip-18.05/sample.7z'],
-            ['windows/7zip-18.05/sample.tar'],
-            ['windows/7zip-18.05/sample.wim'],
-            ['windows/7zip-18.05/sample.zip'],
-            ['windows/7zip-18.05/sample.tgz'],
-            ['windows/totalcommander-9.21a/sample.tar'],
-            ['windows/totalcommander-9.21a/sample.zip'],
-            ['windows/winrar-5.61/sample.zip'],
-            ['windows/winrar-5.61/sample-rar4.rar'],
-            ['windows/winrar-5.61/sample-rar5.rar'],
-            ['linux/zip-0.3/sample.zip'],
-            ['linux/p7zip-16.02/sample.7z'],
-            ['linux/p7zip-16.02/sample.tar'],
-            ['linux/p7zip-16.02/sample.zip'],
-            ['linux/gnutar-1.34/sample.tar'],
-            ['linux/gnutar-1.34/sample.tar.gz'],
-            ['linux/bsdtar-3.6.2/sample.tar'],
-            ['linux/bsdtar-3.6.2/sample.zip'],
-            ['macos/apple-archive/sample.zip'],
-            ['macos/zip/sample.zip'],
-            ['macos/bsdtar/sample.tar'],
+            ['zip/windows/7zip-26.04/misnamed.7z'],
+            ['zip/windows/7zip-26.04/warnings.zip'],
+            ['7z/windows/7zip-18.05/sample.7z'],
+            ['tar/windows/7zip-18.05/sample.tar'],
+            ['wim/windows/7zip-18.05/sample.wim'],
+            ['zip/windows/7zip-18.05/sample.zip'],
+            ['gzip/windows/7zip-18.05/sample.tgz'],
+            ['tar/windows/totalcommander-9.21a/sample.tar'],
+            ['zip/windows/totalcommander-9.21a/sample.zip'],
+            ['zip/windows/winrar-5.61/sample.zip'],
+            ['rar/windows/winrar-5.61/sample-rar4.rar'],
+            ['rar/windows/winrar-5.61/sample-rar5.rar'],
+            ['zip/linux/zip-0.3/sample.zip'],
+            ['7z/linux/p7zip-16.02/sample.7z'],
+            ['7z/linux/7zip-26.04/sample.7z'],
+            ['tar/linux/p7zip-16.02/sample.tar'],
+            ['zip/linux/p7zip-16.02/sample.zip'],
+            ['tar/linux/gnutar-1.34/sample.tar'],
+            ['gzip/linux/gnutar-1.34/sample.tar.gz'],
+            ['bz2/linux/gnutar-1.35/sample.tar.bz2'],
+            ['tar/linux/bsdtar-3.6.2/sample.tar'],
+            ['zip/linux/bsdtar-3.6.2/sample.zip'],
+            ['zip/macos/apple-archive/sample.zip'],
+            ['zip/macos/zip/sample.zip'],
+            ['tar/macos/bsdtar/sample.tar'],
         ];
     }
 
-    #[DataProvider('extractProvider')]
-    public function testExtractCyrillic(string $archiveName): void
+    #[DataProvider('utf8Provider')]
+    public function testExtractNonAscii(string $archiveName): void
     {
-        $dirCyrillic = $this->tmpDir.'/папка';
-        $chavezFile = 'чавес.jpg';
+        $dirNonAscii = $this->tmpDir.'/папка';
+        $nonAsciiFile = 'чавес.jpg';
 
-        if (!\mkdir($dirCyrillic)) {
-            self::markTestIncomplete('Cant create cyrillic directory.');
+        if (!\mkdir($dirNonAscii)) {
+            self::markTestIncomplete('Cant create non-ascii directory.');
         }
 
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
-        $obj->extract($dirCyrillic);
+        $obj->extract($dirNonAscii);
 
-        self::assertFileExists($dirCyrillic.'/1.jpg');
-        self::assertFileExists($dirCyrillic.'/'.$chavezFile);
-        self::assertFileExists($dirCyrillic.'/test/test.txt');
+        self::assertFileExists($dirNonAscii.'/1.jpg');
+        self::assertFileExists($dirNonAscii.'/'.$nonAsciiFile);
+        self::assertFileExists($dirNonAscii.'/test/test.txt');
     }
 
     /**
@@ -256,23 +288,23 @@ class Archive7zTest extends TestCase
     public static function extractPasswdProvider(): array
     {
         return [
-            ['windows/7zip-26.04/encrypted.7z'],
-            ['windows/7zip-26.04/encrypted.zip'],
-            ['windows/winrar-3/encrypted-rar3.rar'],
-            ['linux/rar-7.30/encrypted-rar5.rar'],
+            ['7z/windows/7zip-26.04/encrypted.7z'],
+            ['zip/windows/7zip-26.04/encrypted.zip'],
+            ['rar/windows/winrar-3/encrypted-rar3.rar'],
+            ['rar/linux/rar-7.30/encrypted-rar5.rar'],
         ];
     }
 
     #[DataProvider('extractPasswdProvider')]
-    public function testExtractPasswdCyrillic(string $archiveName): void
+    public function testExtractPasswdNonAscii(string $archiveName): void
     {
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: '123'));
         $obj->extract($this->tmpDir);
 
-        $chavezFile = 'чавес.jpg';
+        $nonAsciiFile = 'чавес.jpg';
 
         self::assertFileExists($this->tmpDir.'/1.jpg');
-        self::assertFileExists($this->tmpDir.'/'.$chavezFile);
+        self::assertFileExists($this->tmpDir.'/'.$nonAsciiFile);
         self::assertFileExists($this->tmpDir.'/test/test.txt');
     }
 
@@ -363,8 +395,8 @@ class Archive7zTest extends TestCase
         \unlink($this->tmpDir.'/test/test_1.txt');
     }
 
-    #[DataProvider('extractProvider')]
-    public function testExtractEntryCyrillic(string $archiveName): void
+    #[DataProvider('utf8Provider')]
+    public function testExtractEntryNonAscii(string $archiveName): void
     {
         $file = 'чавес.jpg';
 
@@ -417,36 +449,40 @@ class Archive7zTest extends TestCase
     public static function entryProvider(): array
     {
         return [
-            ['windows/7zip-26.04/misnamed.7z'],
-            ['windows/7zip-26.04/warnings.zip'],
-            ['windows/7zip-18.05/sample.7z'],
-            ['windows/7zip-18.05/sample.tar'],
-            ['windows/7zip-18.05/sample.wim'],
-            ['windows/7zip-18.05/sample.zip'],
-            ['windows/7zip-18.05/sample.tgz'],
-            ['windows/totalcommander-9.21a/sample.tar'],
-            ['windows/totalcommander-9.21a/sample.zip'],
-            ['windows/winrar-5.61/sample.zip'],
-            // ['windows/winrar-5.61/sample-rar4.rar'], // not supported
-            // ['windows/winrar-5.61/sample-rar5.rar'], // not supported
-            ['linux/zip-0.3/sample.zip'],
-            ['linux/p7zip-16.02/sample.7z'],
-            ['linux/p7zip-16.02/sample.tar'],
-            ['linux/p7zip-16.02/sample.zip'],
+            ['zip/windows/7zip-26.04/misnamed.7z'],
+            ['zip/windows/7zip-26.04/warnings.zip'],
+            ['7z/windows/7zip-18.05/sample.7z'],
+            ['tar/windows/7zip-18.05/sample.tar'],
+            ['wim/windows/7zip-18.05/sample.wim'],
+            ['zip/windows/7zip-18.05/sample.zip'],
+            ['gzip/windows/7zip-18.05/sample.tgz'],
+            ['tar/windows/totalcommander-9.21a/sample.tar'],
+            ['zip/windows/totalcommander-9.21a/sample.zip'],
+            ['zip/windows/winrar-5.61/sample.zip'],
+            // ['rar/windows/winrar-5.61/sample-rar4.rar'], // not supported
+            // ['rar/windows/winrar-5.61/sample-rar5.rar'], // not supported
+            ['zip/linux/zip-0.3/sample.zip'],
+            ['7z/linux/p7zip-16.02/sample.7z'],
+            ['7z/linux/7zip-26.04/sample.7z'],
+            ['tar/linux/p7zip-16.02/sample.tar'],
+            ['zip/linux/p7zip-16.02/sample.zip'],
         ];
     }
 
-    #[DataProvider('entryProvider')]
-    public function testAddEntryExists(string $archiveName): void
+    public function testAddEntryExists(): void
     {
-        \copy($this->fixturesDir.'/'.$archiveName, $this->tmpDir.'/'.\str_replace('/', '_', $archiveName));
-        $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'_'.\str_replace('/', '_', $archiveName);
+        $archive = $this->tmpDir.'/existing.7z';
+        \copy($this->fixturesDir.'/7z/windows/7zip-18.05/sample.7z', $archive);
 
-        $obj = new Archive7z($tempArchive);
+        $obj = new Archive7z($archive);
+        self::assertInstanceOf(Entry::class, $obj->getEntry('1.jpg'));
+
         $obj->addEntry(__FILE__);
-        $result = $obj->getEntry(\basename(__FILE__));
-        self::assertInstanceOf(Entry::class, $result);
-        self::assertEquals(\basename(__FILE__), $result->getPath());
+
+        $added = $obj->getEntry(\basename(__FILE__));
+        self::assertInstanceOf(Entry::class, $added);
+        self::assertEquals(\basename(__FILE__), $added->getPath());
+        self::assertInstanceOf(Entry::class, $obj->getEntry('1.jpg'));
         self::assertTrue($obj->isValid());
     }
 
@@ -549,22 +585,23 @@ class Archive7zTest extends TestCase
     public static function delProvider(): array
     {
         return [
-            // ['windows/7zip-26.04/misnamed.7z'], // 7-Zip 21.02+ swears now at this
-            // ['windows/7zip-26.04/warnings.zip'], // not supported
-            ['windows/7zip-18.05/sample.7z'],
-            ['windows/7zip-18.05/sample.tar'],
-            ['windows/7zip-18.05/sample.wim'],
-            ['windows/7zip-18.05/sample.zip'],
-            // ['windows/7zip-18.05/sample.tgz'],
-            ['windows/totalcommander-9.21a/sample.tar'],
-            ['windows/totalcommander-9.21a/sample.zip'],
-            ['windows/winrar-5.61/sample.zip'],
-            // ['windows/winrar-5.61/sample-rar4.rar'], // not supported
-            // ['windows/winrar-5.61/sample-rar5.rar'], // not supported
-            ['linux/zip-0.3/sample.zip'],
-            ['linux/p7zip-16.02/sample.7z'],
-            ['linux/p7zip-16.02/sample.tar'],
-            ['linux/p7zip-16.02/sample.zip'],
+            // ['zip/windows/7zip-26.04/misnamed.7z'], // 7-Zip 21.02+ swears now at this
+            // ['zip/windows/7zip-26.04/warnings.zip'], // not supported
+            ['7z/windows/7zip-18.05/sample.7z'],
+            ['tar/windows/7zip-18.05/sample.tar'],
+            ['wim/windows/7zip-18.05/sample.wim'],
+            ['zip/windows/7zip-18.05/sample.zip'],
+            // ['gzip/windows/7zip-18.05/sample.tgz'],
+            ['tar/windows/totalcommander-9.21a/sample.tar'],
+            ['zip/windows/totalcommander-9.21a/sample.zip'],
+            ['zip/windows/winrar-5.61/sample.zip'],
+            // ['rar/windows/winrar-5.61/sample-rar4.rar'], // not supported
+            // ['rar/windows/winrar-5.61/sample-rar5.rar'], // not supported
+            ['zip/linux/zip-0.3/sample.zip'],
+            ['7z/linux/p7zip-16.02/sample.7z'],
+            ['7z/linux/7zip-26.04/sample.7z'],
+            ['tar/linux/p7zip-16.02/sample.tar'],
+            ['zip/linux/p7zip-16.02/sample.zip'],
         ];
     }
 
@@ -586,8 +623,8 @@ class Archive7zTest extends TestCase
     public static function delPasswdProvider(): array
     {
         return [
-            ['windows/7zip-26.04/encrypted.7z'],
-            ['windows/7zip-26.04/encrypted.zip'],
+            ['7z/windows/7zip-26.04/encrypted.7z'],
+            ['zip/windows/7zip-26.04/encrypted.zip'],
         ];
     }
 
@@ -649,13 +686,13 @@ class Archive7zTest extends TestCase
 
     public function testGetWarnings(): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/windows/7zip-26.04/warnings.zip');
+        $obj = new Archive7z($this->fixturesDir.'/zip/windows/7zip-26.04/warnings.zip');
         $warnings = $obj->getWarnings();
 
         self::assertCount(1, $warnings);
         self::assertSame('There are data after the end of archive', $warnings[0]);
 
-        $obj = new Archive7z($this->fixturesDir.'/windows/7zip-26.04/misnamed.7z');
+        $obj = new Archive7z($this->fixturesDir.'/zip/windows/7zip-26.04/misnamed.7z');
         $noWarnings = $obj->getWarnings();
         self::assertEmpty($noWarnings);
     }
@@ -666,7 +703,7 @@ class Archive7zTest extends TestCase
     public static function extractPasswdEncFilesProvider(): array
     {
         return [
-            ['windows/7zip-26.04/encrypted-header.7z'],
+            ['7z/windows/7zip-26.04/encrypted-header.7z'],
         ];
     }
 
@@ -856,8 +893,8 @@ class Archive7zTest extends TestCase
         self::assertSame($path, $entries[0]->getUnixPath());
     }
 
-    #[DataProvider('extractProvider')]
-    public function testGetEntriesPathMaskCyrillic(string $archiveName): void
+    #[DataProvider('utf8Provider')]
+    public function testGetEntriesPathMaskNonAscii(string $archiveName): void
     {
         $path = 'чавес.jpg';
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
@@ -884,11 +921,11 @@ class Archive7zTest extends TestCase
     public static function featureProvider(): array
     {
         return [
-            ['windows/7zip-26.04/features.7z'],
-            ['windows/7zip-26.04/features.zip'],
-            ['linux/gnutar-1.34/features.tar'],
-            ['linux/bsdtar-3.6.2/features.tar'],
-            ['linux/bsdtar-3.6.2/features.zip'],
+            ['7z/windows/7zip-26.04/features.7z'],
+            ['zip/windows/7zip-26.04/features.zip'],
+            ['tar/linux/gnutar-1.34/features.tar'],
+            ['tar/linux/bsdtar-3.6.2/features.tar'],
+            ['zip/linux/bsdtar-3.6.2/features.zip'],
         ];
     }
 
@@ -924,7 +961,7 @@ class Archive7zTest extends TestCase
 
     public function testPartialRar(): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/windows/winrar-7.0/multivolume.part1.rar');
+        $obj = new Archive7z($this->fixturesDir.'/rar/windows/winrar-7.0/multivolume.part1.rar');
         $entries = $obj->getEntries();
 
         self::assertCount(1, $entries);

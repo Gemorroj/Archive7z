@@ -32,14 +32,14 @@ composer require gemorroj/archive7z
 
 ### Notes:
 - https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
-- Filenames are expected to be UTF-8. For archives with legacy (non-UTF-8) names pass `fallbackEncoding` to `ArchiveOptions` (`FallbackEncoding::codepage(...)` or `detect()`), see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
+- Filenames are expected to be UTF-8; for non-UTF-8 names pass `fallbackEncoding` to `ArchiveOptions`, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
 - Pass `env` to `ArchiveOptions` to set environment variables for the 7-Zip process (for example `env: ['LC_ALL' => 'ru_RU.UTF-8']`).
 
 
 ### Limitations:
 
-- Non-UTF-8 filenames cannot be recovered reliably without an explicit `FallbackEncoding::codepage(...)` hint; `FallbackEncoding::detect()` is heuristic.
-- For `zip`/`tar`/`gzip` the names are read from the container itself, so `codepage`/`detect` behave the same for listing, selection and extraction on every platform; other formats rely on 7-Zip's own (usually correct) decoding.
+- Names in a non-UTF-8 encoding (CP866, CP1251, ...) are not auto-detected: pass `ArchiveOptions::fallbackEncoding` (`FallbackEncoding::codepage(...)` exact, or `detect()` heuristic), otherwise they are unreadable on Linux and may be mangled on Windows.
+- For `zip`/`tar`/`gzip` the names are read from the container, so `codepage`/`detect` apply uniformly to listing, selection and extraction; other formats rely on 7-Zip's own decoding.
 
 
 ### Recommendations:

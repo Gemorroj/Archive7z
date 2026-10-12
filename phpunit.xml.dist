@@ -5,6 +5,7 @@
          backupGlobals="false"
          colors="true"
          failOnWarning="true"
+         defaultTestSuite="Archive7z"
          bootstrap="vendor/autoload.php"
 >
     <php>
@@ -14,6 +15,10 @@
     <testsuites>
         <testsuite name="Archive7z">
             <directory>tests</directory>
+            <exclude>tests/KnownIssues</exclude>
+        </testsuite>
+        <testsuite name="KnownIssues">
+            <directory>tests/KnownIssues</directory>
         </testsuite>
     </testsuites>
 </phpunit>

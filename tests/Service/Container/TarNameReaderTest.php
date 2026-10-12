@@ -18,7 +18,7 @@ class TarNameReaderTest extends TestCase
 
     public function testUtf8Names(): void
     {
-        $names = (new TarNameReader())->read($this->fixturesDir.'/windows/7zip-18.05/sample.tar');
+        $names = (new TarNameReader())->read($this->fixturesDir.'/tar/windows/7zip-18.05/sample.tar');
 
         self::assertCount(5, $names);
         self::assertSame('1.jpg', $names[0]->value);
@@ -29,9 +29,9 @@ class TarNameReaderTest extends TestCase
         self::assertFalse($names[4]->utf8);
     }
 
-    public function testLegacyNames(): void
+    public function testNonUtf8Names(): void
     {
-        $names = (new TarNameReader())->read($this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar');
+        $names = (new TarNameReader())->read($this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar');
 
         self::assertSame(\mb_convert_encoding('чавес.jpg', 'Windows-1251', 'UTF-8'), $names[4]->value);
         self::assertFalse($names[4]->utf8);
@@ -39,7 +39,7 @@ class TarNameReaderTest extends TestCase
 
     public function testGnuTar(): void
     {
-        $names = (new TarNameReader())->read($this->fixturesDir.'/linux/gnutar-1.34/sample.tar');
+        $names = (new TarNameReader())->read($this->fixturesDir.'/tar/linux/gnutar-1.34/sample.tar');
 
         self::assertCount(5, $names);
         self::assertSame('test/test.txt', $names[3]->value);

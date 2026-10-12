@@ -74,3 +74,45 @@ jobs:
 
       - name: Tests
         run: vendor/bin/phpunit --configuration phpunit.xml.dist
+
+  known-issues:
+    name: Known issues (expected failures)
+    # Expected failures are kept visible in their own, non-blocking check so a
+    # regression in the default suite is never confused with a known limitation.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup 7zip Ubuntu
+        run: |
+          curl -L https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-linux-x64.tar.xz > 7z-linux-x64.tar.xz
+          tar xJvf 7z-linux-x64.tar.xz
+          sudo cp 7zz /usr/bin/7zz
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v4
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          retry_wait_seconds: 30
+          command: |
+            composer update --optimize-autoloader --no-interaction --ansi --no-progress --prefer-dist
+            composer info -D
+
+      - name: Known issues
+        run: vendor/bin/phpunit --testsuite KnownIssues

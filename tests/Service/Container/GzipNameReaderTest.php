@@ -18,7 +18,7 @@ class GzipNameReaderTest extends TestCase
 
     public function testName(): void
     {
-        $names = (new GzipNameReader())->read($this->fixturesDir.'/windows/7zip-18.05/sample.tgz');
+        $names = (new GzipNameReader())->read($this->fixturesDir.'/gzip/windows/7zip-18.05/sample.tgz');
 
         self::assertCount(1, $names);
         self::assertSame('test.tar', $names[0]->value);
