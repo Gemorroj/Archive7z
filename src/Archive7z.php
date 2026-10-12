@@ -8,12 +8,13 @@ use Archive7z\Config\ArchiveOptions;
 use Archive7z\Exception\RuntimeException;
 use Archive7z\Model\Entry;
 use Archive7z\Model\Info;
-use Archive7z\Service\Encoder\NameEncoder;
-use Archive7z\Service\Encoder\NameRepairer;
-use Archive7z\Service\Parser\Parser;
+use Archive7z\Service\Archive\ArchiveExtractor;
+use Archive7z\Service\Archive\ArchiveLister;
+use Archive7z\Service\Container\NameReaderResolver;
+use Archive7z\Service\Namer\NameMapping;
+use Archive7z\Service\Namer\NameRepairer;
 use Archive7z\Service\Process\ExecutableFinder;
 use Archive7z\Service\Process\ProcessFactory;
-use Symfony\Component\Process\Process;
 
 final class Archive7z
 {
@@ -21,9 +22,11 @@ final class Archive7z
 
     private ProcessFactory $processFactory;
 
-    private NameRepairer $nameRepairer;
+    private NameMapping $nameMapping;
 
-    private ?NameEncoder $nameEncoder = null;
+    private ArchiveLister $lister;
+
+    private ArchiveExtractor $extractor;
 
     /**
      * @param string              $filename 7z archive filename
@@ -47,7 +50,18 @@ final class Archive7z
             ExecutableFinder::isWindows(),
             $this->options->getEnv(),
         );
-        $this->nameRepairer = new NameRepairer($this->options->getOverwriteMode());
+        $this->nameMapping = new NameMapping(
+            $this->options->getFallbackEncoding(),
+            new NameReaderResolver(),
+            $filename,
+        );
+        $this->lister = new ArchiveLister($this->processFactory, $this->options, $this->nameMapping);
+        $this->extractor = new ArchiveExtractor(
+            $this->processFactory,
+            $this->options,
+            $this->nameMapping,
+            new NameRepairer($this->options->getOverwriteMode()),
+        );
     }
 
     /**
@@ -59,12 +73,10 @@ final class Archive7z
     {
         $binary7z = ExecutableFinder::find($binary7z);
 
-        $cmd = [
+        $process = new \Symfony\Component\Process\Process([
             \str_replace('\\', '/', $binary7z),
             'i',
-        ];
-
-        $process = new Process($cmd);
+        ]);
         $process->mustRun();
 
         return $process->getOutput();
@@ -73,51 +85,6 @@ final class Archive7z
     public function getOptions(): ArchiveOptions
     {
         return $this->options;
-    }
-
-    /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     *
-     * @return string[]
-     */
-    private function getRawListing(?string $pathMask): array
-    {
-        $process = $this->processFactory->create('l', \array_merge(
-            ['-slt'],
-            $this->processFactory->decorateExtract($this->options),
-            null !== $pathMask ? [$pathMask] : [],
-        ));
-
-        $this->execute($process);
-
-        return \explode(\PHP_EOL, $process->getOutput());
-    }
-
-    /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     */
-    private function nameEncoder(): NameEncoder
-    {
-        if (null === $this->nameEncoder) {
-            $fallbackEncoding = $this->options->getFallbackEncoding();
-            $sample = $fallbackEncoding->isDetect()
-                ? \implode(\PHP_EOL, $this->getRawListing(null))
-                : null;
-
-            $this->nameEncoder = NameEncoder::resolve($fallbackEncoding, $sample);
-        }
-
-        return $this->nameEncoder;
-    }
-
-    private function convertOutput(string $output): string
-    {
-        return $this->nameEncoder()->decode($output);
-    }
-
-    private function encodeName(string $name): string
-    {
-        return $this->nameEncoder()->encode($name);
     }
 
     /**
@@ -143,49 +110,11 @@ final class Archive7z
     }
 
     /**
-     * Renames extracted entries whose names were not valid UTF-8 on disk.
-     *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     */
-    private function repairExtractedNames(string $directory, ?string $pathMask): void
-    {
-        if ($this->options->getFallbackEncoding()->isAsIs()) {
-            return;
-        }
-
-        $rawLines = $this->getRawListing($pathMask);
-        $nameEncoder = NameEncoder::resolve($this->options->getFallbackEncoding(), \implode(\PHP_EOL, $rawLines));
-        if ($nameEncoder->isAsIs()) {
-            return;
-        }
-
-        $paths = [];
-        $parser = new Parser($rawLines);
-        foreach ($parser->parseEntries() as $data) {
-            $path = $data['Path'] ?? null;
-            if (\is_string($path)) {
-                $paths[] = $path;
-            }
-        }
-
-        $this->nameRepairer->repair($directory, $paths, $nameEncoder);
-    }
-
-    /**
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
      */
     public function extract(?string $directory = null): void
     {
-        $directory = $this->resolveOutputDirectory($directory);
-
-        $process = $this->processFactory->create('x', \array_merge([
-            $this->options->getOverwriteMode(),
-            '-o'.$directory,
-        ], $this->processFactory->decorateExtract($this->options)));
-
-        $this->execute($process);
-
-        $this->repairExtractedNames($directory, null);
+        $this->extractor->extract($this->resolveOutputDirectory($directory));
     }
 
     /**
@@ -193,17 +122,7 @@ final class Archive7z
      */
     public function extractEntry(string $path, ?string $directory = null): void
     {
-        $directory = $this->resolveOutputDirectory($directory);
-        $path = $this->encodeName($path);
-
-        $process = $this->processFactory->create('x', \array_merge([
-            $this->options->getOverwriteMode(),
-            '-o'.$directory,
-        ], $this->processFactory->decorateExtract($this->options), [$path]));
-
-        $this->execute($process);
-
-        $this->repairExtractedNames($directory, $path);
+        $this->extractor->extract($this->resolveOutputDirectory($directory), $path);
     }
 
     /**
@@ -211,14 +130,12 @@ final class Archive7z
      */
     public function getContent(string $path): string
     {
-        $path = $this->encodeName($path);
-
         $process = $this->processFactory->create('x', \array_merge([
             '-so',
-            $path,
+            $this->nameMapping->encode($path),
         ], $this->processFactory->decorateExtract($this->options)));
 
-        return $this->execute($process)->getOutput();
+        return $this->processFactory->run($process)->getOutput();
     }
 
     /**
@@ -238,23 +155,8 @@ final class Archive7z
      */
     public function getEntries(?string $pathMask = null, ?int $limit = null): array
     {
-        if (null !== $pathMask) {
-            $pathMask = $this->encodeName($pathMask);
-        }
-
-        $process = $this->processFactory->create('l', \array_merge(
-            ['-slt'],
-            $this->processFactory->decorateExtract($this->options),
-            null !== $pathMask ? [$pathMask] : [],
-        ));
-
-        $this->execute($process);
-
-        $out = \explode(\PHP_EOL, $this->convertOutput($process->getOutput()));
-
         $list = [];
-        $parser = new Parser($out);
-        foreach ($parser->parseEntries($limit) as $v) {
+        foreach ($this->lister->entries($pathMask, $limit) as $v) {
             $list[] = new Entry($this, $v);
         }
 
@@ -266,17 +168,7 @@ final class Archive7z
      */
     public function getInfo(): Info
     {
-        $process = $this->processFactory->create('l', \array_merge([
-            '-slt',
-        ], $this->processFactory->decorateExtract($this->options), ['Archive7z fake path']));
-
-        $this->execute($process);
-
-        $out = \explode(\PHP_EOL, $this->convertOutput($process->getOutput()));
-
-        $parser = new Parser($out);
-
-        return new Info($parser);
+        return $this->lister->info();
     }
 
     /**
@@ -309,7 +201,7 @@ final class Archive7z
 
         $process = $this->processFactory->create('a', \array_merge($args, $this->processFactory->decorateCompress($this->options)));
 
-        $this->execute($process);
+        $this->processFactory->run($process);
     }
 
     /**
@@ -317,13 +209,11 @@ final class Archive7z
      */
     public function delEntry(string $path): void
     {
-        $path = $this->encodeName($path);
-
         $process = $this->processFactory->create('d', \array_merge([
-            $path,
+            $this->nameMapping->encode($path),
         ], $this->processFactory->decorateExtract($this->options)));
 
-        $this->execute($process);
+        $this->processFactory->run($process);
     }
 
     /**
@@ -333,15 +223,12 @@ final class Archive7z
      */
     public function renameEntry(string $pathSrc, string $pathDest): void
     {
-        $pathSrc = $this->encodeName($pathSrc);
-        $pathDest = $this->encodeName($pathDest);
-
         $process = $this->processFactory->create('rn', \array_merge([
-            $pathSrc,
-            $pathDest,
+            $this->nameMapping->encode($pathSrc),
+            $this->nameMapping->encode($pathDest),
         ], $this->processFactory->decorateExtract($this->options)));
 
-        $this->execute($process);
+        $this->processFactory->run($process);
     }
 
     /**
@@ -353,9 +240,7 @@ final class Archive7z
     {
         $process = $this->processFactory->create('t', $this->processFactory->decorateExtract($this->options));
 
-        $this->execute($process);
-
-        return \str_contains($process->getOutput(), 'Everything is Ok');
+        return \str_contains($this->processFactory->run($process)->getOutput(), 'Everything is Ok');
     }
 
     /**
@@ -369,9 +254,7 @@ final class Archive7z
     {
         $process = $this->processFactory->create('t', $this->processFactory->decorateExtract($this->options));
 
-        $this->execute($process);
-
-        $output = $process->getOutput();
+        $output = $this->processFactory->run($process)->getOutput();
 
         $pos = \strpos($output, \PHP_EOL.'--');
         if (false === $pos) {
@@ -388,21 +271,5 @@ final class Archive7z
         $warningsStr = \trim($warningsStr);
 
         return \explode(\PHP_EOL, $warningsStr);
-    }
-
-    /**
-     * Exit codes
-     * 0 - Normal (no errors or warnings detected)
-     * 1 - Warning (Non fatal error(s)). For example, some files cannot be read during compressing. So they were not compressed
-     * 2 - Fatal error
-     * 7 - Bad command line parameters
-     * 8 - Not enough memory for operation
-     * 255 - User stopped the process with control-C (or similar).
-     *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     */
-    private function execute(Process $process): Process
-    {
-        return $this->processFactory->run($process);
     }
 }

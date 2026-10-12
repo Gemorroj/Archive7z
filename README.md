@@ -38,7 +38,8 @@ composer require gemorroj/archive7z
 
 ### Limitations:
 
-- Legacy (non-UTF-8) filenames cannot be recovered reliably without an explicit `FallbackEncoding::codepage(...)` hint; `FallbackEncoding::detect()` is heuristic and has no effect on Windows.
+- Non-UTF-8 filenames cannot be recovered reliably without an explicit `FallbackEncoding::codepage(...)` hint; `FallbackEncoding::detect()` is heuristic.
+- For `zip`/`tar`/`gzip` the names are read from the container itself, so `codepage`/`detect` behave the same for listing, selection and extraction on every platform; other formats rely on 7-Zip's own (usually correct) decoding.
 
 
 ### Recommendations:

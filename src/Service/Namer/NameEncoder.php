@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Archive7z\Service\Encoder;
+namespace Archive7z\Service\Namer;
 
 use Archive7z\Config\FallbackEncoding;
 

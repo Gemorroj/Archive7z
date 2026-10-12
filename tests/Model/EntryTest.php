@@ -58,9 +58,8 @@ class EntryTest extends TestCase
         $archive = new Archive7z($this->fixturesDir.'/windows/7zip-18.05/sample.tar');
 
         $folder = $archive->getEntry('test');
-        $ref = new \ReflectionObject($folder);
-        $property = $ref->getProperty('folder');
-        $property->setAccessible(true);
+        \assert($folder instanceof Entry);
+        $property = new \ReflectionProperty(Entry::class, 'folder');
 
         self::assertSame('+', $property->getValue($folder));
     }

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Archive7z\Service\Encoder;
+namespace Archive7z\Service\Namer;
 
 use Archive7z\Config\ArchiveOptions;
 
 /**
- * Renames extracted entries whose names were not valid UTF-8 on disk.
+ * Renames extracted entries to their target names.
  *
- * Only the passed entries are touched (never other files that may already
- * exist in the output directory).
+ * Deeper paths are renamed first (so parent directories are renamed after
+ * their contents), and name collisions honor the overwrite mode.
  */
 final class NameRepairer
 {
@@ -20,33 +20,24 @@ final class NameRepairer
     }
 
     /**
-     * @param string[] $relativePaths extracted archive entry paths
+     * @param array<int, array{from: string, to: string}> $renames relative paths
      */
-    public function repair(string $directory, array $relativePaths, NameEncoder $nameEncoder): void
+    public function rename(string $directory, array $renames): void
     {
-        $paths = [];
-        foreach ($relativePaths as $path) {
-            if ('' !== $path) {
-                $paths[$path] = true;
-            }
-        }
-
-        $paths = \array_keys($paths);
         $depths = [];
-        foreach ($paths as $path) {
-            $depths[] = \substr_count(\str_replace('\\', '/', $path), '/');
+        foreach ($renames as $index => $rename) {
+            $depths[$index] = \substr_count(\str_replace('\\', '/', $rename['from']), '/');
         }
-        \array_multisort($depths, \SORT_DESC, \SORT_NUMERIC, $paths);
+        \array_multisort($depths, \SORT_DESC, \SORT_NUMERIC, $renames);
 
-        foreach ($paths as $path) {
-            $corrected = $nameEncoder->decode($path);
-            if ($corrected === $path) {
+        foreach ($renames as $rename) {
+            if ($rename['from'] === $rename['to']) {
                 continue;
             }
 
-            $this->rename(
-                $this->buildPath($directory, $path),
-                $this->buildPath($directory, $corrected),
+            $this->renamePath(
+                $this->buildPath($directory, $rename['from']),
+                $this->buildPath($directory, $rename['to']),
             );
         }
     }
@@ -58,7 +49,7 @@ final class NameRepairer
         return \rtrim($directory, '/\\').\DIRECTORY_SEPARATOR.\ltrim($relativePath, '/\\');
     }
 
-    private function rename(string $from, string $to): void
+    private function renamePath(string $from, string $to): void
     {
         if ($from === $to || (!\file_exists($from) && !\is_link($from))) {
             return;

@@ -98,6 +98,21 @@ class Archive7zTest extends TestCase
         self::assertContains('чавес.jpg', $paths);
     }
 
+    public function testFallbackEncodingCodepageZip(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/windows/7zip-18.05/sample.zip',
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')),
+        );
+
+        $paths = [];
+        foreach ($obj->getEntries() as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        self::assertContains('чавес.jpg', $paths);
+    }
+
     public function testExtractRepairsLegacyNames(): void
     {
         $obj = new Archive7z(
@@ -109,6 +124,17 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/чавес.jpg');
         self::assertFileExists($this->tmpDir.'/1.jpg');
         self::assertFileExists($this->tmpDir.'/test/test.txt');
+    }
+
+    public function testExtractDetectLegacyNames(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/windows/totalcommander-9.21a/sample.tar',
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect()),
+        );
+        $obj->extract($this->tmpDir);
+
+        self::assertFileExists($this->tmpDir.'/чавес.jpg');
     }
 
     public function testFallbackEncodingCodepageMask(): void

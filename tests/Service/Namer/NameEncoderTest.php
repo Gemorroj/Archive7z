@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Archive7z\Tests\Service\Encoder;
+namespace Archive7z\Tests\Service\Namer;
 
 use Archive7z\Config\FallbackEncoding;
-use Archive7z\Service\Encoder\NameEncoder;
+use Archive7z\Service\Namer\NameEncoder;
 use PHPUnit\Framework\TestCase;
 
 class NameEncoderTest extends TestCase
