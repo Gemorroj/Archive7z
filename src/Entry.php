@@ -309,6 +309,7 @@ class Entry
         if (null === $path) {
             return null;
         }
+
         return \str_replace('\\', '/', $path);
     }
 
