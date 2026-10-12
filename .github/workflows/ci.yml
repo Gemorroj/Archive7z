@@ -116,3 +116,39 @@ jobs:
 
       - name: Known issues
         run: vendor/bin/phpunit --testsuite KnownIssues
+
+  diagnose-macos:
+    # TEMPORARY: gather evidence for macOS legacy-name decoding, then remove.
+    name: Diagnose macOS legacy names (temporary)
+    runs-on: macos-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup 7zip MacOs
+        run: |
+          curl -L https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-mac.tar.xz > 7z-mac.tar.xz
+          tar xJvf 7z-mac.tar.xz
+          sudo cp 7zz /usr/local/bin/7zz
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v4
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          retry_wait_seconds: 30
+          command: |
+            composer update --optimize-autoloader --no-interaction --ansi --no-progress --prefer-dist
+            composer info -D
+
+      - name: Diagnose
+        run: bash tools/diagnose-macos.sh
