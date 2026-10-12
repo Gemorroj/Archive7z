@@ -1,0 +1,28 @@
+name: Generate macOS fixtures
+
+on:
+  workflow_dispatch:
+
+jobs:
+  macos-fixtures:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Generate fixtures
+        run: bash tests/fixtures/generator/macos.sh
+
+      - name: Inspect
+        run: |
+          find tests/fixtures/macos -type f -print
+          for f in tests/fixtures/macos/*/*; do
+            echo "== $f =="
+            bsdtar -tvf "$f" || true
+          done
+
+      - name: Upload fixtures
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-fixtures
+          path: tests/fixtures/macos
+          if-no-files-found: error

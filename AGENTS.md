@@ -17,3 +17,4 @@ PHP >= 8.2 library. 7z CLI wrapper (`Archive7z\Archive7z`) based on `symfony/pro
 - Keep backward compatibility of public API (`Archive7z`, `Entry`, `Info`).
 - Requires `proc_open` and 7z binary.
 - Run tests and static analysis before committing.
+- Never commit or push; the human does it.

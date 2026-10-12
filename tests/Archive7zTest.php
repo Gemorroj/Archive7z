@@ -101,21 +101,24 @@ class Archive7zTest extends TestCase
     public static function extractProvider(): array
     {
         return [
-            ['zip.7z'],
-            ['warnings.zip'],
-            ['7zip-18.05/test.7z'],
-            ['7zip-18.05/test.tar'],
-            ['7zip-18.05/test.wim'],
-            ['7zip-18.05/test.zip'],
-            ['totalcommander-9.21a/test.tar'],
-            ['totalcommander-9.21a/test.zip'],
-            ['winrar-5.61/test.zip'],
-            ['winrar-5.61/test4.rar'],
-            ['winrar-5.61/test5.rar'],
-            ['linux/zip-0.3/test.zip'],
-            ['linux/p7zip-16.02/test.7z'],
-            ['linux/p7zip-16.02/test.tar'],
-            ['linux/p7zip-16.02/test.zip'],
+            ['windows/7zip-26.04/misnamed.7z'],
+            ['windows/7zip-26.04/warnings.zip'],
+            ['windows/7zip-18.05/sample.7z'],
+            ['windows/7zip-18.05/sample.tar'],
+            ['windows/7zip-18.05/sample.wim'],
+            ['windows/7zip-18.05/sample.zip'],
+            ['windows/totalcommander-9.21a/sample.tar'],
+            ['windows/totalcommander-9.21a/sample.zip'],
+            ['windows/winrar-5.61/sample.zip'],
+            ['windows/winrar-5.61/sample-rar4.rar'],
+            ['windows/winrar-5.61/sample-rar5.rar'],
+            ['linux/zip-0.3/sample.zip'],
+            ['linux/p7zip-16.02/sample.7z'],
+            ['linux/p7zip-16.02/sample.tar'],
+            ['linux/p7zip-16.02/sample.zip'],
+            ['linux/gnutar-1.34/sample.tar'],
+            ['linux/bsdtar-3.6.2/sample.tar'],
+            ['linux/bsdtar-3.6.2/sample.zip'],
         ];
     }
 
@@ -125,22 +128,26 @@ class Archive7zTest extends TestCase
     public static function basicProvider(): array
     {
         return [
-            ['zip.7z'],
-            ['warnings.zip'],
-            ['7zip-18.05/test.7z'],
-            ['7zip-18.05/test.tar'],
-            ['7zip-18.05/test.wim'],
-            ['7zip-18.05/test.zip'],
-            ['7zip-18.05/test.tgz'],
-            ['totalcommander-9.21a/test.tar'],
-            ['totalcommander-9.21a/test.zip'],
-            ['winrar-5.61/test.zip'],
-            ['winrar-5.61/test4.rar'],
-            ['winrar-5.61/test5.rar'],
-            ['linux/zip-0.3/test.zip'],
-            ['linux/p7zip-16.02/test.7z'],
-            ['linux/p7zip-16.02/test.tar'],
-            ['linux/p7zip-16.02/test.zip'],
+            ['windows/7zip-26.04/misnamed.7z'],
+            ['windows/7zip-26.04/warnings.zip'],
+            ['windows/7zip-18.05/sample.7z'],
+            ['windows/7zip-18.05/sample.tar'],
+            ['windows/7zip-18.05/sample.wim'],
+            ['windows/7zip-18.05/sample.zip'],
+            ['windows/7zip-18.05/sample.tgz'],
+            ['windows/totalcommander-9.21a/sample.tar'],
+            ['windows/totalcommander-9.21a/sample.zip'],
+            ['windows/winrar-5.61/sample.zip'],
+            ['windows/winrar-5.61/sample-rar4.rar'],
+            ['windows/winrar-5.61/sample-rar5.rar'],
+            ['linux/zip-0.3/sample.zip'],
+            ['linux/p7zip-16.02/sample.7z'],
+            ['linux/p7zip-16.02/sample.tar'],
+            ['linux/p7zip-16.02/sample.zip'],
+            ['linux/gnutar-1.34/sample.tar'],
+            ['linux/gnutar-1.34/sample.tar.gz'],
+            ['linux/bsdtar-3.6.2/sample.tar'],
+            ['linux/bsdtar-3.6.2/sample.zip'],
         ];
     }
 
@@ -169,9 +176,10 @@ class Archive7zTest extends TestCase
     public static function extractPasswdProvider(): array
     {
         return [
-            ['testPasswd.7z'],
-            ['testPasswd.zip'],
-            ['testPasswd.rar'],
+            ['windows/7zip-26.04/encrypted.7z'],
+            ['windows/7zip-26.04/encrypted.zip'],
+            ['windows/winrar-3/encrypted-rar3.rar'],
+            ['linux/rar-7.30/encrypted-rar5.rar'],
         ];
     }
 
@@ -340,22 +348,22 @@ class Archive7zTest extends TestCase
     public static function entryProvider(): array
     {
         return [
-            ['zip.7z'],
-            ['warnings.zip'],
-            ['7zip-18.05/test.7z'],
-            ['7zip-18.05/test.tar'],
-            ['7zip-18.05/test.wim'],
-            ['7zip-18.05/test.zip'],
-            ['7zip-18.05/test.tgz'],
-            ['totalcommander-9.21a/test.tar'],
-            ['totalcommander-9.21a/test.zip'],
-            ['winrar-5.61/test.zip'],
-            // ['winrar-5.61/test4.rar'], // not supported
-            // ['winrar-5.61/test5.rar'], // not supported
-            ['linux/zip-0.3/test.zip'],
-            ['linux/p7zip-16.02/test.7z'],
-            ['linux/p7zip-16.02/test.tar'],
-            ['linux/p7zip-16.02/test.zip'],
+            ['windows/7zip-26.04/misnamed.7z'],
+            ['windows/7zip-26.04/warnings.zip'],
+            ['windows/7zip-18.05/sample.7z'],
+            ['windows/7zip-18.05/sample.tar'],
+            ['windows/7zip-18.05/sample.wim'],
+            ['windows/7zip-18.05/sample.zip'],
+            ['windows/7zip-18.05/sample.tgz'],
+            ['windows/totalcommander-9.21a/sample.tar'],
+            ['windows/totalcommander-9.21a/sample.zip'],
+            ['windows/winrar-5.61/sample.zip'],
+            // ['windows/winrar-5.61/sample-rar4.rar'], // not supported
+            // ['windows/winrar-5.61/sample-rar5.rar'], // not supported
+            ['linux/zip-0.3/sample.zip'],
+            ['linux/p7zip-16.02/sample.7z'],
+            ['linux/p7zip-16.02/sample.tar'],
+            ['linux/p7zip-16.02/sample.zip'],
         ];
     }
 
@@ -473,22 +481,22 @@ class Archive7zTest extends TestCase
     public static function delProvider(): array
     {
         return [
-            // ['zip.7z'], // 7-Zip 21.02+ swears now at this
-            // ['warnings.zip'], // not supported
-            ['7zip-18.05/test.7z'],
-            ['7zip-18.05/test.tar'],
-            ['7zip-18.05/test.wim'],
-            ['7zip-18.05/test.zip'],
-            // ['7zip-18.05/test.tgz'],
-            ['totalcommander-9.21a/test.tar'],
-            ['totalcommander-9.21a/test.zip'],
-            ['winrar-5.61/test.zip'],
-            // ['winrar-5.61/test4.rar'], // not supported
-            // ['winrar-5.61/test5.rar'], // not supported
-            ['linux/zip-0.3/test.zip'],
-            ['linux/p7zip-16.02/test.7z'],
-            ['linux/p7zip-16.02/test.tar'],
-            ['linux/p7zip-16.02/test.zip'],
+            // ['windows/7zip-26.04/misnamed.7z'], // 7-Zip 21.02+ swears now at this
+            // ['windows/7zip-26.04/warnings.zip'], // not supported
+            ['windows/7zip-18.05/sample.7z'],
+            ['windows/7zip-18.05/sample.tar'],
+            ['windows/7zip-18.05/sample.wim'],
+            ['windows/7zip-18.05/sample.zip'],
+            // ['windows/7zip-18.05/sample.tgz'],
+            ['windows/totalcommander-9.21a/sample.tar'],
+            ['windows/totalcommander-9.21a/sample.zip'],
+            ['windows/winrar-5.61/sample.zip'],
+            // ['windows/winrar-5.61/sample-rar4.rar'], // not supported
+            // ['windows/winrar-5.61/sample-rar5.rar'], // not supported
+            ['linux/zip-0.3/sample.zip'],
+            ['linux/p7zip-16.02/sample.7z'],
+            ['linux/p7zip-16.02/sample.tar'],
+            ['linux/p7zip-16.02/sample.zip'],
         ];
     }
 
@@ -510,16 +518,16 @@ class Archive7zTest extends TestCase
     public static function delPasswdProvider(): array
     {
         return [
-            ['testPasswd.7z'],
-            ['testPasswd.zip'],
+            ['windows/7zip-26.04/encrypted.7z'],
+            ['windows/7zip-26.04/encrypted.zip'],
         ];
     }
 
     #[DataProvider('delPasswdProvider')]
     public function testDelEntryPasswd(string $fixtureArchiveName): void
     {
-        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
-        $obj = new Archive7z($this->tmpDir.'/'.$fixtureArchiveName);
+        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
         $obj->setPassword('123');
 
         self::assertInstanceOf(Entry::class, $obj->getEntry('test/test.txt'));
@@ -531,8 +539,8 @@ class Archive7zTest extends TestCase
     #[DataProvider('delPasswdProvider')]
     public function testDelEntryPasswdFail(string $fixtureArchiveName): void
     {
-        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
-        $obj = new Archive7z($this->tmpDir.'/'.$fixtureArchiveName);
+        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
 
         if ('zip' !== \pathinfo($fixtureArchiveName, \PATHINFO_EXTENSION)) { // zip allow delete files from encrypted archives 😮
             $this->expectException(ProcessFailedException::class);
@@ -544,8 +552,8 @@ class Archive7zTest extends TestCase
     #[DataProvider('delPasswdProvider')]
     public function testRenameEntryPasswd(string $fixtureArchiveName): void
     {
-        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
-        $obj = new Archive7z($this->tmpDir.'/'.$fixtureArchiveName);
+        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
         $obj->setPassword('123');
 
         $resultSrc = $obj->getEntry('test/test.txt');
@@ -570,13 +578,13 @@ class Archive7zTest extends TestCase
 
     public function testGetWarnings(): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/warnings.zip');
+        $obj = new Archive7z($this->fixturesDir.'/windows/7zip-26.04/warnings.zip');
         $warnings = $obj->getWarnings();
 
         self::assertCount(1, $warnings);
         self::assertSame('There are data after the end of archive', $warnings[0]);
 
-        $obj = new Archive7z($this->fixturesDir.'/zip.7z');
+        $obj = new Archive7z($this->fixturesDir.'/windows/7zip-26.04/misnamed.7z');
         $noWarnings = $obj->getWarnings();
         self::assertEmpty($noWarnings);
     }
@@ -587,7 +595,7 @@ class Archive7zTest extends TestCase
     public static function extractPasswdEncFilesProvider(): array
     {
         return [
-            ['testPasswdEncFiles.7z'],
+            ['windows/7zip-26.04/encrypted-header.7z'],
         ];
     }
 
@@ -663,8 +671,8 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdEncFilesProvider')]
     public function testDelEntryPasswdEncFiles(string $fixtureArchiveName): void
     {
-        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
-        $obj = new Archive7z($this->tmpDir.'/'.$fixtureArchiveName);
+        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
         $obj->setPassword('abc123');
 
         self::assertInstanceOf(Entry::class, $obj->getEntry('file1.txt'));
@@ -676,8 +684,8 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdEncFilesProvider')]
     public function testDelEntryPasswdEncFilesFail(string $fixtureArchiveName): void
     {
-        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.$fixtureArchiveName);
-        $obj = new Archive7z($this->tmpDir.'/'.$fixtureArchiveName);
+        \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
 
         $this->expectException(ProcessFailedException::class);
         $this->expectExceptionMessageMatches('/Can\s*not open encrypted archive\. Wrong password\?/');
@@ -820,9 +828,53 @@ class Archive7zTest extends TestCase
         self::assertCount(3, $entries); // 1 folder + 2 files in the folder
     }
 
+    /**
+     * @return string[][]
+     */
+    public static function featureProvider(): array
+    {
+        return [
+            ['windows/7zip-26.04/features.7z'],
+            ['windows/7zip-26.04/features.zip'],
+            ['linux/gnutar-1.34/features.tar'],
+            ['linux/bsdtar-3.6.2/features.tar'],
+            ['linux/bsdtar-3.6.2/features.zip'],
+        ];
+    }
+
+    #[DataProvider('featureProvider')]
+    public function testContentFeatures(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+
+        $entries = [];
+        foreach ($obj->getEntries() as $entry) {
+            $entries[(string) $entry->getUnixPath()] = $entry;
+        }
+
+        self::assertArrayHasKey('name with spaces.txt', $entries);
+        self::assertArrayHasKey('noextension', $entries);
+        self::assertArrayHasKey('UPPER.TXT', $entries);
+        self::assertArrayHasKey('zero.txt', $entries);
+        self::assertSame('0', $entries['zero.txt']->getSize());
+        self::assertArrayHasKey('nested/one/two/deep.txt', $entries);
+
+        self::assertTrue($entries['empty']->isDirectory());
+        self::assertTrue($entries['nested/one']->isDirectory());
+
+        $longNames = [];
+        foreach (\array_keys($entries) as $path) {
+            if (\str_starts_with($path, 'long-')) {
+                $longNames[] = $path;
+            }
+        }
+        self::assertCount(1, $longNames);
+        self::assertGreaterThan(100, \strlen((string) \current($longNames)));
+    }
+
     public function testPartialRar(): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/winrar-7.0/partial/WinRAR.part1.rar');
+        $obj = new Archive7z($this->fixturesDir.'/windows/winrar-7.0/multivolume.part1.rar');
         $entries = $obj->getEntries();
 
         self::assertIsArray($entries);

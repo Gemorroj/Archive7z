@@ -106,7 +106,7 @@ Archive7z\Entry Object
             [overwriteMode:protected] => -aos
             [outputDirectory:protected] => /path/to/custom/output/directory
             [binary7z:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
-            [filename:Archive7z\Archive7z:private] => s:\VCS\Git\Archive7z\tests/fixtures/testPasswd.7z
+            [filename:Archive7z\Archive7z:private] => s:\VCS\Git\Archive7z\tests/fixtures/windows/7zip-26.04/encrypted.7z
             [password:Archive7z\Archive7z:private] => 123
             [encryptFilenames:protected] => 
         )

@@ -31,7 +31,7 @@ class EntryTest extends TestCase
         ];
         $actualResults = [];
 
-        $archive = new Archive7z($this->fixturesDir.'/7zip-18.05/test.7z');
+        $archive = new Archive7z($this->fixturesDir.'/windows/7zip-18.05/sample.7z');
         foreach ($archive->getEntries() as $entry) {
             $actualResults[] = $entry->getPackedSize();
         }
@@ -63,7 +63,7 @@ class EntryTest extends TestCase
      */
     public function testDirectory(): void
     {
-        $archive = new Archive7z($this->fixturesDir.'/7zip-18.05/test.tar');
+        $archive = new Archive7z($this->fixturesDir.'/windows/7zip-18.05/sample.tar');
 
         $folder = $archive->getEntry('test');
         $ref = new \ReflectionObject($folder);
@@ -100,7 +100,7 @@ class EntryTest extends TestCase
             'Block = 0',
         ];
 
-        $archive = new Archive7z($this->fixturesDir.'/7zip-18.05/test.7z');
+        $archive = new Archive7z($this->fixturesDir.'/windows/7zip-18.05/sample.7z');
         [$firstEntry, $secondEntry] = $archive->getEntries();
 
         $actualResultFirst = $firstEntry->getData();
