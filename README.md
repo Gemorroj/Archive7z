@@ -38,14 +38,13 @@ composer require gemorroj/archive7z
 
 ### Limitations:
 
-- Names in a non-UTF-8 encoding (CP866, CP1251, ...) are not auto-detected: pass `ArchiveOptions::fallbackEncoding` (`FallbackEncoding::codepage(...)` exact, or `detect()` heuristic), otherwise they are unreadable on Linux and may be mangled on Windows.
-- For `zip`/`tar`/`gzip` the names are read from the container, so `codepage`/`detect` apply uniformly to listing, selection and extraction; other formats rely on 7-Zip's own decoding.
+- Filenames are given as UTF-8. Archives whose names use another encoding (CP866, CP1251, ...) need an explicit `ArchiveOptions::fallbackEncoding` — `FallbackEncoding::codepage(...)` (exact) or `detect()` (heuristic); otherwise they are unreadable on Linux and may be mangled on Windows.
+- For `zip`/`tar`/`gzip` the names are read from the container, so listing, selection and extraction behave the same on every platform; other formats rely on 7-Zip's own decoding.
 
 
 ### Recommendations:
-Archive7z focuses on wrapping up the original 7-zip features.
-But it is not always convenient to use in your application.
-Therefore, we recommend wrapping it by composition (a higher-level class that *has* an Archive7z instance) instead of extending it.
+Archive7z is `final` and wraps the 7-Zip feature set.
+Reuse it by composition — a higher-level class that *has* an `Archive7z` instance.
 
 
 ### Example:

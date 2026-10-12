@@ -14,6 +14,9 @@ final readonly class ArchiveOptions
     /**
      * Overwrite all existing files.
      *
+     * 7-Zip maps the "-ao" post char "asut" to Overwrite/Skip/Rename/
+     * RenameExisting (ArchiveCommandLine.cpp: kOverwritePostCharSet).
+     *
      * @see https://documentation.help/7-Zip/overwrite.htm
      */
     public const OVERWRITE_MODE_A = '-aoa';

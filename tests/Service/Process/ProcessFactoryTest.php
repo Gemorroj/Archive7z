@@ -48,7 +48,6 @@ class ProcessFactoryTest extends TestCase
         $args = $this->factory(true)->decorateExtract(new ArchiveOptions());
 
         self::assertContains('-sccUTF-8', $args);
-        self::assertContains('-scsUTF-8', $args);
     }
 
     public function testDecorateCompressSolidMode(): void

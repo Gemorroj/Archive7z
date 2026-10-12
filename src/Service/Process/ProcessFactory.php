@@ -31,6 +31,10 @@ final class ProcessFactory
      * a temporary list file with an explicit -scs code page, so 8-bit names are
      * matched the same way on every platform. Otherwise it is a regular argument.
      *
+     * -scs sets the list-file charset and accepts a numeric code page id
+     * (ArchiveCommandLine.cpp: FindCharset, kListfileCharSet); it does not apply
+     * to positional names, which is why a list file is used here.
+     *
      * @param string[] $arguments
      *
      * @return array{0: string[], 1: MaskListFile|null}
@@ -93,22 +97,24 @@ final class ProcessFactory
         $out = [];
         $out[] = '-y';
 
+        // '-mcp' is not a switch: it is the method property 'cp' (switch "m",
+        // ArchiveCommandLine.cpp), stored by handlers as _forceCodePage/
+        // _specifiedCodePage (TarHandler.cpp, ZipHandlerOut.cpp). ZIP reading
+        // honours it for names without a UTF-8 flag / Info-ZIP Unicode path
+        // (ZipItem.cpp: CItem::GetUnicodeString); other formats ignore it.
         $codepage = $options->getFallbackEncoding()->getCodepage();
         if (null !== $codepage) {
             $out[] = '-mcp='.$codepage;
         }
 
-        // https://github.com/p7zip-project/p7zip/blob/v17.05/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
-        /*
-  { "utf-8", CP_UTF8 },
-  { "win", CP_ACP },
-  { "dos", CP_OEMCP },
-  { "utf-16le", MY__CP_UTF16 },
-  { "utf-16be", MY__CP_UTF16BE }
-         */
-        if ($this->isWindows) { // doesn't work on *nix
+        // Console output charset; only "utf-8", "win" or "dos" are accepted
+        // (ArchiveCommandLine.cpp: FindCharset, byteOnlyCodePages). It drives the
+        // UString -> AString name conversion (StdOutStream.cpp:
+        // Convert_UString_to_AString); the default is CP_OEMCP and differs per
+        // platform, so force UTF-8 on Windows. -scs (list files) is not passed:
+        // it already defaults to UTF-8 and does not affect positional names.
+        if ($this->isWindows) {
             $out[] = '-sccUTF-8';
-            $out[] = '-scsUTF-8';
         }
 
         $password = $options->getPassword();
@@ -116,8 +122,8 @@ final class ProcessFactory
             $out[] = '-p'.$password;
         } else {
             // Pass an empty password so 7-Zip never prompts for it interactively
-            // (e.g. archives with an encrypted header). Without -p the process
-            // blocks on "Enter password (will not be echoed)" and times out.
+            // (UserInputUtils.cpp: "Enter password (will not be echoed)"); without
+            // it archives with an encrypted header block on stdin and time out.
             $out[] = '-p ';
         }
 
@@ -132,17 +138,11 @@ final class ProcessFactory
         $out = [];
         $out[] = '-y';
 
-        // https://github.com/p7zip-project/p7zip/blob/v17.05/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
-        /*
-  { "utf-8", CP_UTF8 },
-  { "win", CP_ACP },
-  { "dos", CP_OEMCP },
-  { "utf-16le", MY__CP_UTF16 },
-  { "utf-16be", MY__CP_UTF16BE }
-         */
-        if ($this->isWindows) {  // doesn't work on *nix
+        // See decorateExtract: -scc is the console output charset, forced to
+        // UTF-8 on Windows; the list-file charset (-scs) already defaults to
+        // UTF-8 and is not passed.
+        if ($this->isWindows) {
             $out[] = '-sccUTF-8';
-            $out[] = '-scsUTF-8';
         }
 
         $password = $options->getPassword();
