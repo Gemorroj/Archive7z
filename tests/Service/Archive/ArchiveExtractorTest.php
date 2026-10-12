@@ -59,6 +59,15 @@ class ArchiveExtractorTest extends TestCase
         self::assertFileExists($this->tmpDir.'/чавес.jpg');
     }
 
+    public function testExtractUtf8NamesWithDetect(): void
+    {
+        $extractor = $this->extractor('tar/linux/gnutar-1.34/sample.tar', FallbackEncoding::detect());
+        $extractor->extract($this->tmpDir);
+
+        self::assertFileExists($this->tmpDir.'/чавес.jpg');
+        self::assertFileExists($this->tmpDir.'/test/test.txt');
+    }
+
     private function extractor(string $file, ?FallbackEncoding $fallbackEncoding = null): ArchiveExtractor
     {
         $filename = $this->fixturesDir.'/'.$file;

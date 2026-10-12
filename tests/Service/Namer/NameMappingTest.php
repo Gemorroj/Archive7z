@@ -67,6 +67,34 @@ class NameMappingTest extends TestCase
         self::assertSame([['from' => $raw, 'to' => 'чавес.jpg']], $mapping->targets([$raw]));
     }
 
+    public function testRequiresRepairAsIs(): void
+    {
+        $mapping = $this->mapping('tar/linux/gnutar-1.34/sample.tar', FallbackEncoding::asIs());
+
+        self::assertFalse($mapping->requiresRepair());
+    }
+
+    public function testRequiresRepairFalseForUtf8Container(): void
+    {
+        $mapping = $this->mapping('tar/linux/gnutar-1.34/sample.tar', FallbackEncoding::codepage('Windows-1251'));
+
+        self::assertFalse($mapping->requiresRepair());
+    }
+
+    public function testRequiresRepairTrueForNonUtf8Container(): void
+    {
+        $mapping = $this->mapping('tar/windows/totalcommander-9.21a/sample.tar', FallbackEncoding::codepage('Windows-1251'));
+
+        self::assertTrue($mapping->requiresRepair());
+    }
+
+    public function testRequiresRepairTrueWithoutContainerReader(): void
+    {
+        $mapping = $this->mapping('x.7z', FallbackEncoding::codepage('Windows-1251'));
+
+        self::assertTrue($mapping->requiresRepair());
+    }
+
     private function mapping(string $file, FallbackEncoding $fallbackEncoding): NameMapping
     {
         return new NameMapping($fallbackEncoding, new NameReaderResolver(), $this->fixturesDir.'/'.$file);

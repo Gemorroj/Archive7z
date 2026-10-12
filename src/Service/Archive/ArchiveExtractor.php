@@ -55,7 +55,7 @@ final class ArchiveExtractor
      */
     private function repair(string $directory, ?string $mask): void
     {
-        if ($this->nameMapping->isAsIs()) {
+        if (!$this->nameMapping->requiresRepair()) {
             return;
         }
 
@@ -81,6 +81,9 @@ final class ArchiveExtractor
         }
 
         $renames = $this->nameMapping->targets($sources);
+        if ([] === $renames) {
+            return;
+        }
 
         $this->nameRepairer->rename($directory, $renames);
     }

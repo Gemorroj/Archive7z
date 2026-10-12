@@ -91,6 +91,38 @@ final class NameMapping
     }
 
     /**
+     * Whether the extracted names can differ from the decoded ones.
+     *
+     * For container formats (zip/tar/gzip) this is decided from the container
+     * itself, so an archive with already-UTF-8 names never triggers the extra
+     * listing/repair pass. For other formats it is unknown until the archive is
+     * listed, so it returns true.
+     */
+    public function requiresRepair(): bool
+    {
+        if ($this->fallbackEncoding->isAsIs()) {
+            return false;
+        }
+
+        $container = $this->containerNames();
+        if (null === $container) {
+            return true;
+        }
+
+        if (NameEncoder::resolve($this->fallbackEncoding, $this->sample($container))->isAsIs()) {
+            return false;
+        }
+
+        foreach ($container as $rawName) {
+            if (!$rawName->utf8 && !\mb_check_encoding($rawName->value, 'UTF-8')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param string[] $sourceNames
      *
      * @return array<int, array{from: string, to: string}>
