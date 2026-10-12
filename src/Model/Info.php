@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Archive7z;
+namespace Archive7z\Model;
+
+use Archive7z\Service\Parser\Parser;
 
 /*
 Path = test.7z

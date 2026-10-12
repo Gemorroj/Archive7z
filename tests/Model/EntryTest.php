@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Archive7z\Tests;
+namespace Archive7z\Tests\Model;
 
 use Archive7z\Archive7z;
-use Archive7z\Entry;
+use Archive7z\Model\Entry;
 use PHPUnit\Framework\TestCase;
 
 class EntryTest extends TestCase
@@ -14,7 +14,7 @@ class EntryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fixturesDir = __DIR__.'/fixtures';
+        $this->fixturesDir = \dirname(__DIR__).'/fixtures';
     }
 
     /**
@@ -39,23 +39,15 @@ class EntryTest extends TestCase
         self::assertEquals($expectedResults, $actualResults);
     }
 
-    public function testExtractTo(): void
+    public function testExtract(): void
     {
         $archive = new Archive7z('fake.7z');
         $entry = new Entry($archive, [
             'Path' => 'some-path',
         ]);
 
-        $originalOutputDirectory = $archive->getOutputDirectory();
-        try {
-            $entry->extractTo(\sys_get_temp_dir());
-        } catch (\Exception $e) {
-            self::assertSame(\realpath($originalOutputDirectory), $archive->getOutputDirectory());
-
-            return;
-        }
-
-        self::fail('Not catch expected exception');
+        $this->expectException(\Exception::class);
+        $entry->extract(\sys_get_temp_dir());
     }
 
     /**

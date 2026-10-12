@@ -1,0 +1,81 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Archive7z\Service\Encoder;
+
+use Archive7z\Config\FallbackEncoding;
+
+/**
+ * Resolved encoding of the archive entry names.
+ *
+ * Values that are not valid UTF-8 are decoded from the resolved source
+ * encoding; {@see self::encode()} does the opposite for user supplied names.
+ */
+final readonly class NameEncoder
+{
+    private function __construct(
+        private ?string $encoding,
+    ) {
+    }
+
+    public static function asIs(): self
+    {
+        return new self(null);
+    }
+
+    /**
+     * @param string|null $sample raw listing used to detect the encoding
+     */
+    public static function resolve(FallbackEncoding $fallbackEncoding, ?string $sample = null): self
+    {
+        if ($fallbackEncoding->isAsIs()) {
+            return self::asIs();
+        }
+
+        if ($fallbackEncoding->isDetect()) {
+            if (null === $sample || \mb_check_encoding($sample, 'UTF-8')) {
+                return self::asIs();
+            }
+
+            $encoding = \mb_detect_encoding($sample, FallbackEncoding::DETECT_CANDIDATES, true);
+
+            return \is_string($encoding) ? new self($encoding) : self::asIs();
+        }
+
+        return new self($fallbackEncoding->getEncoding());
+    }
+
+    public function isAsIs(): bool
+    {
+        return null === $this->encoding;
+    }
+
+    /**
+     * Converts a value from the archive name encoding to UTF-8.
+     */
+    public function decode(string $value): string
+    {
+        if (null === $this->encoding || \mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+
+        $converted = \mb_convert_encoding($value, 'UTF-8', $this->encoding);
+
+        return false === $converted ? $value : $converted;
+    }
+
+    /**
+     * Converts a UTF-8 value to the archive name encoding.
+     */
+    public function encode(string $value): string
+    {
+        if (null === $this->encoding) {
+            return $value;
+        }
+
+        $encoded = \mb_convert_encoding($value, $this->encoding, 'UTF-8');
+
+        return $encoded ?: $value;
+    }
+}

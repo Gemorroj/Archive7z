@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Archive7z;
+namespace Archive7z\Model;
+
+use Archive7z\Archive7z;
+use Archive7z\Exception\RuntimeException;
 
 /*
 p7zip: 7z
@@ -211,48 +214,31 @@ class Entry
     }
 
     /**
-     * @throws Exception
+     * @throws RuntimeException
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function getContent(): string
     {
         if (null === $this->path) {
-            throw new Exception('Entry path is not available');
+            throw new RuntimeException('Entry path is not available');
         }
 
         return $this->archive->getContent($this->path);
     }
 
     /**
-     * @throws Exception
+     * @param string|null $directory target directory (current directory by default)
+     *
+     * @throws RuntimeException
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function extract(): void
+    public function extract(?string $directory = null): void
     {
         if (null === $this->path) {
-            throw new Exception('Entry path is not available');
+            throw new RuntimeException('Entry path is not available');
         }
 
-        $this->archive->extractEntry($this->path);
-    }
-
-    /**
-     * @throws Exception
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     */
-    public function extractTo(string $directory): void
-    {
-        if (null === $this->path) {
-            throw new Exception('Entry path is not available');
-        }
-
-        $oldDirectory = $this->archive->getOutputDirectory();
-        $this->archive->setOutputDirectory($directory);
-        try {
-            $this->archive->extractEntry($this->path);
-        } finally {
-            $this->archive->setOutputDirectory($oldDirectory);
-        }
+        $this->archive->extractEntry($this->path, $directory);
     }
 
     public function getAttributes(): ?string

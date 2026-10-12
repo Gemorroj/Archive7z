@@ -11,12 +11,17 @@
     ],
     "require": {
         "php": ">=8.2",
-        "symfony/process": "^7.4||^8.0"
+        "symfony/process": "^7.4||^8.0",
+        "symfony/polyfill-mbstring": "^1.43"
     },
     "require-dev": {
+        "ext-mbstring": "*",
         "phpunit/phpunit": "^11.5||^12.5||^13",
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan": "^2.3"
+    },
+    "suggest": {
+        "ext-mbstring": "Recommended for the filename fallback encoding: the native mb_detect_encoding recognizes Cyrillic code pages, unlike the polyfill"
     },
     "autoload": {
         "psr-4": {

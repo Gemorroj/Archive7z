@@ -32,13 +32,19 @@ composer require gemorroj/archive7z
 
 ### Notes:
 - https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
-- Correctly works only with filenames in UTF-8 encoding [#15](https://github.com/Gemorroj/Archive7z/issues/15).
+- Filenames are expected to be UTF-8. For archives with legacy (non-UTF-8) names pass `fallbackEncoding` to `ArchiveOptions` (`FallbackEncoding::codepage(...)` or `detect()`), see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
+- Pass `env` to `ArchiveOptions` to set environment variables for the 7-Zip process (for example `env: ['LC_ALL' => 'ru_RU.UTF-8']`).
+
+
+### Limitations:
+
+- Legacy (non-UTF-8) filenames cannot be recovered reliably without an explicit `FallbackEncoding::codepage(...)` hint; `FallbackEncoding::detect()` is heuristic and has no effect on Windows.
 
 
 ### Recommendations:
 Archive7z focuses on wrapping up the original 7-zip features.
 But it is not always convenient to use in your application.
-Therefore, we recommend that you always create your own wrapper class over Archive7z with the addition of higher-level logic.
+Therefore, we recommend wrapping it by composition (a higher-level class that *has* an Archive7z instance) instead of extending it.
 
 
 ### Example:
@@ -46,16 +52,16 @@ Therefore, we recommend that you always create your own wrapper class over Archi
 ```php
 <?php
 use Archive7z\Archive7z;
+use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\SolidMode;
 
-class MyArchive7z extends Archive7z
-{
-    protected $timeout = 120;
-    protected $compressionLevel = 6;
-    protected $overwriteMode = self::OVERWRITE_MODE_S;
-    protected $outputDirectory = '/path/to/custom/output/directory';
-}
-
-$obj = new MyArchive7z('path_to_7z_file.7z');
+$obj = new Archive7z(
+    'path_to_7z_file.7z',
+    new ArchiveOptions(
+        compressionLevel: 6,
+        overwriteMode: ArchiveOptions::OVERWRITE_MODE_S,
+    ),
+);
 
 if (!$obj->isValid()) {
     throw new \RuntimeException('Incorrect archive');
@@ -63,71 +69,73 @@ if (!$obj->isValid()) {
 
 print_r($obj->getInfo());
 /*
-Archive7z\Info Object
+Archive7z\Model\Info Object
 (
-    [path:Archive7z\Info:private] => /full_path_to/test.7z
-    [type:Archive7z\Info:private] => 7z
-    [physicalSize:Archive7z\Info:private] => 165343
-    [headersSize:Archive7z\Info:private] => 241
-    [method:Archive7z\Info:private] => LZMA2:192k
-    [solid:Archive7z\Info:private] => +
-    [blocks:Archive7z\Info:private] => 1
-    [codePage:Archive7z\Info:private] => 
+    [data:Archive7z\Model\Info:private] => Array
+        (
+            ...
+        )
+
+    [path:Archive7z\Model\Info:private] => /full_path_to/test.7z
+    [type:Archive7z\Model\Info:private] => 7z
+    [physicalSize:Archive7z\Model\Info:private] => 165343
+    [headersSize:Archive7z\Model\Info:private] => 241
+    [method:Archive7z\Model\Info:private] => LZMA2:192k
+    [solid:Archive7z\Model\Info:private] => +
+    [blocks:Archive7z\Model\Info:private] => 1
+    [codePage:Archive7z\Model\Info:private] => 
 )
 */
 
 
-// $obj->setPassword('123');
-
 // $obj->getEntries('test', 100)
 foreach ($obj->getEntries() as $entry) {
-        print_r($entry);
+    print_r($entry);
 /*
-Archive7z\Entry Object
+Archive7z\Model\Entry Object
 (
-    [path:Archive7z\Entry:private] => 1.jpg
-    [size:Archive7z\Entry:private] => 91216
-    [packedSize:Archive7z\Entry:private] => 165344
-    [modified:Archive7z\Entry:private] => 2013-06-10 09:56:07
-    [created:Archive7z\Entry:private] => 
-    [attributes:Archive7z\Entry:private] => A
-    [crc:Archive7z\Entry:private] => 871345C2
-    [encrypted:Archive7z\Entry:private] => +
-    [method:Archive7z\Entry:private] => LZMA:192k 7zAES:19
-    [block:Archive7z\Entry:private] => 0
-    [comment:Archive7z\Entry:private] => 
-    [hostOs:Archive7z\Entry:private] => 
-    [characteristics:Archive7z\Entry:private] => 
-    [folder:Archive7z\Entry:private] => 
-    [archive:Archive7z\Entry:private] => MyArchive7z Object
+    [data:Archive7z\Model\Entry:private] => Array
         (
-            [timeout:protected] => 60
-            [compressionLevel:protected] => 6
-            [overwriteMode:protected] => -aos
-            [outputDirectory:protected] => /path/to/custom/output/directory
-            [binary7z:Archive7z\Archive7z:private] => C:\Program Files\7-Zip\7z.exe
-            [filename:Archive7z\Archive7z:private] => s:\VCS\Git\Archive7z\tests/fixtures/windows/7zip-26.04/encrypted.7z
-            [password:Archive7z\Archive7z:private] => 123
-            [encryptFilenames:protected] => 
+            ...
+        )
+
+    [path:Archive7z\Model\Entry:private] => 1.jpg
+    [size:Archive7z\Model\Entry:private] => 91216
+    [packedSize:Archive7z\Model\Entry:private] => 165102
+    [modified:Archive7z\Model\Entry:private] => 2013-06-10 09:56:07.0000000
+    [created:Archive7z\Model\Entry:private] => 
+    [attributes:Archive7z\Model\Entry:private] => A
+    [crc:Archive7z\Model\Entry:private] => 871345C2
+    [encrypted:Archive7z\Model\Entry:private] => -
+    [method:Archive7z\Model\Entry:private] => LZMA2:192k
+    [block:Archive7z\Model\Entry:private] => 0
+    [comment:Archive7z\Model\Entry:private] => 
+    [hostOs:Archive7z\Model\Entry:private] => 
+    [characteristics:Archive7z\Model\Entry:private] => 
+    [folder:Archive7z\Model\Entry:private] => 
+    [archive:Archive7z\Model\Entry:private] => Archive7z\Archive7z Object
+        (
+            ...
         )
 )
 */
 
     if ($entry->getPath() === 'test/test.txt') {
-        $entry->extractTo('path_to_extract_folder/'); // extract the file
+        $entry->extract('path_to_extract_folder/'); // extract the file
     }
 }
 
 echo $obj->getContent('test/test.txt'); // show content of the file
-$obj->setOutputDirectory('path_to_extract_folder/')->extract(); // extract the archive
-$obj->setOutputDirectory('path_to_extract_pass_folder/')->setPassword('pass')->extractEntry('test/test.txt'); // extract the password-protected entry
+$obj->extract('path_to_extract_folder/'); // extract the archive
 
-$solidMode = new SolidMode();
-$solidMode->setMode(SolidMode::OFF);
-$obj->setSolidMode($solidMode);
-$obj->addEntry(__DIR__);  // add directory to the archive (include subfolders)
-$obj->addEntry(__FILE__); // add file to the archive
+// password-protected archive: pass the password to ArchiveOptions
+$obj = new Archive7z('path_to_protected.7z', new ArchiveOptions(password: 'pass'));
+$obj->extractEntry('test/test.txt', 'path_to_extract_pass_folder/'); // extract the password-protected entry
 
-$obj->renameEntry(__FILE__, __FILE__.'new'); // rename the file in the archive
-$obj->delEntry(__FILE__.'new'); // remove the file from the archive
+$archive = new Archive7z('path_to_archive.7z', new ArchiveOptions(solidMode: SolidMode::off()));
+$archive->addEntry(__DIR__);  // add directory to the archive (include subfolders)
+$archive->addEntry(__FILE__); // add file to the archive
+
+$archive->renameEntry(__FILE__, __FILE__.'new'); // rename the file in the archive
+$archive->delEntry(__FILE__.'new'); // remove the file from the archive
 ```

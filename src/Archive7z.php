@@ -4,108 +4,60 @@ declare(strict_types=1);
 
 namespace Archive7z;
 
+use Archive7z\Config\ArchiveOptions;
+use Archive7z\Exception\RuntimeException;
+use Archive7z\Model\Entry;
+use Archive7z\Model\Info;
+use Archive7z\Service\Encoder\NameEncoder;
+use Archive7z\Service\Encoder\NameRepairer;
+use Archive7z\Service\Parser\Parser;
+use Archive7z\Service\Process\ExecutableFinder;
+use Archive7z\Service\Process\ProcessFactory;
 use Symfony\Component\Process\Process;
 
-class Archive7z
+final class Archive7z
 {
-    use Archive7zTrait;
+    private ArchiveOptions $options;
+
+    private ProcessFactory $processFactory;
+
+    private NameRepairer $nameRepairer;
+
+    private ?NameEncoder $nameEncoder = null;
 
     /**
-     * Overwrite all existing files.
+     * @param string              $filename 7z archive filename
+     * @param ArchiveOptions|null $options  Archive configuration
+     * @param string|null         $binary7z 7-zip binary path
+     * @param float|null          $timeout  Timeout of system process
      *
-     * @see https://documentation.help/7-Zip/overwrite.htm
-     *
-     * @var string
+     * @throws RuntimeException
      */
-    public const OVERWRITE_MODE_A = '-aoa';
-    /**
-     * Skip extracting of existing files.
-     *
-     * @see https://documentation.help/7-Zip/overwrite.htm
-     *
-     * @var string
-     */
-    public const OVERWRITE_MODE_S = '-aos';
-    /**
-     * Auto rename extracting file (for example, name.txt will be renamed to name_1.txt).
-     *
-     * @see https://documentation.help/7-Zip/overwrite.htm
-     *
-     * @var string
-     */
-    public const OVERWRITE_MODE_U = '-aou';
-    /**
-     * Auto rename existing file (for example, name.txt will be renamed to name_1.txt).
-     *
-     * @see https://documentation.help/7-Zip/overwrite.htm
-     *
-     * @var string
-     */
-    public const OVERWRITE_MODE_T = '-aot';
-
-    private string $binary7z;
-
-    private string $filename;
-
-    private ?string $password = null;
-
-    /**
-     * @see https://documentation.help/7-Zip/method.htm#Solid
-     */
-    private ?SolidMode $solidMode = null;
-
-    /**
-     * Encrypt archive header.
-     *
-     * Supported by 7z archives only.
-     *
-     * @see https://documentation.help/7-Zip/method.htm#HeaderEncrypt
-     */
-    protected bool $encryptFilenames = false;
-
-    /**
-     * From 0 to 9.
-     *
-     * @see https://documentation.help/7-Zip/method.htm#ZipX
-     * @see https://documentation.help/7-Zip/method.htm#BZip2X
-     * @see https://documentation.help/7-Zip/method.htm#SevenZipX
-     */
-    protected int $compressionLevel = 9;
-
-    protected string $outputDirectory = './';
-
-    /**
-     * @see https://documentation.help/7-Zip/overwrite.htm
-     */
-    protected string $overwriteMode = self::OVERWRITE_MODE_A;
-
-    /**
-     * Cli process timeout in seconds.
-     */
-    protected ?float $timeout = 60.0;
-
-    /**
-     * @param string      $filename 7z archive filename
-     * @param string|null $binary7z 7-zip binary path
-     * @param float|null  $timeout  Timeout of system process
-     *
-     * @throws Exception
-     */
-    public function __construct(string $filename, ?string $binary7z = null, ?float $timeout = 60.0)
-    {
-        $this->filename = $filename;
-        $this->timeout = $timeout;
-        $this->binary7z = static::makeBinary7z($binary7z);
+    public function __construct(
+        string $filename,
+        ?ArchiveOptions $options = null,
+        ?string $binary7z = null,
+        ?float $timeout = 60.0,
+    ) {
+        $this->options = $options ?? new ArchiveOptions();
+        $this->processFactory = new ProcessFactory(
+            ExecutableFinder::find($binary7z),
+            $filename,
+            $timeout,
+            ExecutableFinder::isWindows(),
+            $this->options->getEnv(),
+        );
+        $this->nameRepairer = new NameRepairer($this->options->getOverwriteMode());
     }
 
     /**
      * @param string|null $binary7z 7-zip binary path
      *
-     * @throws Exception
+     * @throws RuntimeException
      */
     public static function get7zipInformation(?string $binary7z = null): string
     {
-        $binary7z = static::makeBinary7z($binary7z);
+        $binary7z = ExecutableFinder::find($binary7z);
 
         $cmd = [
             \str_replace('\\', '/', $binary7z),
@@ -118,202 +70,140 @@ class Archive7z
         return $process->getOutput();
     }
 
-    public function getOutputDirectory(): string
+    public function getOptions(): ArchiveOptions
     {
-        return $this->outputDirectory;
+        return $this->options;
     }
 
     /**
-     * Directory must exist and be writable.
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      *
-     * @throws Exception
+     * @return string[]
      */
-    public function setOutputDirectory(string $directory): self
+    private function getRawListing(?string $pathMask): array
     {
+        $process = $this->processFactory->create('l', \array_merge(
+            ['-slt'],
+            $this->processFactory->decorateExtract($this->options),
+            null !== $pathMask ? [$pathMask] : [],
+        ));
+
+        $this->execute($process);
+
+        return \explode(\PHP_EOL, $process->getOutput());
+    }
+
+    /**
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     */
+    private function nameEncoder(): NameEncoder
+    {
+        if (null === $this->nameEncoder) {
+            $fallbackEncoding = $this->options->getFallbackEncoding();
+            $sample = $fallbackEncoding->isDetect()
+                ? \implode(\PHP_EOL, $this->getRawListing(null))
+                : null;
+
+            $this->nameEncoder = NameEncoder::resolve($fallbackEncoding, $sample);
+        }
+
+        return $this->nameEncoder;
+    }
+
+    private function convertOutput(string $output): string
+    {
+        return $this->nameEncoder()->decode($output);
+    }
+
+    private function encodeName(string $name): string
+    {
+        return $this->nameEncoder()->encode($name);
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    private function resolveOutputDirectory(?string $directory): string
+    {
+        if (null === $directory) {
+            return '.';
+        }
+
         $outputDirectory = \realpath($directory);
 
         if (false === $outputDirectory) {
-            throw new Exception('Output directory is not available');
+            throw new RuntimeException('Output directory is not available');
         }
 
         if (!\is_writable($outputDirectory)) {
-            throw new Exception('Output directory is not writable');
+            throw new RuntimeException('Output directory is not writable');
         }
 
-        $this->outputDirectory = $outputDirectory;
-
-        return $this;
-    }
-
-    public function setSolidMode(?SolidMode $solidMode): self
-    {
-        $this->solidMode = $solidMode;
-
-        return $this;
-    }
-
-    public function getSolidMode(): ?SolidMode
-    {
-        return $this->solidMode;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(?string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    public function getEncryptFilenames(): bool
-    {
-        return $this->encryptFilenames;
-    }
-
-    public function setEncryptFilenames(bool $encrypt): self
-    {
-        $this->encryptFilenames = $encrypt;
-
-        return $this;
-    }
-
-    public function getOverwriteMode(): string
-    {
-        return $this->overwriteMode;
+        return $outputDirectory;
     }
 
     /**
-     * @throws Exception
+     * Renames extracted entries whose names were not valid UTF-8 on disk.
+     *
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    public function setOverwriteMode(string $mode): self
+    private function repairExtractedNames(string $directory, ?string $pathMask): void
     {
-        if (!\in_array($mode, [
-            self::OVERWRITE_MODE_A,
-            self::OVERWRITE_MODE_S,
-            self::OVERWRITE_MODE_T,
-            self::OVERWRITE_MODE_U,
-        ], true)) {
-            throw new Exception('Overwrite mode is not available');
+        if ($this->options->getFallbackEncoding()->isAsIs()) {
+            return;
         }
 
-        $this->overwriteMode = $mode;
-
-        return $this;
-    }
-
-    /**
-     * @param string[] $arguments
-     */
-    private function makeProcess(string $command, array $arguments): Process
-    {
-        $cmd = [
-            \str_replace('\\', '/', $this->binary7z),
-            $command,
-            $this->filename,
-        ];
-        \array_push($cmd, ...$arguments);
-
-        return new Process($cmd, null, null, null, $this->timeout);
-    }
-
-    /**
-     * @return string[]
-     */
-    private function decorateCmdExtract(): array
-    {
-        $out = [];
-        $out[] = '-y';
-
-        // https://github.com/p7zip-project/p7zip/blob/v17.05/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
-        /*
-  { "utf-8", CP_UTF8 },
-  { "win", CP_ACP },
-  { "dos", CP_OEMCP },
-  { "utf-16le", MY__CP_UTF16 },
-  { "utf-16be", MY__CP_UTF16BE }
-         */
-        if (static::isOsWin()) { // doesn't work on *nix
-            $out[] = '-sccUTF-8';
-            $out[] = '-scsUTF-8';
+        $rawLines = $this->getRawListing($pathMask);
+        $nameEncoder = NameEncoder::resolve($this->options->getFallbackEncoding(), \implode(\PHP_EOL, $rawLines));
+        if ($nameEncoder->isAsIs()) {
+            return;
         }
 
-        if (null !== $this->password) {
-            $out[] = '-p'.$this->password;
-        } else {
-            // Pass an empty password so 7-Zip never prompts for it interactively
-            // (e.g. archives with an encrypted header). Without -p the process
-            // blocks on "Enter password (will not be echoed)" and times out.
-            $out[] = '-p ';
-        }
-
-        return $out;
-    }
-
-    /**
-     * @return string[]
-     */
-    private function decorateCmdCompress(): array
-    {
-        $out = [];
-        $out[] = '-y';
-
-        // https://github.com/p7zip-project/p7zip/blob/v17.05/CPP/7zip/UI/Common/ArchiveCommandLine.cpp#L959-L966
-        /*
-  { "utf-8", CP_UTF8 },
-  { "win", CP_ACP },
-  { "dos", CP_OEMCP },
-  { "utf-16le", MY__CP_UTF16 },
-  { "utf-16be", MY__CP_UTF16BE }
-         */
-        if (static::isOsWin()) {  // doesn't work on *nix
-            $out[] = '-sccUTF-8';
-            $out[] = '-scsUTF-8';
-        }
-
-        if (null !== $this->password) {
-            $out[] = '-p'.$this->password;
-
-            // Encrypt archive header if 7z archive
-            if ($this->encryptFilenames && '7z' === \pathinfo($this->filename, \PATHINFO_EXTENSION)) {
-                $out[] = '-mhe=on';
+        $paths = [];
+        $parser = new Parser($rawLines);
+        foreach ($parser->parseEntries() as $data) {
+            $path = $data['Path'] ?? null;
+            if (\is_string($path)) {
+                $paths[] = $path;
             }
         }
 
-        if ($this->solidMode) {
-            $out[] = '-ms='.((string) $this->solidMode);
-        }
-
-        return $out;
+        $this->nameRepairer->repair($directory, $paths, $nameEncoder);
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
      */
-    public function extract(): void
+    public function extract(?string $directory = null): void
     {
-        $process = $this->makeProcess('x', \array_merge([
-            $this->overwriteMode,
-            '-o'.$this->outputDirectory,
-        ], $this->decorateCmdExtract()));
+        $directory = $this->resolveOutputDirectory($directory);
+
+        $process = $this->processFactory->create('x', \array_merge([
+            $this->options->getOverwriteMode(),
+            '-o'.$directory,
+        ], $this->processFactory->decorateExtract($this->options)));
 
         $this->execute($process);
+
+        $this->repairExtractedNames($directory, null);
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
      */
-    public function extractEntry(string $path): void
+    public function extractEntry(string $path, ?string $directory = null): void
     {
-        $process = $this->makeProcess('x', \array_merge([
-            $this->overwriteMode,
-            '-o'.$this->outputDirectory,
-        ], $this->decorateCmdExtract(), [$path]));
+        $directory = $this->resolveOutputDirectory($directory);
+        $path = $this->encodeName($path);
+
+        $process = $this->processFactory->create('x', \array_merge([
+            $this->options->getOverwriteMode(),
+            '-o'.$directory,
+        ], $this->processFactory->decorateExtract($this->options), [$path]));
 
         $this->execute($process);
+
+        $this->repairExtractedNames($directory, $path);
     }
 
     /**
@@ -321,10 +211,12 @@ class Archive7z
      */
     public function getContent(string $path): string
     {
-        $process = $this->makeProcess('x', \array_merge([
+        $path = $this->encodeName($path);
+
+        $process = $this->processFactory->create('x', \array_merge([
             '-so',
             $path,
-        ], $this->decorateCmdExtract()));
+        ], $this->processFactory->decorateExtract($this->options)));
 
         return $this->execute($process)->getOutput();
     }
@@ -346,15 +238,19 @@ class Archive7z
      */
     public function getEntries(?string $pathMask = null, ?int $limit = null): array
     {
-        $process = $this->makeProcess('l', \array_merge(
+        if (null !== $pathMask) {
+            $pathMask = $this->encodeName($pathMask);
+        }
+
+        $process = $this->processFactory->create('l', \array_merge(
             ['-slt'],
-            $this->decorateCmdExtract(),
+            $this->processFactory->decorateExtract($this->options),
             null !== $pathMask ? [$pathMask] : [],
         ));
 
         $this->execute($process);
 
-        $out = \explode(\PHP_EOL, $process->getOutput());
+        $out = \explode(\PHP_EOL, $this->convertOutput($process->getOutput()));
 
         $list = [];
         $parser = new Parser($out);
@@ -370,13 +266,13 @@ class Archive7z
      */
     public function getInfo(): Info
     {
-        $process = $this->makeProcess('l', \array_merge([
+        $process = $this->processFactory->create('l', \array_merge([
             '-slt',
-        ], $this->decorateCmdExtract(), ['Archive7z fake path']));
+        ], $this->processFactory->decorateExtract($this->options), ['Archive7z fake path']));
 
         $this->execute($process);
 
-        $out = \explode(\PHP_EOL, $process->getOutput());
+        $out = \explode(\PHP_EOL, $this->convertOutput($process->getOutput()));
 
         $parser = new Parser($out);
 
@@ -388,12 +284,12 @@ class Archive7z
      *
      * @param bool $storePath store real filesystem path in archive
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|Exception
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
      */
     public function addEntry(string $path, bool $storePath = false): void
     {
         $args = [];
-        $args[] = '-mx='.$this->compressionLevel;
+        $args[] = '-mx='.$this->options->getCompressionLevel();
 
         if ($storePath) {
             $args[] = '-spf';
@@ -401,7 +297,7 @@ class Archive7z
         } else {
             $realPath = \realpath($path);
             if (false === $realPath) {
-                throw new Exception('Can not resolve absolute path for "'.$path.'"');
+                throw new RuntimeException('Can not resolve absolute path for "'.$path.'"');
             }
 
             if (\is_dir($realPath)) {
@@ -411,7 +307,7 @@ class Archive7z
             $args[] = $realPath;
         }
 
-        $process = $this->makeProcess('a', \array_merge($args, $this->decorateCmdCompress()));
+        $process = $this->processFactory->create('a', \array_merge($args, $this->processFactory->decorateCompress($this->options)));
 
         $this->execute($process);
     }
@@ -421,9 +317,11 @@ class Archive7z
      */
     public function delEntry(string $path): void
     {
-        $process = $this->makeProcess('d', \array_merge([
+        $path = $this->encodeName($path);
+
+        $process = $this->processFactory->create('d', \array_merge([
             $path,
-        ], $this->decorateCmdExtract()));
+        ], $this->processFactory->decorateExtract($this->options)));
 
         $this->execute($process);
     }
@@ -435,10 +333,13 @@ class Archive7z
      */
     public function renameEntry(string $pathSrc, string $pathDest): void
     {
-        $process = $this->makeProcess('rn', \array_merge([
+        $pathSrc = $this->encodeName($pathSrc);
+        $pathDest = $this->encodeName($pathDest);
+
+        $process = $this->processFactory->create('rn', \array_merge([
             $pathSrc,
             $pathDest,
-        ], $this->decorateCmdExtract()));
+        ], $this->processFactory->decorateExtract($this->options)));
 
         $this->execute($process);
     }
@@ -450,7 +351,7 @@ class Archive7z
      */
     public function isValid(): bool
     {
-        $process = $this->makeProcess('t', $this->decorateCmdExtract());
+        $process = $this->processFactory->create('t', $this->processFactory->decorateExtract($this->options));
 
         $this->execute($process);
 
@@ -466,7 +367,7 @@ class Archive7z
      */
     public function getWarnings(): array
     {
-        $process = $this->makeProcess('t', $this->decorateCmdExtract());
+        $process = $this->processFactory->create('t', $this->processFactory->decorateExtract($this->options));
 
         $this->execute($process);
 
@@ -500,8 +401,8 @@ class Archive7z
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
-    protected function execute(Process $process): Process
+    private function execute(Process $process): Process
     {
-        return $process->mustRun();
+        return $this->processFactory->run($process);
     }
 }
