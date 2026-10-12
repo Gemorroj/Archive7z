@@ -148,6 +148,9 @@ class Archive7zTest extends TestCase
             ['linux/gnutar-1.34/sample.tar.gz'],
             ['linux/bsdtar-3.6.2/sample.tar'],
             ['linux/bsdtar-3.6.2/sample.zip'],
+            ['macos/apple-archive/sample.zip'],
+            ['macos/zip/sample.zip'],
+            ['macos/bsdtar/sample.tar'],
         ];
     }
 
