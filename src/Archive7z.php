@@ -105,7 +105,7 @@ class Archive7z
      */
     public static function get7zipInformation(?string $binary7z = null): string
     {
-        $binary7z ??= static::makeBinary7z($binary7z);
+        $binary7z = static::makeBinary7z($binary7z);
 
         $cmd = [
             \str_replace('\\', '/', $binary7z),
@@ -244,7 +244,10 @@ class Archive7z
         if (null !== $this->password) {
             $out[] = '-p'.$this->password;
         } else {
-            $out[] = '-p '; // todo
+            // Pass an empty password so 7-Zip never prompts for it interactively
+            // (e.g. archives with an encrypted header). Without -p the process
+            // blocks on "Enter password (will not be echoed)" and times out.
+            $out[] = '-p ';
         }
 
         return $out;

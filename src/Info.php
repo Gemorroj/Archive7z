@@ -67,7 +67,7 @@ class Info
     }
 
     /**
-     * @param string[] $headerData
+     * @param array<string, string> $headerData
      */
     private function parseHeader(array $headerData): void
     {

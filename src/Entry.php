@@ -121,13 +121,18 @@ class Entry
     private function parseData(array $data): void
     {
         foreach ($data as $key => $value) {
-            switch ($key) {
-                case '':
-                    if (\is_array($value)) {
-                        $this->data = $value;
-                    }
-                    break;
+            if ('' === $key) {
+                if (\is_array($value)) {
+                    $this->data = $value;
+                }
+                continue;
+            }
 
+            if (!\is_string($value)) {
+                continue;
+            }
+
+            switch ($key) {
                 case 'Path':
                     $this->path = $value;
                     break;

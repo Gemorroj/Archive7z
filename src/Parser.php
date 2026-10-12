@@ -91,6 +91,7 @@ class Parser
     {
         $isHead = true;
         $list = [];
+        $raw = [];
         $i = 0;
 
         foreach ($this->data as $value) {
@@ -117,7 +118,11 @@ class Parser
             }
 
             $list[$i][\key($entry)] = \current($entry);
-            $list[$i][''][] = $value;
+            $raw[$i][] = $value;
+        }
+
+        foreach ($raw as $index => $lines) {
+            $list[$index][''] = $lines;
         }
 
         return $list;

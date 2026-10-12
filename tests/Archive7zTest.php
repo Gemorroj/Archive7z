@@ -54,6 +54,16 @@ class Archive7zTest extends TestCase
         \closedir($h);
     }
 
+    private static function resolvePath(string $path): string
+    {
+        $real = \realpath($path);
+        if (false === $real) {
+            self::fail('Cannot resolve path: '.$path);
+        }
+
+        return $real;
+    }
+
     public function testGet7zipInformation(): void
     {
         $info = Archive7z::get7zipInformation();
@@ -311,6 +321,8 @@ class Archive7zTest extends TestCase
         $obj->setOutputDirectory($this->tmpDir);
         $obj->setPassword('123');
         $obj->extractEntry('1.jpg');
+
+        self::assertFileExists($this->tmpDir.'/1.jpg');
     }
 
     #[DataProvider('extractPasswdProvider')]
@@ -330,7 +342,6 @@ class Archive7zTest extends TestCase
         $obj->setPassword('123');
         $result = $obj->getEntries();
 
-        self::assertIsArray($result);
         self::assertCount(5, $result); // 4 file + 1 directory
         self::assertInstanceOf(Entry::class, $result[0]);
     }
@@ -410,7 +421,7 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
-        $fullPath = \realpath($this->tmpDir.'/file.txt');
+        $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('111');
@@ -428,7 +439,7 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
-        $fullPath = \realpath($this->tmpDir.'/file.txt');
+        $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
         $obj->addEntry($fullPath);
@@ -440,7 +451,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryFullPathStore(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
-        $fullPath = \realpath($this->tmpDir.'/file.txt');
+        $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
         $obj->addEntry($fullPath, true);
@@ -452,7 +463,7 @@ class Archive7zTest extends TestCase
     public function testAddEntryLocalPath(): void
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/test.txt');
-        $localPath = \realpath($this->tmpDir.'/test.txt');
+        $localPath = self::resolvePath($this->tmpDir.'/test.txt');
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
         $obj->addEntry($localPath, true);
@@ -469,7 +480,7 @@ class Archive7zTest extends TestCase
         }
 
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/test/test.txt');
-        $localPath = \realpath($this->tmpDir);
+        $localPath = self::resolvePath($this->tmpDir);
 
         $obj = new Archive7z($this->tmpDir.'/test.7z');
         $obj->addEntry($localPath, true);
@@ -545,10 +556,15 @@ class Archive7zTest extends TestCase
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
         $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
 
-        if ('zip' !== \pathinfo($fixtureArchiveName, \PATHINFO_EXTENSION)) { // zip allow delete files from encrypted archives 😮
-            $this->expectException(ProcessFailedException::class);
+        // zip allows deleting files from encrypted archives
+        if ('zip' === \pathinfo($fixtureArchiveName, \PATHINFO_EXTENSION)) {
+            $obj->delEntry('test/test.txt');
+            self::assertNull($obj->getEntry('test/test.txt'));
+
+            return;
         }
 
+        $this->expectException(ProcessFailedException::class);
         $obj->delEntry('test/test.txt');
     }
 
@@ -621,7 +637,6 @@ class Archive7zTest extends TestCase
         $obj->setPassword('abc123');
         $result = $obj->getEntries();
 
-        self::assertIsArray($result);
         self::assertCount(2, $result); // 2 files
         self::assertInstanceOf(Entry::class, $result[0]);
     }
@@ -645,7 +660,7 @@ class Archive7zTest extends TestCase
     {
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file.txt');
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
-        $fullPath = \realpath($this->tmpDir.'/file.txt');
+        $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
         $obj = new Archive7z($tempArchive);
         $obj->setPassword('abc123');
@@ -788,7 +803,6 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
         $entries = $obj->getEntries(null, 2);
 
-        self::assertIsArray($entries);
         self::assertCount(2, $entries);
         self::assertInstanceOf(Entry::class, $entries[0]);
         self::assertInstanceOf(Entry::class, $entries[1]);
@@ -801,7 +815,6 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
         $entries = $obj->getEntries($path);
 
-        self::assertIsArray($entries);
         self::assertCount(1, $entries);
         self::assertInstanceOf(Entry::class, $entries[0]);
         self::assertSame($path, $entries[0]->getUnixPath());
@@ -814,7 +827,6 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
         $entries = $obj->getEntries($path);
 
-        self::assertIsArray($entries);
         self::assertCount(1, $entries);
         self::assertInstanceOf(Entry::class, $entries[0]);
         self::assertSame($path, $entries[0]->getUnixPath());
@@ -827,7 +839,6 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
         $entries = $obj->getEntries($path);
 
-        self::assertIsArray($entries);
         self::assertCount(3, $entries); // 1 folder + 2 files in the folder
     }
 
@@ -880,7 +891,6 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->fixturesDir.'/windows/winrar-7.0/multivolume.part1.rar');
         $entries = $obj->getEntries();
 
-        self::assertIsArray($entries);
         self::assertCount(1, $entries);
     }
 }
