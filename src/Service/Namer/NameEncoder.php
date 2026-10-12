@@ -78,9 +78,10 @@ final readonly class NameEncoder
     }
 
     /**
-     * Reverses 7-Zip's escape of bytes it cannot represent in its output
-     * (each such byte B becomes the private-use code point U+EF00 + B, e.g. on
-     * macOS). Raw 8-bit names (e.g. on Linux) contain no such code points.
+     * Reverses 7-Zip's escape of bytes it cannot represent (see UTFConvert.cpp:
+     * UTF_ESCAPE_PLANE + UTF_ESCAPE_BASE + byte, i.e. U+EF80..U+EFFF for bytes
+     * 0x80..0xFF; 7-Zip restores them the same way with (char)val). Raw 8-bit
+     * names (e.g. on Linux) contain no such code points.
      */
     private static function unescape(string $value): string
     {
@@ -88,7 +89,7 @@ final readonly class NameEncoder
             return $value;
         }
 
-        $result = \preg_replace_callback('/[\x{EF00}-\x{EFFF}]/u', static function (array $match): string {
+        $result = \preg_replace_callback('/[\x{EF80}-\x{EFFF}]/u', static function (array $match): string {
             $bytes = $match[0];
 
             return \chr(((\ord($bytes[1]) & 0x03) << 6) | (\ord($bytes[2]) & 0x3F));

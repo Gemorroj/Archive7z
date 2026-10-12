@@ -41,6 +41,14 @@ class NameEncoderTest extends TestCase
         self::assertSame('чавес.jpg', $encoder->decode($escaped));
     }
 
+    public function testDecodeKeepsNonEscapePrivateUse(): void
+    {
+        $encoder = NameEncoder::resolve(FallbackEncoding::codepage('Windows-1251'));
+
+        // Only U+EF80..U+EFFF are escape points (IS_ESCAPE_POINT masks 0xFFFFFF80).
+        self::assertSame("\u{EF00}", $encoder->decode("\u{EF00}"));
+    }
+
     public function testDetect(): void
     {
         $raw = \mb_convert_encoding('чавес', 'Windows-1251', 'UTF-8');
