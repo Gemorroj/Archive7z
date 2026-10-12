@@ -34,7 +34,13 @@ final readonly class NameEncoder
         }
 
         if ($fallbackEncoding->isDetect()) {
-            if (null === $sample || \mb_check_encoding($sample, 'UTF-8')) {
+            if (null === $sample) {
+                return self::asIs();
+            }
+
+            $sample = self::unescape($sample);
+
+            if (\mb_check_encoding($sample, 'UTF-8')) {
                 return self::asIs();
             }
 
@@ -56,13 +62,39 @@ final readonly class NameEncoder
      */
     public function decode(string $value): string
     {
-        if (null === $this->encoding || \mb_check_encoding($value, 'UTF-8')) {
+        if (null === $this->encoding) {
+            return $value;
+        }
+
+        $value = self::unescape($value);
+
+        if (\mb_check_encoding($value, 'UTF-8')) {
             return $value;
         }
 
         $converted = \mb_convert_encoding($value, 'UTF-8', $this->encoding);
 
         return false === $converted ? $value : $converted;
+    }
+
+    /**
+     * Reverses 7-Zip's escape of bytes it cannot represent in its output
+     * (each such byte B becomes the private-use code point U+EF00 + B, e.g. on
+     * macOS). Raw 8-bit names (e.g. on Linux) contain no such code points.
+     */
+    private static function unescape(string $value): string
+    {
+        if (!\mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+
+        $result = \preg_replace_callback('/[\x{EF00}-\x{EFFF}]/u', static function (array $match): string {
+            $bytes = $match[0];
+
+            return \chr(((\ord($bytes[1]) & 0x03) << 6) | (\ord($bytes[2]) & 0x3F));
+        }, $value);
+
+        return $result ?? $value;
     }
 
     /**
