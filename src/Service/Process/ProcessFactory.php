@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Archive7z\Service\Process;
 
 use Archive7z\Config\ArchiveOptions;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -22,6 +23,11 @@ final class ProcessFactory
         private readonly bool $isWindows,
         private readonly array $env = [],
     ) {
+    }
+
+    public function isWindows(): bool
+    {
+        return $this->isWindows;
     }
 
     /**
@@ -82,11 +88,22 @@ final class ProcessFactory
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * Runs the process, tolerating 7-Zip's non-fatal warning exit code.
+     *
+     * 7-Zip exit codes (ExitCode.h): 0 success, 1 non-fatal warnings, >=2 fatal.
+     *
+     * @throws ProcessFailedException
      */
     public function run(Process $process): Process
     {
-        return $process->mustRun();
+        $process->run();
+
+        $exitCode = $process->getExitCode();
+        if (0 !== $exitCode && 1 !== $exitCode) {
+            throw new ProcessFailedException($process);
+        }
+
+        return $process;
     }
 
     /**

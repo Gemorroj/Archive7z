@@ -10,6 +10,8 @@ use Archive7z\Config\SolidMode;
 use Archive7z\Service\Process\MaskListFile;
 use Archive7z\Service\Process\ProcessFactory;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class ProcessFactoryTest extends TestCase
 {
@@ -81,6 +83,22 @@ class ProcessFactoryTest extends TestCase
 
         $file->delete();
         self::assertFileDoesNotExist($file->getPath());
+    }
+
+    public function testRunToleratesWarningExitCode(): void
+    {
+        $process = new Process([\PHP_BINARY, '-r', 'exit(1);']);
+
+        self::assertSame($process, $this->factory()->run($process));
+        self::assertSame(1, $process->getExitCode());
+    }
+
+    public function testRunThrowsOnFatalExitCode(): void
+    {
+        $process = new Process([\PHP_BINARY, '-r', 'exit(2);']);
+
+        $this->expectException(ProcessFailedException::class);
+        $this->factory()->run($process);
     }
 
     public function testCreateWithEnv(): void

@@ -15,6 +15,12 @@ use Archive7z\Service\Process\ProcessFactory;
  */
 final class ArchiveLister
 {
+    /**
+     * A positional include mask that matches no entry, so 7-Zip prints only the
+     * archive header (the info block) and no entry list.
+     */
+    private const INFO_MASK = 'Archive7z fake path';
+
     public function __construct(
         private readonly ProcessFactory $processFactory,
         private readonly ArchiveOptions $options,
@@ -61,7 +67,7 @@ final class ArchiveLister
         $process = $this->processFactory->create('l', \array_merge(
             ['-slt'],
             $this->processFactory->decorateExtract($this->options),
-            ['Archive7z fake path'],
+            [self::INFO_MASK],
         ));
         $this->processFactory->run($process);
 

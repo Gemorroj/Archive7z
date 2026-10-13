@@ -131,7 +131,8 @@ final class Archive7z
     public function getContent(string $path): string
     {
         [$arguments, $maskFile] = $this->processFactory->withMask(
-            \array_merge(['-so'], $this->processFactory->decorateExtract($this->options)),
+            // Single entry by exact name: do not expand wildcards.
+            \array_merge(['-so', '-spd'], $this->processFactory->decorateExtract($this->options)),
             $this->options,
             $this->nameMapping->encode($path),
         );
@@ -242,10 +243,24 @@ final class Archive7z
      */
     public function renameEntry(string $pathSrc, string $pathDest): void
     {
-        $process = $this->processFactory->create('rn', \array_merge([
-            $this->nameMapping->encode($pathSrc),
-            $this->nameMapping->encode($pathDest),
-        ], $this->processFactory->decorateExtract($this->options)));
+        $windows = $this->processFactory->isWindows();
+
+        // Windows receives a Unicode command line and decodes archive names
+        // itself (via -mcp), so UTF-8 is passed as is. On *nix the command line
+        // is byte-oriented and compared against the archive's stored bytes, so
+        // -mcp must be omitted (it would make 7-Zip decode names and break it).
+        $names = $windows
+            ? [$pathSrc, $pathDest]
+            : [$this->nameMapping->encode($pathSrc), $this->nameMapping->encode($pathDest)];
+
+        $decorate = $this->processFactory->decorateExtract($this->options);
+        if (!$windows) {
+            $decorate = \array_values(\array_filter($decorate, static function (string $argument): bool {
+                return !\str_starts_with($argument, '-mcp');
+            }));
+        }
+
+        $process = $this->processFactory->create('rn', \array_merge($names, $decorate));
 
         $this->processFactory->run($process);
     }

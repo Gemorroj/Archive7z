@@ -31,6 +31,14 @@ class NameEncoderTest extends TestCase
         self::assertSame('чавес', $encoder->decode('чавес'));
     }
 
+    public function testAsIsUnescapes(): void
+    {
+        $encoder = NameEncoder::resolve(FallbackEncoding::asIs());
+        $escaped = "\u{EFF7}\u{EFE0}\u{EFE2}\u{EFE5}\u{EFF1}.jpg";
+
+        self::assertSame("\xF7\xE0\xE2\xE5\xF1.jpg", $encoder->decode($escaped));
+    }
+
     public function testDecodeEscapedBytes(): void
     {
         $encoder = NameEncoder::resolve(FallbackEncoding::codepage('Windows-1251'));

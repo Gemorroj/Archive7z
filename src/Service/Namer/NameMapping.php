@@ -18,19 +18,12 @@ use Archive7z\Service\Container\RawName;
  * mask/path encoding and extraction repair, so the configured fallback
  * encoding behaves the same way everywhere.
  */
-final class NameMapping
+final readonly class NameMapping
 {
-    private bool $containerResolved = false;
-
-    /**
-     * @var RawName[]|null
-     */
-    private ?array $containerNames = null;
-
     public function __construct(
-        private readonly FallbackEncoding $fallbackEncoding,
-        private readonly NameReaderResolver $nameReaderResolver,
-        private readonly string $filename,
+        private FallbackEncoding $fallbackEncoding,
+        private NameReaderResolver $nameReaderResolver,
+        private string $filename,
     ) {
     }
 
@@ -44,10 +37,7 @@ final class NameMapping
      */
     public function decodeOutput(string $output): string
     {
-        if ($this->fallbackEncoding->isAsIs()) {
-            return $output;
-        }
-
+        // Always go through the encoder: even asIs must reverse 7-Zip escapes.
         return NameEncoder::resolve($this->fallbackEncoding, $output)->decode($output);
     }
 
@@ -147,21 +137,18 @@ final class NameMapping
      */
     private function containerNames(): ?array
     {
-        if (!$this->containerResolved) {
-            $this->containerResolved = true;
-
-            $reader = $this->nameReaderResolver->resolve($this->filename);
-            if (null !== $reader) {
-                try {
-                    $names = $reader->read($this->filename);
-                    $this->containerNames = [] === $names ? null : $names;
-                } catch (RuntimeException) {
-                    $this->containerNames = null;
-                }
-            }
+        $reader = $this->nameReaderResolver->resolve($this->filename);
+        if (null === $reader) {
+            return null;
         }
 
-        return $this->containerNames;
+        try {
+            $names = $reader->read($this->filename);
+        } catch (RuntimeException) {
+            return null;
+        }
+
+        return [] === $names ? null : $names;
     }
 
     private function containerSample(): ?string

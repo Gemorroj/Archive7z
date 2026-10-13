@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace Archive7z\Service\Parser;
 
-class Parser
+final class Parser
 {
-    protected string $headTokenStart = '--';
+    private const HEAD_TOKEN_START = '--';
+    private const HEAD_TOKEN_END = '';
+    private const LIST_TOKEN_START = '----------';
+    private const NEW_FILE_LIST_TOKEN = '';
 
-    protected string $headTokenEnd = '';
-
-    protected string $listTokenStart = '----------';
-
-    protected string $newFileListToken = '';
     /**
      * raw cli output.
      *
      * @var string[]
      */
-    protected array $data;
+    private array $data;
 
     /**
      * @param string[] $data raw cli output
@@ -41,7 +39,7 @@ class Parser
         $data = '';
 
         foreach ($this->data as $value) {
-            if ($value === $this->headTokenStart) {
+            if (self::HEAD_TOKEN_START === $value) {
                 break;
             }
 
@@ -60,7 +58,7 @@ class Parser
         $list = [];
 
         foreach ($this->data as $value) {
-            if ($value === $this->headTokenStart) {
+            if (self::HEAD_TOKEN_START === $value) {
                 $isMess = false;
                 continue;
             }
@@ -69,7 +67,7 @@ class Parser
                 continue;
             }
 
-            if ($value === $this->headTokenEnd) {
+            if (self::HEAD_TOKEN_END === $value) {
                 break;
             }
 
@@ -95,7 +93,7 @@ class Parser
         $i = 0;
 
         foreach ($this->data as $value) {
-            if ($value === $this->listTokenStart) {
+            if (self::LIST_TOKEN_START === $value) {
                 $isHead = false;
                 continue;
             }
@@ -107,7 +105,7 @@ class Parser
             if (null !== $limit && $i >= $limit) {
                 break;
             }
-            if ($value === $this->newFileListToken) {
+            if (self::NEW_FILE_LIST_TOKEN === $value) {
                 ++$i;
                 continue;
             }
@@ -131,7 +129,7 @@ class Parser
     /**
      * @return array<string, string>|null
      */
-    protected function parseEntry(string $line): ?array
+    private function parseEntry(string $line): ?array
     {
         if (!\str_contains($line, ' =')) {
             return null;
@@ -145,7 +143,7 @@ class Parser
     /**
      * @return array<string, string>|null
      */
-    protected function parseHeaderLine(string $line): ?array
+    private function parseHeaderLine(string $line): ?array
     {
         if (\str_starts_with($line, 'ERROR:') || \str_starts_with($line, 'Open WARNING:')) {
             return null;

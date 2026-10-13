@@ -39,11 +39,14 @@ final class ArchiveExtractor
      */
     private function run(string $directory, ?string $mask): void
     {
+        $base = [$this->options->getOverwriteMode(), '-o'.$directory];
+        if (null !== $mask) {
+            // Extract a single entry by its exact name: do not expand wildcards.
+            $base[] = '-spd';
+        }
+
         [$arguments, $maskFile] = $this->processFactory->withMask(
-            \array_merge(
-                [$this->options->getOverwriteMode(), '-o'.$directory],
-                $this->processFactory->decorateExtract($this->options),
-            ),
+            \array_merge($base, $this->processFactory->decorateExtract($this->options)),
             $this->options,
             $mask,
         );
@@ -70,8 +73,13 @@ final class ArchiveExtractor
             return;
         }
 
+        $base = ['-slt'];
+        if (null !== $mask) {
+            $base[] = '-spd';
+        }
+
         [$arguments, $maskFile] = $this->processFactory->withMask(
-            \array_merge(['-slt'], $this->processFactory->decorateExtract($this->options)),
+            \array_merge($base, $this->processFactory->decorateExtract($this->options)),
             $this->options,
             $mask,
         );

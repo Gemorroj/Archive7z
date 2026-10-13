@@ -173,6 +173,21 @@ class Archive7zTest extends TestCase
         self::assertStringStartsWith("\xFF\xD8", $content);
     }
 
+    public function testGetContentDoesNotExpandWildcards(): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/tar/linux/gnutar-1.34/sample.tar');
+
+        self::assertSame('', $obj->getContent('*.jpg'));
+    }
+
+    public function testExtractEntryDoesNotExpandWildcards(): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/tar/linux/gnutar-1.34/sample.tar');
+        $obj->extractEntry('*.jpg', $this->tmpDir);
+
+        self::assertSame([], \glob($this->tmpDir.'/*') ?: []);
+    }
+
     /**
      * @return string[][]
      */
@@ -695,6 +710,23 @@ class Archive7zTest extends TestCase
         $obj = new Archive7z($this->fixturesDir.'/zip/windows/7zip-26.04/misnamed.7z');
         $noWarnings = $obj->getWarnings();
         self::assertEmpty($noWarnings);
+    }
+
+    public function testRenameNonUtf8Entry(): void
+    {
+        $archive = $this->tmpDir.'/rename.zip';
+        \copy($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip', $archive);
+
+        $obj = new Archive7z($archive, new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')));
+        $obj->renameEntry('чавес.jpg', 'renamed.jpg');
+
+        $paths = [];
+        foreach ($obj->getEntries() as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        self::assertContains('renamed.jpg', $paths);
+        self::assertNotContains('чавес.jpg', $paths);
     }
 
     /**

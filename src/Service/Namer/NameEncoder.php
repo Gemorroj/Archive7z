@@ -59,16 +59,15 @@ final readonly class NameEncoder
 
     /**
      * Converts a value from the archive name encoding to UTF-8.
+     *
+     * 7-Zip byte escapes (see {@see self::unescape()}) are always reversed,
+     * also for asIs, since they are a lossless transport artifact, not decoding.
      */
     public function decode(string $value): string
     {
-        if (null === $this->encoding) {
-            return $value;
-        }
-
         $value = self::unescape($value);
 
-        if (\mb_check_encoding($value, 'UTF-8')) {
+        if (null === $this->encoding || \mb_check_encoding($value, 'UTF-8')) {
             return $value;
         }
 
