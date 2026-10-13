@@ -25,7 +25,26 @@ class FallbackEncodingTest extends TestCase
 
         self::assertTrue($encoding->isDetect());
         self::assertFalse($encoding->isAsIs());
+        self::assertFalse($encoding->isCallback());
         self::assertNull($encoding->getEncoding());
+        self::assertSame(FallbackEncoding::DETECT_CANDIDATES, $encoding->getDetectCandidates());
+    }
+
+    public function testDetectCustomCandidates(): void
+    {
+        self::assertSame(['CP866', 'KOI8-R'], FallbackEncoding::detect(['CP866', 'KOI8-R'])->getDetectCandidates());
+    }
+
+    public function testDetectEmptyCandidatesUseDefault(): void
+    {
+        self::assertSame(FallbackEncoding::DETECT_CANDIDATES, FallbackEncoding::detect([])->getDetectCandidates());
+    }
+
+    public function testDetectUnknownCandidateThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        FallbackEncoding::detect(['NOPE']);
     }
 
     public function testCodepage(): void
@@ -38,15 +57,24 @@ class FallbackEncodingTest extends TestCase
         self::assertSame(1251, $encoding->getCodepage());
     }
 
-    public function testUnknownCodepageNumber(): void
+    public function testCodepageWithoutZipNumber(): void
     {
-        self::assertNull(FallbackEncoding::codepage('X-Unknown')->getCodepage());
+        // A valid encoding that has no 7-Zip -mcp number yields no code page.
+        self::assertNull(FallbackEncoding::codepage('SJIS')->getCodepage());
     }
 
     public function testEmptyCodepage(): void
     {
         $this->expectException(InvalidArgumentException::class);
         FallbackEncoding::codepage('');
+    }
+
+    public function testUnknownCodepageThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown encoding "NOPE"');
+
+        FallbackEncoding::codepage('NOPE');
     }
 
     public function testCallback(): void

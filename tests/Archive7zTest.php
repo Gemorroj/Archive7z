@@ -115,6 +115,21 @@ class Archive7zTest extends TestCase
         self::assertContains('чавес.jpg', $paths);
     }
 
+    public function testFallbackEncodingDetectCustomCandidates(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip',
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect(['CP866'])),
+        );
+
+        $paths = [];
+        foreach ($obj->getEntries() as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        self::assertContains('чавес.jpg', $paths);
+    }
+
     public function testFallbackEncodingCallback(): void
     {
         $obj = new Archive7z(

@@ -17,6 +17,12 @@ use Archive7z\Config\FallbackEncoding;
 final readonly class NameEncoder
 {
     /**
+     * Minimum plausibility score for a detected encoding to be trusted; below it
+     * the listing is left as-is rather than confidently mis-decoded.
+     */
+    private const DETECT_MIN_SCORE = 0.3;
+
+    /**
      * @param \Closure(string): string $decode raw value -> UTF-8 (7-Zip escapes already reversed)
      * @param \Closure(string): string $encode UTF-8 -> raw value
      */
@@ -45,7 +51,7 @@ final readonly class NameEncoder
         }
 
         if ($fallbackEncoding->isDetect()) {
-            return self::fromDetection($sample);
+            return self::fromDetection($sample, $fallbackEncoding->getDetectCandidates());
         }
 
         $encoding = $fallbackEncoding->getEncoding();
@@ -83,7 +89,10 @@ final readonly class NameEncoder
         return new self(self::identityCallback(), self::identityCallback(), true);
     }
 
-    private static function fromDetection(?string $sample): self
+    /**
+     * @param string[] $candidates
+     */
+    private static function fromDetection(?string $sample, array $candidates): self
     {
         if (null === $sample) {
             return self::identity();
@@ -94,9 +103,60 @@ final readonly class NameEncoder
             return self::identity();
         }
 
-        $encoding = \mb_detect_encoding($sample, FallbackEncoding::DETECT_CANDIDATES, true);
+        $best = null;
+        $bestScore = self::DETECT_MIN_SCORE;
+        foreach ($candidates as $encoding) {
+            $score = self::score($encoding, $sample);
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $encoding;
+            }
+        }
 
-        return \is_string($encoding) ? self::fromEncoding($encoding) : self::identity();
+        return null === $best ? self::identity() : self::fromEncoding($best);
+    }
+
+    /**
+     * Plausibility of decoding the sample (all names) with an encoding: the
+     * average score over its lines. A wrong encoding usually yields control or
+     * unassigned characters and scores low; related single-byte encodings may
+     * score equally, in which case the candidate order decides.
+     *
+     * @return float 0..1, or -INF when the encoding cannot represent the bytes
+     */
+    private static function score(string $encoding, string $sample): float
+    {
+        $sum = 0.0;
+        $lines = 0;
+        foreach (\explode("\n", $sample) as $line) {
+            if ('' === $line) {
+                continue;
+            }
+
+            $decoded = \mb_convert_encoding($line, 'UTF-8', $encoding);
+            if (false === $decoded) {
+                return -\INF;
+            }
+
+            $sum += self::scoreText($decoded);
+            ++$lines;
+        }
+
+        return $lines > 0 ? $sum / $lines : 0.0;
+    }
+
+    private static function scoreText(string $text): float
+    {
+        $length = \mb_strlen($text, 'UTF-8');
+        if (0 === $length) {
+            return 0.0;
+        }
+
+        $good = (int) \preg_match_all('/[\p{L}\p{N}]/u', $text);
+        $neutral = (int) \preg_match_all('/[\p{Zs}\p{P}\p{S}]/u', $text);
+        $bad = (int) \preg_match_all('/[\x{00}-\x{08}\x{0B}\x{0C}\x{0E}-\x{1F}\x{7F}-\x{9F}\x{FFFD}\p{Cn}\p{Co}\p{Cs}]/u', $text);
+
+        return ($good + 0.5 * $neutral - 2.0 * $bad) / $length;
     }
 
     private static function fromEncoding(string $encoding): self

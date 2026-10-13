@@ -43,6 +43,7 @@ composer require gemorroj/archive7z
 use Archive7z\Archive7z;
 use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\SolidMode;
+use Archive7z\Config\FallbackEncoding;
 
 $obj = new Archive7z(
     'path_to_7z_file.7z',
@@ -131,12 +132,7 @@ $archive->delEntry(__FILE__.'new'); // remove the file from the archive
 
 // Custom name encoding:
 // When an archive stores non-UTF-8 names without encoding metadata (old `zip`/`tar`)
-use Archive7z\Archive7z;
-use Archive7z\Config\ArchiveOptions;
-use Archive7z\Config\FallbackEncoding;
-
-// e.g. an old DOS/Windows archive with CP866 names; a legacy tool with its own
-// scheme, or mixed encodings, is handled the same way.
+// e.g. an old DOS/Windows archive with CP866 names; a legacy tool with its own scheme, or mixed encodings, is handled the same way.
 $obj = new Archive7z(
     'path_to_archive.zip',
     new ArchiveOptions(fallbackEncoding: FallbackEncoding::viaCallback(

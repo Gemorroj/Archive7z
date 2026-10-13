@@ -79,6 +79,37 @@ class NameEncoderTest extends TestCase
         self::assertTrue(NameEncoder::resolve(FallbackEncoding::detect())->isAsIs());
     }
 
+    public function testDetectCustomCandidates(): void
+    {
+        $raw = \mb_convert_encoding('чавес', 'CP866', 'UTF-8');
+
+        self::assertSame('чавес', NameEncoder::resolve(FallbackEncoding::detect(['CP866']), $raw)->decode($raw));
+        self::assertSame(
+            \mb_convert_encoding($raw, 'UTF-8', 'Windows-1252'),
+            NameEncoder::resolve(FallbackEncoding::detect(['Windows-1252']), $raw)->decode($raw),
+        );
+    }
+
+    public function testDetectRanksByScore(): void
+    {
+        $raw = \mb_convert_encoding('чавес', 'CP866', 'UTF-8');
+
+        // Windows-1252 is listed first, but CP866 decodes to more letters.
+        $encoder = NameEncoder::resolve(FallbackEncoding::detect(['Windows-1252', 'CP866']), $raw);
+
+        self::assertFalse($encoder->isAsIs());
+        self::assertSame('чавес', $encoder->decode($raw));
+    }
+
+    public function testDetectFallsBackToAsIsOnGarbage(): void
+    {
+        // These bytes decode to C1 control characters under ISO-8859-5, so the
+        // score stays below the threshold and nothing is trusted.
+        $garbage = "\x80\x81\x82";
+
+        self::assertTrue(NameEncoder::resolve(FallbackEncoding::detect(['ISO-8859-5']), $garbage)->isAsIs());
+    }
+
     public function testCallback(): void
     {
         $raw = \mb_convert_encoding('чавес', 'Windows-1251', 'UTF-8');

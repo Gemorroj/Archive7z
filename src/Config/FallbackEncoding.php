@@ -65,11 +65,15 @@ final readonly class FallbackEncoding
         'UTF-8' => 65001,
     ];
 
+    /**
+     * @param string[]|null $detectCandidates candidate encodings for detect()
+     */
     private function __construct(
         private readonly string $mode,
         private readonly ?string $encoding = null,
         private readonly ?\Closure $decodeCallback = null,
         private readonly ?\Closure $encodeCallback = null,
+        private readonly ?array $detectCandidates = null,
     ) {
     }
 
@@ -82,11 +86,51 @@ final readonly class FallbackEncoding
     }
 
     /**
-     * Try to guess the encoding with mb_detect_encoding().
+     * Guess the encoding from the listing, ranking the candidates by how
+     * plausible the decoded text is (see {@see NameEncoder}).
+     *
+     * @param string[]|null $candidates encodings to try, in preference order
+     *
+     * @throws InvalidArgumentException when a candidate is not a known encoding
      */
-    public static function detect(): self
+    public static function detect(?array $candidates = null): self
     {
-        return new self(self::MODE_DETECT);
+        return new self(
+            self::MODE_DETECT,
+            detectCandidates: null === $candidates || [] === $candidates ? null : self::validateCandidates($candidates),
+        );
+    }
+
+    /**
+     * @param array<int|string, mixed> $candidates
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return string[]
+     */
+    private static function validateCandidates(array $candidates): array
+    {
+        $validated = [];
+        foreach ($candidates as $candidate) {
+            if (!\is_string($candidate) || '' === $candidate || !self::isKnownEncoding($candidate)) {
+                throw new InvalidArgumentException('Unknown encoding "'.(\is_string($candidate) ? $candidate : \gettype($candidate)).'"');
+            }
+
+            $validated[] = $candidate;
+        }
+
+        return $validated;
+    }
+
+    private static function isKnownEncoding(string $encoding): bool
+    {
+        try {
+            \mb_convert_encoding('', 'UTF-8', $encoding);
+        } catch (\ValueError) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -98,6 +142,10 @@ final readonly class FallbackEncoding
     {
         if ('' === $encoding) {
             throw new InvalidArgumentException('Encoding must not be empty');
+        }
+
+        if (!self::isKnownEncoding($encoding)) {
+            throw new InvalidArgumentException('Unknown encoding "'.$encoding.'"');
         }
 
         return new self(self::MODE_ENCODING, $encoding);
@@ -139,6 +187,16 @@ final readonly class FallbackEncoding
     public function isDetect(): bool
     {
         return self::MODE_DETECT === $this->mode;
+    }
+
+    /**
+     * Candidate encodings used by detect(), in preference order.
+     *
+     * @return string[]
+     */
+    public function getDetectCandidates(): array
+    {
+        return $this->detectCandidates ?? self::DETECT_CANDIDATES;
     }
 
     public function isCallback(): bool
