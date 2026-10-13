@@ -5,33 +5,20 @@ declare(strict_types=1);
 namespace Archive7z\Service\Process;
 
 use Archive7z\Exception\RuntimeException;
+use Symfony\Component\Process\ExecutableFinder as SymfonyExecutableFinder;
 
 final class ExecutableFinder
 {
     /**
-     * 7zz - official standalone 7-Zip for Linux/macOS (7-zip.org, Homebrew).
-     * 7z  - distribution package (e.g. the Debian/Ubuntu "7zip" package).
+     * Preference order. 7zz (the official standalone build) is tried first so
+     * that, when both are installed, an explicit official build wins over an
+     * old distribution 7z (e.g. p7zip 16.02, which this library does not
+     * support). 7z covers distribution packages and Windows, where 7zz does
+     * not exist.
      *
      * @var string[]
      */
-    private const NIX_PATHS = [
-        '/usr/bin/7z',
-        '/usr/bin/7zz',
-        '/usr/local/bin/7z',
-        '/usr/local/bin/7zz',
-        '/opt/homebrew/bin/7z',
-        '/opt/homebrew/bin/7zz',
-    ];
-
-    /**
-     * @var string[]
-     */
-    private const WINDOWS_PATHS = ['C:\Program Files\7-Zip\7z.exe']; // %ProgramFiles%\7-Zip\7z.exe
-
-    public static function isWindows(): bool
-    {
-        return 'Windows' === \PHP_OS_FAMILY;
-    }
+    private const NAMES = ['7zz', '7z'];
 
     /**
      * @throws RuntimeException
@@ -59,14 +46,39 @@ final class ExecutableFinder
 
     private static function autoDetect(): ?string
     {
-        $paths = self::isWindows() ? self::WINDOWS_PATHS : self::NIX_PATHS;
+        $finder = new SymfonyExecutableFinder();
 
-        foreach ($paths as $path) {
-            if (\file_exists($path)) {
-                return $path;
+        foreach (self::NAMES as $name) {
+            $found = $finder->find($name, null, self::extraDirs());
+            if (null !== $found) {
+                return $found;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Well-known install directories, checked in addition to PATH: batches and
+     * non-interactive processes often lack the Homebrew or Windows "Program
+     * Files" directories in PATH.
+     *
+     * @return string[]
+     */
+    private static function extraDirs(): array
+    {
+        if ('Windows' === \PHP_OS_FAMILY) {
+            $dirs = [];
+            foreach (['ProgramFiles', 'ProgramFiles(x86)', 'ProgramW6432'] as $variable) {
+                $base = \getenv($variable);
+                if (\is_string($base) && '' !== $base) {
+                    $dirs[] = $base.'\7-Zip';
+                }
+            }
+
+            return $dirs;
+        }
+
+        return ['/usr/bin', '/usr/local/bin', '/opt/homebrew/bin', '/opt/local/bin'];
     }
 }

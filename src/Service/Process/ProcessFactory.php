@@ -22,14 +22,8 @@ final class ProcessFactory
         private readonly string $binary7z,
         private readonly string $filename,
         private readonly ?float $timeout,
-        private readonly bool $isWindows,
         private readonly array $env = [],
     ) {
-    }
-
-    public function isWindows(): bool
-    {
-        return $this->isWindows;
     }
 
     /**
@@ -168,7 +162,7 @@ final class ProcessFactory
         // Convert_UString_to_AString); the default is CP_OEMCP and differs per
         // platform, so force UTF-8 on Windows. -scs (list files) is not passed:
         // it already defaults to UTF-8 and does not affect positional names.
-        if ($this->isWindows) {
+        if ('Windows' === \PHP_OS_FAMILY) {
             $out[] = '-sccUTF-8';
         }
 
@@ -196,7 +190,7 @@ final class ProcessFactory
         // See decorateExtract: -scc is the console output charset, forced to
         // UTF-8 on Windows; the list-file charset (-scs) already defaults to
         // UTF-8 and is not passed.
-        if ($this->isWindows) {
+        if ('Windows' === \PHP_OS_FAMILY) {
             $out[] = '-sccUTF-8';
         }
 

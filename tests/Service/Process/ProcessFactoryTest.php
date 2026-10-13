@@ -15,9 +15,9 @@ use Symfony\Component\Process\Process;
 
 class ProcessFactoryTest extends TestCase
 {
-    private function factory(bool $isWindows = false): ProcessFactory
+    private function factory(): ProcessFactory
     {
-        return new ProcessFactory('/usr/bin/7z', 'archive.7z', 30.0, $isWindows);
+        return new ProcessFactory('/usr/bin/7z', 'archive.7z', 30.0);
     }
 
     public function testCreate(): void
@@ -44,7 +44,7 @@ class ProcessFactoryTest extends TestCase
         \file_put_contents($zip, "PK\x03\x04");
 
         try {
-            $args = (new ProcessFactory('/usr/bin/7z', $zip, 30.0, false))->decorateExtract($options);
+            $args = (new ProcessFactory('/usr/bin/7z', $zip, 30.0))->decorateExtract($options);
         } finally {
             \unlink($zip);
         }
@@ -70,7 +70,7 @@ class ProcessFactoryTest extends TestCase
         \file_put_contents($tar, \str_repeat("\0", 257).'ustar'.\str_repeat("\0", 100));
 
         try {
-            $args = (new ProcessFactory('/usr/bin/7z', $tar, 30.0, false))->decorateExtract($options);
+            $args = (new ProcessFactory('/usr/bin/7z', $tar, 30.0))->decorateExtract($options);
         } finally {
             \unlink($tar);
         }
@@ -80,9 +80,13 @@ class ProcessFactoryTest extends TestCase
 
     public function testDecorateExtractWindowsCharset(): void
     {
-        $args = $this->factory(true)->decorateExtract(new ArchiveOptions());
+        $args = $this->factory()->decorateExtract(new ArchiveOptions());
 
-        self::assertContains('-sccUTF-8', $args);
+        if ('Windows' === \PHP_OS_FAMILY) {
+            self::assertContains('-sccUTF-8', $args);
+        } else {
+            self::assertNotContains('-sccUTF-8', $args);
+        }
     }
 
     public function testDecorateCompressSolidMode(): void
@@ -113,7 +117,7 @@ class ProcessFactoryTest extends TestCase
     {
         $options = new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
 
-        [$arguments, $file] = $this->factory(true)
+        [$arguments, $file] = $this->factory()
             ->withMask(['-slt', '-scsUTF-8', '-sccUTF-8'], $options, 'mask');
 
         self::assertInstanceOf(MaskListFile::class, $file);
@@ -145,7 +149,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testCreateWithEnv(): void
     {
-        $factory = new ProcessFactory('/usr/bin/7z', 'archive.7z', 30.0, false, ['LC_ALL' => 'ru_RU.UTF-8']);
+        $factory = new ProcessFactory('/usr/bin/7z', 'archive.7z', 30.0, ['LC_ALL' => 'ru_RU.UTF-8']);
 
         self::assertSame(['LC_ALL' => 'ru_RU.UTF-8'], $factory->create('l', [])->getEnv());
     }

@@ -51,7 +51,6 @@ final class Archive7z
             ExecutableFinder::find($binary7z),
             $filename,
             $timeout,
-            ExecutableFinder::isWindows(),
             $this->options->getEnv(),
         );
         $this->nameMapping = new NameMapping(
@@ -286,7 +285,7 @@ final class Archive7z
     {
         // Windows receives a Unicode command line and decodes archive names
         // itself (via -mcp), so UTF-8 is passed as is.
-        if ($this->processFactory->isWindows()) {
+        if ('Windows' === \PHP_OS_FAMILY) {
             $this->runRename(
                 [$pathSrc, $pathDest],
                 $this->processFactory->decorateExtract($this->options),

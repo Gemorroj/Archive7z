@@ -87,7 +87,6 @@ class ArchiveListerTest extends TestCase
             ExecutableFinder::find(),
             $filename,
             60.0,
-            ExecutableFinder::isWindows(),
             $options->getEnv(),
         );
 

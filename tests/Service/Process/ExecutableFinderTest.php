@@ -10,11 +10,6 @@ use PHPUnit\Framework\TestCase;
 
 class ExecutableFinderTest extends TestCase
 {
-    public function testIsWindows(): void
-    {
-        self::assertSame('Windows' === \PHP_OS_FAMILY, ExecutableFinder::isWindows());
-    }
-
     public function testFindAutoDetect(): void
     {
         self::assertFileExists(ExecutableFinder::find());
@@ -42,6 +37,36 @@ class ExecutableFinderTest extends TestCase
             ExecutableFinder::find($file);
         } finally {
             \unlink($file);
+        }
+    }
+
+    public function testFindFromPath(): void
+    {
+        $dir = \sys_get_temp_dir().'/'.\uniqid('archive7z_bin_', false);
+        \mkdir($dir);
+        $suffix = 'Windows' === \PHP_OS_FAMILY ? '.exe' : '';
+        $binaries = [$dir.'/7z'.$suffix, $dir.'/7zz'.$suffix];
+        foreach ($binaries as $binary) {
+            // Non-empty: empty files are not "executable" on Windows.
+            \file_put_contents($binary, 'MZ');
+            @\chmod($binary, 0o755);
+        }
+
+        $path = $dir.\PATH_SEPARATOR.(\getenv('PATH') ?: '');
+        $original = \getenv('PATH');
+        \putenv('PATH='.$path);
+        \putenv('Path='.$path); // Windows stores it as "Path"
+
+        try {
+            // Either name may win depending on the preference order.
+            self::assertSame(\realpath($dir), \dirname(ExecutableFinder::find()));
+        } finally {
+            \putenv('PATH='.($original ?: ''));
+            \putenv('Path='.($original ?: ''));
+            foreach ($binaries as $binary) {
+                \unlink($binary);
+            }
+            \rmdir($dir);
         }
     }
 }
