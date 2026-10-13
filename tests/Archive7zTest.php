@@ -8,6 +8,8 @@ use Archive7z\Archive7z;
 use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
 use Archive7z\Config\SolidMode;
+use Archive7z\Exception\ExceptionInterface;
+use Archive7z\Exception\RuntimeException;
 use Archive7z\Model\Entry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -66,6 +68,21 @@ class Archive7zTest extends TestCase
     {
         $info = Archive7z::get7zipInformation();
         self::assertStringContainsString('7-Zip', $info);
+    }
+
+    public function testConstructorWithBadBinaryThrows(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Binary of 7-zip is not available');
+
+        new Archive7z($this->fixturesDir.'/7z/windows/7zip-18.05/sample.7z', null, '/nonexistent/7z');
+    }
+
+    public function testGet7zipInformationBadBinaryThrows(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        Archive7z::get7zipInformation('/nonexistent/7z');
     }
 
     public function testFallbackEncodingCodepage(): void
@@ -729,6 +746,52 @@ class Archive7zTest extends TestCase
         self::assertTrue($valid->isValid());
     }
 
+    public function testIsValidNotArchiveReturnsFalse(): void
+    {
+        $archive = $this->tmpDir.'/not-an-archive.txt';
+        \file_put_contents($archive, 'this is not an archive');
+
+        $obj = new Archive7z($archive);
+
+        self::assertFalse($obj->isValid());
+    }
+
+    public function testIsValidCorruptedArchiveReturnsFalse(): void
+    {
+        $archive = $this->tmpDir.'/truncated.zip';
+        $data = (string) \file_get_contents($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip');
+        \file_put_contents($archive, \substr($data, 0, \strlen($data) - 10));
+
+        $obj = new Archive7z($archive);
+
+        self::assertFalse($obj->isValid());
+    }
+
+    public function testIsValidMissingFileThrows(): void
+    {
+        $obj = new Archive7z($this->tmpDir.'/missing.7z');
+
+        $this->expectException(RuntimeException::class);
+
+        $obj->isValid();
+    }
+
+    public function testProcessFailureImplementsExceptionInterface(): void
+    {
+        $archive = $this->tmpDir.'/not-an-archive.txt';
+        \file_put_contents($archive, 'this is not an archive');
+
+        $obj = new Archive7z($archive);
+
+        try {
+            $obj->getEntries();
+            self::fail('Expected a process failure.');
+        } catch (ProcessFailedException $e) {
+            self::assertInstanceOf(ExceptionInterface::class, $e);
+            self::assertSame(2, $e->getProcess()->getExitCode());
+        }
+    }
+
     public function testGetWarnings(): void
     {
         $obj = new Archive7z($this->fixturesDir.'/zip/windows/7zip-26.04/warnings.zip');
@@ -873,6 +936,14 @@ class Archive7zTest extends TestCase
         $valid = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: 'abc123'));
 
         self::assertTrue($valid->isValid());
+    }
+
+    #[DataProvider('extractPasswdEncFilesProvider')]
+    public function testIsValidEncryptedWithoutPasswordReturnsFalse(string $archiveName): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+
+        self::assertFalse($obj->isValid());
     }
 
     #[DataProvider('extractPasswdEncFilesProvider')]

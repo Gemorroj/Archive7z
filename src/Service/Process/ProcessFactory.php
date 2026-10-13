@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Archive7z\Service\Process;
 
 use Archive7z\Config\ArchiveOptions;
-use Symfony\Component\Process\Exception\ProcessFailedException;
+use Archive7z\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**

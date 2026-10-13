@@ -30,4 +30,18 @@ class ExecutableFinderTest extends TestCase
         $this->expectException(RuntimeException::class);
         ExecutableFinder::find('/nonexistent/7z');
     }
+
+    public function testFindNotExecutable(): void
+    {
+        $file = (string) \tempnam(\sys_get_temp_dir(), 'archive7z_bin_');
+
+        try {
+            $this->expectException(RuntimeException::class);
+            $this->expectExceptionMessage('Binary of 7-zip is not executable');
+
+            ExecutableFinder::find($file);
+        } finally {
+            \unlink($file);
+        }
+    }
 }

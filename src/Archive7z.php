@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Archive7z;
 
 use Archive7z\Config\ArchiveOptions;
+use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Exception\RuntimeException;
 use Archive7z\Model\Entry;
 use Archive7z\Model\Info;
@@ -19,6 +20,8 @@ use Archive7z\Service\Process\ProcessFactory;
 final class Archive7z
 {
     private ArchiveOptions $options;
+
+    private string $filename;
 
     private ProcessFactory $processFactory;
 
@@ -43,6 +46,7 @@ final class Archive7z
         ?float $timeout = 60.0,
     ) {
         $this->options = $options ?? new ArchiveOptions();
+        $this->filename = $filename;
         $this->processFactory = new ProcessFactory(
             ExecutableFinder::find($binary7z),
             $filename,
@@ -68,6 +72,7 @@ final class Archive7z
      * @param string|null $binary7z 7-zip binary path
      *
      * @throws RuntimeException
+     * @throws ProcessFailedException
      */
     public static function get7zipInformation(?string $binary7z = null): string
     {
@@ -77,7 +82,12 @@ final class Archive7z
             \str_replace('\\', '/', $binary7z),
             'i',
         ]);
-        $process->mustRun();
+
+        try {
+            $process->mustRun();
+        } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
+            throw new ProcessFailedException($e->getProcess());
+        }
 
         return $process->getOutput();
     }
@@ -110,7 +120,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
+     * @throws ProcessFailedException|RuntimeException
      */
     public function extract(?string $directory = null): void
     {
@@ -118,7 +128,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
+     * @throws ProcessFailedException|RuntimeException
      */
     public function extractEntry(string $path, ?string $directory = null): void
     {
@@ -126,7 +136,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function getContent(string $path): string
     {
@@ -149,7 +159,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function getEntry(string $path): ?Entry
     {
@@ -162,7 +172,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      *
      * @return Entry[]
      */
@@ -177,7 +187,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function getInfo(): Info
     {
@@ -189,7 +199,7 @@ final class Archive7z
      *
      * @param bool $storePath store real filesystem path in archive
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException|RuntimeException
+     * @throws ProcessFailedException|RuntimeException
      */
     public function addEntry(string $path, bool $storePath = false): void
     {
@@ -218,7 +228,7 @@ final class Archive7z
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function delEntry(string $path): void
     {
@@ -243,7 +253,7 @@ final class Archive7z
      * @param string[] $names
      * @param string[] $decorate
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     private function runRename(array $names, array $decorate): void
     {
@@ -270,7 +280,7 @@ final class Archive7z
     /**
      * Renames an entry inside the archive.
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function renameEntry(string $pathSrc, string $pathDest): void
     {
@@ -308,21 +318,40 @@ final class Archive7z
     }
 
     /**
-     * Is valid archive?
+     * Whether 7-Zip validates the archive.
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * The file is checked first: a missing or unreadable path is a precondition
+     * error, not a property of the archive, so it is reported as an exception.
+     * With the file present, false means 7-Zip could not validate the archive
+     * (unknown/wrong format, corrupted data, encrypted without a password).
+     *
+     * @throws RuntimeException
      */
     public function isValid(): bool
     {
+        if (!\is_file($this->filename)) {
+            throw new RuntimeException('Archive file is not available');
+        }
+
+        if (!\is_readable($this->filename)) {
+            throw new RuntimeException('Archive file is not readable');
+        }
+
         $process = $this->processFactory->create('t', $this->processFactory->decorateExtract($this->options));
 
-        return \str_contains($this->processFactory->run($process)->getOutput(), 'Everything is Ok');
+        try {
+            $output = $this->processFactory->run($process)->getOutput();
+        } catch (ProcessFailedException) {
+            return false;
+        }
+
+        return \str_contains($output, 'Everything is Ok');
     }
 
     /**
      * List archive warnings.
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      *
      * @return string[]
      */

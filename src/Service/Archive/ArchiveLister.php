@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Archive7z\Service\Archive;
 
 use Archive7z\Config\ArchiveOptions;
+use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Model\Info;
 use Archive7z\Service\Namer\NameMapping;
 use Archive7z\Service\Parser\Parser;
@@ -31,7 +32,7 @@ final class ArchiveLister
     /**
      * @param bool $exact treat the mask as a single exact name instead of a wildcard pattern
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      *
      * @return array<int, array<string, string|string[]>>
      */
@@ -66,7 +67,7 @@ final class ArchiveLister
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function info(): Info
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Archive7z\Model;
 
 use Archive7z\Archive7z;
+use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Exception\RuntimeException;
 
 /*
@@ -215,7 +216,7 @@ class Entry
 
     /**
      * @throws RuntimeException
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function getContent(): string
     {
@@ -230,7 +231,7 @@ class Entry
      * @param string|null $directory target directory (current directory by default)
      *
      * @throws RuntimeException
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function extract(?string $directory = null): void
     {

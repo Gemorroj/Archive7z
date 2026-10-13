@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Archive7z\Service\Archive;
 
 use Archive7z\Config\ArchiveOptions;
+use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Service\Namer\NameMapping;
 use Archive7z\Service\Namer\NameRepairer;
 use Archive7z\Service\Parser\Parser;
@@ -24,7 +25,7 @@ final readonly class ArchiveExtractor
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     public function extract(string $directory, ?string $pathMask = null): void
     {
@@ -35,7 +36,7 @@ final readonly class ArchiveExtractor
     }
 
     /**
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     private function run(string $directory, ?string $mask): void
     {
@@ -63,7 +64,7 @@ final readonly class ArchiveExtractor
     /**
      * Renames the extracted entries to the names read from the container.
      *
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     * @throws ProcessFailedException
      */
     private function repair(string $directory, ?string $mask): void
     {
