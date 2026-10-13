@@ -68,7 +68,13 @@ final readonly class ArchiveExtractor
      */
     private function repair(string $directory, ?string $mask): void
     {
-        if (!$this->nameMapping->requiresRepair()) {
+        if ($this->nameMapping->isAsIs()) {
+            return;
+        }
+
+        $container = $this->nameMapping->container();
+
+        if (!$container->requiresRepair()) {
             return;
         }
 
@@ -105,7 +111,7 @@ final readonly class ArchiveExtractor
             return;
         }
 
-        $renames = $this->nameMapping->targets($sources);
+        $renames = $container->targets($sources);
         if ([] === $renames) {
             return;
         }

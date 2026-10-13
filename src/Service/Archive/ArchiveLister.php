@@ -100,7 +100,7 @@ final class ArchiveLister
             $sources[] = \is_string($path) ? $path : '';
         }
 
-        $names = $this->nameMapping->names($sources);
+        $names = $this->nameMapping->container()->names($sources);
         if (\count($names) !== \count($entries)) {
             return $entries;
         }

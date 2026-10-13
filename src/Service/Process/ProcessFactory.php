@@ -6,6 +6,10 @@ namespace Archive7z\Service\Process;
 
 use Archive7z\Config\ArchiveOptions;
 use Archive7z\Exception\ProcessFailedException;
+use Archive7z\Exception\ProcessRuntimeException;
+use Archive7z\Exception\ProcessTimedOutException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException as SymfonyProcessTimedOutException;
+use Symfony\Component\Process\Exception\RuntimeException as SymfonyProcessRuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -111,10 +115,18 @@ final class ProcessFactory
      * 7-Zip exit codes (ExitCode.h): 0 success, 1 non-fatal warnings, >=2 fatal.
      *
      * @throws ProcessFailedException
+     * @throws ProcessRuntimeException
+     * @throws ProcessTimedOutException
      */
     public function run(Process $process): Process
     {
-        $process->run();
+        try {
+            $process->run();
+        } catch (SymfonyProcessTimedOutException $e) {
+            throw new ProcessTimedOutException($e->getProcess(), $e->isIdleTimeout() ? ProcessTimedOutException::TYPE_IDLE : ProcessTimedOutException::TYPE_GENERAL);
+        } catch (SymfonyProcessRuntimeException $e) {
+            throw new ProcessRuntimeException($e->getMessage(), (int) $e->getCode(), $e);
+        }
 
         $exitCode = $process->getExitCode();
         if (0 !== $exitCode && 1 !== $exitCode) {

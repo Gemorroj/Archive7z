@@ -30,6 +30,9 @@ final class ExecutableFinder
             if (null === $binary7z) {
                 throw new RuntimeException('Can\'t auto detect binary of 7-zip');
             }
+        } elseif (!\str_contains($binary7z, '/') && !\str_contains($binary7z, '\\')) {
+            // A bare name (e.g. "7z") is resolved through PATH, like the shell.
+            $binary7z = self::locate($binary7z, $binary7z);
         }
 
         $binary7z = \realpath($binary7z);
@@ -46,16 +49,22 @@ final class ExecutableFinder
 
     private static function autoDetect(): ?string
     {
-        $finder = new SymfonyExecutableFinder();
-
         foreach (self::NAMES as $name) {
-            $found = $finder->find($name, null, self::extraDirs());
+            $found = self::locate($name);
             if (null !== $found) {
                 return $found;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Locates a 7-Zip executable through PATH and the well-known directories.
+     */
+    private static function locate(string $name, ?string $default = null): ?string
+    {
+        return (new SymfonyExecutableFinder())->find($name, $default, self::extraDirs());
     }
 
     /**

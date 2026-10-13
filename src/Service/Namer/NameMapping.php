@@ -48,92 +48,18 @@ final readonly class NameMapping
     {
         // The sample is only needed to detect the encoding; as-is and an explicit
         // codepage ignore it, so skip reading the archive in those cases.
-        $sample = $this->fallbackEncoding->isDetect() ? $this->containerSample() : null;
+        $sample = $this->fallbackEncoding->isDetect() ? $this->container()->sample() : null;
 
         return NameEncoder::resolve($this->fallbackEncoding, $sample)->encode($name);
     }
 
     /**
-     * Decodes the entry names, taking them from the container when possible.
-     *
-     * @param string[] $sourceNames names as 7-Zip produced them
-     *
-     * @return string[]
+     * Reads the container names once and returns a snapshot for the queries
+     * that need them (repair decision, decoding, rename targets).
      */
-    public function names(array $sourceNames): array
+    public function container(): ContainerNames
     {
-        $container = $this->containerNames();
-        if (null !== $container && \count($container) === \count($sourceNames)) {
-            $encoder = NameEncoder::resolve($this->fallbackEncoding, $this->sample($container));
-
-            $names = [];
-            foreach ($container as $rawName) {
-                $names[] = $rawName->utf8 ? $rawName->value : $encoder->decode($rawName->value);
-            }
-
-            return $names;
-        }
-
-        $encoder = NameEncoder::resolve($this->fallbackEncoding, \implode("\n", $sourceNames));
-
-        $names = [];
-        foreach ($sourceNames as $sourceName) {
-            $names[] = $encoder->decode($sourceName);
-        }
-
-        return $names;
-    }
-
-    /**
-     * Whether the extracted names can differ from the decoded ones.
-     *
-     * For container formats (zip/tar/gzip) this is decided from the container
-     * itself, so an archive with already-UTF-8 names never triggers the extra
-     * listing/repair pass. For other formats it is unknown until the archive is
-     * listed, so it returns true.
-     */
-    public function requiresRepair(): bool
-    {
-        if ($this->fallbackEncoding->isAsIs()) {
-            return false;
-        }
-
-        $container = $this->containerNames();
-        if (null === $container) {
-            return true;
-        }
-
-        if (NameEncoder::resolve($this->fallbackEncoding, $this->sample($container))->isAsIs()) {
-            return false;
-        }
-
-        foreach ($container as $rawName) {
-            if (!$rawName->utf8 && !\mb_check_encoding($rawName->value, 'UTF-8')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param string[] $sourceNames
-     *
-     * @return array<int, array{from: string, to: string}>
-     */
-    public function targets(array $sourceNames): array
-    {
-        $names = $this->names($sourceNames);
-
-        $renames = [];
-        foreach ($sourceNames as $index => $from) {
-            $to = $names[$index];
-            if ($to !== $from) {
-                $renames[] = ['from' => $from, 'to' => $to];
-            }
-        }
-
-        return $renames;
+        return new ContainerNames($this->fallbackEncoding, $this->containerNames());
     }
 
     /**
@@ -153,25 +79,5 @@ final readonly class NameMapping
         }
 
         return [] === $names ? null : $names;
-    }
-
-    private function containerSample(): ?string
-    {
-        $container = $this->containerNames();
-
-        return null === $container ? null : $this->sample($container);
-    }
-
-    /**
-     * @param RawName[] $rawNames
-     */
-    private function sample(array $rawNames): string
-    {
-        $sample = '';
-        foreach ($rawNames as $rawName) {
-            $sample .= $rawName->value."\n";
-        }
-
-        return $sample;
     }
 }

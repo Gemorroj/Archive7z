@@ -42,6 +42,28 @@ class ExecutableFinderTest extends TestCase
 
     public function testFindFromPath(): void
     {
+        $this->withBinDirInPath(static function (string $dir): void {
+            // Either name may win depending on the preference order.
+            self::assertSame(\realpath($dir), \dirname(ExecutableFinder::find()));
+        });
+    }
+
+    public function testFindBareNameFromPath(): void
+    {
+        $this->withBinDirInPath(static function (string $dir): void {
+            self::assertSame(\realpath($dir), \dirname(ExecutableFinder::find('7z')));
+            self::assertSame(\realpath($dir), \dirname(ExecutableFinder::find('7zz')));
+        });
+    }
+
+    /**
+     * Creates a temp dir with fake 7-Zip binaries, prepends it to PATH for the
+     * duration of the callback, then restores everything.
+     *
+     * @param callable(string): void $test
+     */
+    private function withBinDirInPath(callable $test): void
+    {
         $dir = \sys_get_temp_dir().'/'.\uniqid('archive7z_bin_', false);
         \mkdir($dir);
         $suffix = 'Windows' === \PHP_OS_FAMILY ? '.exe' : '';
@@ -58,8 +80,7 @@ class ExecutableFinderTest extends TestCase
         \putenv('Path='.$path); // Windows stores it as "Path"
 
         try {
-            // Either name may win depending on the preference order.
-            self::assertSame(\realpath($dir), \dirname(ExecutableFinder::find()));
+            $test($dir);
         } finally {
             \putenv('PATH='.($original ?: ''));
             \putenv('Path='.($original ?: ''));

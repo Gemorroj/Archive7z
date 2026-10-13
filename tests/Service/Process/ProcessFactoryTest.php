@@ -7,6 +7,9 @@ namespace Archive7z\Tests\Service\Process;
 use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
 use Archive7z\Config\SolidMode;
+use Archive7z\Exception\ExceptionInterface;
+use Archive7z\Exception\ProcessRuntimeException;
+use Archive7z\Exception\ProcessTimedOutException;
 use Archive7z\Service\Process\MaskListFile;
 use Archive7z\Service\Process\ProcessFactory;
 use PHPUnit\Framework\TestCase;
@@ -145,6 +148,31 @@ class ProcessFactoryTest extends TestCase
 
         $this->expectException(ProcessFailedException::class);
         $this->factory()->run($process);
+    }
+
+    public function testRunThrowsTypedTimeout(): void
+    {
+        $process = new Process([\PHP_BINARY, '-r', 'sleep(5);'], timeout: 0.1);
+
+        try {
+            $this->factory()->run($process);
+            self::fail('Expected a timeout.');
+        } catch (ProcessTimedOutException $e) {
+            self::assertInstanceOf(ExceptionInterface::class, $e);
+            self::assertSame($process, $e->getProcess());
+        }
+    }
+
+    public function testRunThrowsTypedRuntimeFailure(): void
+    {
+        $process = new Process([\PHP_BINARY, '-r', 'echo 1;'], '/nonexistent/cwd');
+
+        try {
+            $this->factory()->run($process);
+            self::fail('Expected a runtime failure.');
+        } catch (ProcessRuntimeException $e) {
+            self::assertInstanceOf(ExceptionInterface::class, $e);
+        }
     }
 
     public function testCreateWithEnv(): void

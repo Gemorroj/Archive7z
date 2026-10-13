@@ -6,6 +6,8 @@ namespace Archive7z;
 
 use Archive7z\Config\ArchiveOptions;
 use Archive7z\Exception\ProcessFailedException;
+use Archive7z\Exception\ProcessRuntimeException;
+use Archive7z\Exception\ProcessTimedOutException;
 use Archive7z\Exception\RuntimeException;
 use Archive7z\Model\Entry;
 use Archive7z\Model\Info;
@@ -72,6 +74,8 @@ final class Archive7z
      *
      * @throws RuntimeException
      * @throws ProcessFailedException
+     * @throws ProcessRuntimeException
+     * @throws ProcessTimedOutException
      */
     public static function get7zipInformation(?string $binary7z = null): string
     {
@@ -86,6 +90,10 @@ final class Archive7z
             $process->mustRun();
         } catch (\Symfony\Component\Process\Exception\ProcessFailedException $e) {
             throw new ProcessFailedException($e->getProcess());
+        } catch (\Symfony\Component\Process\Exception\ProcessTimedOutException $e) {
+            throw new ProcessTimedOutException($e->getProcess(), $e->isIdleTimeout() ? ProcessTimedOutException::TYPE_IDLE : ProcessTimedOutException::TYPE_GENERAL);
+        } catch (\Symfony\Component\Process\Exception\RuntimeException $e) {
+            throw new ProcessRuntimeException($e->getMessage(), (int) $e->getCode(), $e);
         }
 
         return $process->getOutput();

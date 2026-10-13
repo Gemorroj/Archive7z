@@ -45,7 +45,7 @@ class NameMappingTest extends TestCase
     {
         $mapping = $this->mapping('zip/windows/7zip-18.05/sample.zip', FallbackEncoding::codepage('CP866'));
 
-        $names = $mapping->names(['1.jpg', 'test', 'test/2.jpg', 'test/test.txt', 'x.jpg']);
+        $names = $mapping->container()->names(['1.jpg', 'test', 'test/2.jpg', 'test/test.txt', 'x.jpg']);
 
         self::assertCount(5, $names);
         self::assertSame('чавес.jpg', $names[4]);
@@ -56,7 +56,7 @@ class NameMappingTest extends TestCase
         $mapping = $this->mapping('x.7z', FallbackEncoding::codepage('Windows-1251'));
         $raw = \mb_convert_encoding('чавес.jpg', 'Windows-1251', 'UTF-8');
 
-        self::assertSame(['чавес.jpg'], $mapping->names([$raw]));
+        self::assertSame(['чавес.jpg'], $mapping->container()->names([$raw]));
     }
 
     public function testTargets(): void
@@ -64,35 +64,35 @@ class NameMappingTest extends TestCase
         $mapping = $this->mapping('x.7z', FallbackEncoding::codepage('Windows-1251'));
         $raw = \mb_convert_encoding('чавес.jpg', 'Windows-1251', 'UTF-8');
 
-        self::assertSame([['from' => $raw, 'to' => 'чавес.jpg']], $mapping->targets([$raw]));
+        self::assertSame([['from' => $raw, 'to' => 'чавес.jpg']], $mapping->container()->targets([$raw]));
     }
 
     public function testRequiresRepairAsIs(): void
     {
         $mapping = $this->mapping('tar/linux/gnutar-1.34/sample.tar', FallbackEncoding::asIs());
 
-        self::assertFalse($mapping->requiresRepair());
+        self::assertFalse($mapping->container()->requiresRepair());
     }
 
     public function testRequiresRepairFalseForUtf8Container(): void
     {
         $mapping = $this->mapping('tar/linux/gnutar-1.34/sample.tar', FallbackEncoding::codepage('Windows-1251'));
 
-        self::assertFalse($mapping->requiresRepair());
+        self::assertFalse($mapping->container()->requiresRepair());
     }
 
     public function testRequiresRepairTrueForNonUtf8Container(): void
     {
         $mapping = $this->mapping('tar/windows/totalcommander-9.21a/sample.tar', FallbackEncoding::codepage('Windows-1251'));
 
-        self::assertTrue($mapping->requiresRepair());
+        self::assertTrue($mapping->container()->requiresRepair());
     }
 
     public function testRequiresRepairTrueWithoutContainerReader(): void
     {
         $mapping = $this->mapping('x.7z', FallbackEncoding::codepage('Windows-1251'));
 
-        self::assertTrue($mapping->requiresRepair());
+        self::assertTrue($mapping->container()->requiresRepair());
     }
 
     private function mapping(string $file, FallbackEncoding $fallbackEncoding): NameMapping
