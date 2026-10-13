@@ -44,4 +44,21 @@ class TarNameReaderTest extends TestCase
         self::assertCount(5, $names);
         self::assertSame('test/test.txt', $names[3]->value);
     }
+
+    public function testPaxLongPath(): void
+    {
+        $names = (new TarNameReader())->read($this->fixturesDir.'/tar/linux/bsdtar-3.6.2/features.tar');
+
+        self::assertCount(10, $names);
+
+        $long = $names[2];
+        self::assertTrue($long->utf8);
+        self::assertGreaterThan(100, \strlen($long->value));
+        self::assertStringStartsWith('long-', $long->value);
+        self::assertStringEndsWith('.txt', $long->value);
+
+        // The PAX path must not leak into the following entries.
+        self::assertSame('name with spaces.txt', $names[3]->value);
+        self::assertSame('nested', $names[4]->value);
+    }
 }

@@ -756,6 +756,25 @@ class Archive7zTest extends TestCase
         }
     }
 
+    public function testPaxLongNameWithFallbackEncoding(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/tar/linux/bsdtar-3.6.2/features.tar',
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('UTF-8')),
+        );
+
+        $longNames = [];
+        foreach ($obj->getEntries() as $entry) {
+            $path = (string) $entry->getUnixPath();
+            if (\str_starts_with($path, 'long-')) {
+                $longNames[] = $path;
+            }
+        }
+
+        self::assertCount(1, $longNames);
+        self::assertGreaterThan(100, \strlen($longNames[0]));
+    }
+
     /**
      * @return string[][]
      */
@@ -972,6 +991,24 @@ class Archive7zTest extends TestCase
         $entries = $obj->getEntries($path);
 
         self::assertCount(3, $entries); // 1 folder + 2 files in the folder
+    }
+
+    public function testGetEntryExactNameWithWildcardChars(): void
+    {
+        if ('Windows' === \PHP_OS_FAMILY) {
+            self::markTestSkipped('Windows file names cannot contain "*" or "?"');
+        }
+
+        \file_put_contents($this->tmpDir.'/qXname.txt', 'a');
+        \file_put_contents($this->tmpDir.'/q?name.txt', 'b');
+
+        $obj = new Archive7z($this->tmpDir.'/wild.7z');
+        $obj->addEntry($this->tmpDir.'/qXname.txt');
+        $obj->addEntry($this->tmpDir.'/q?name.txt');
+
+        $entry = $obj->getEntry('q?name.txt');
+        self::assertInstanceOf(Entry::class, $entry);
+        self::assertSame('q?name.txt', $entry->getPath());
     }
 
     /**

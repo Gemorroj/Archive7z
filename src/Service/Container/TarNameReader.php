@@ -81,13 +81,9 @@ final class TarNameReader implements NameReaderInterface
                 continue;
             }
 
-            $name = $this->name($header, $longName, $paxPath);
+            $names[] = $this->name($header, $longName, $paxPath);
             $longName = null;
-            if ('x' === $type) {
-                $paxPath = null;
-            }
-
-            $names[] = $name;
+            $paxPath = null;
             \fseek($handle, $paddedSize, \SEEK_CUR);
         }
 
@@ -132,7 +128,16 @@ final class TarNameReader implements NameReaderInterface
             if (false === $separator) {
                 continue;
             }
-            if ('path' === \substr($line, 0, $separator)) {
+
+            // PAX records are "<length> <key>=<value>": drop the numeric length
+            // prefix (including the separating space) before comparing the key.
+            $key = \substr($line, 0, $separator);
+            $space = \strpos($key, ' ');
+            if (false !== $space) {
+                $key = \substr($key, $space + 1);
+            }
+
+            if ('path' === $key) {
                 return \substr($line, $separator + 1);
             }
         }

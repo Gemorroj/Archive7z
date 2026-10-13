@@ -153,9 +153,12 @@ final class Archive7z
      */
     public function getEntry(string $path): ?Entry
     {
-        $entries = $this->getEntries($path, 1);
+        $list = [];
+        foreach ($this->lister->entries($path, 1, true) as $v) {
+            $list[] = new Entry($this, $v);
+        }
 
-        return $entries ? $entries[0] : null;
+        return $list ? $list[0] : null;
     }
 
     /**
@@ -237,32 +240,71 @@ final class Archive7z
     }
 
     /**
+     * @param string[] $names
+     * @param string[] $decorate
+     *
+     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
+     */
+    private function runRename(array $names, array $decorate): void
+    {
+        $process = $this->processFactory->create('rn', \array_merge($names, $decorate));
+
+        $this->processFactory->run($process);
+    }
+
+    /**
+     * Extract switches with the archive code page (-mcp) removed.
+     *
+     * @return string[]
+     */
+    private function withoutCodepage(): array
+    {
+        return \array_values(\array_filter(
+            $this->processFactory->decorateExtract($this->options),
+            static function (string $argument): bool {
+                return !\str_starts_with($argument, '-mcp');
+            },
+        ));
+    }
+
+    /**
      * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ ).
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */
     public function renameEntry(string $pathSrc, string $pathDest): void
     {
-        $windows = $this->processFactory->isWindows();
-
         // Windows receives a Unicode command line and decodes archive names
-        // itself (via -mcp), so UTF-8 is passed as is. On *nix the command line
-        // is byte-oriented and compared against the archive's stored bytes, so
-        // -mcp must be omitted (it would make 7-Zip decode names and break it).
-        $names = $windows
-            ? [$pathSrc, $pathDest]
-            : [$this->nameMapping->encode($pathSrc), $this->nameMapping->encode($pathDest)];
+        // itself (via -mcp), so UTF-8 is passed as is.
+        if ($this->processFactory->isWindows()) {
+            $this->runRename(
+                [$pathSrc, $pathDest],
+                $this->processFactory->decorateExtract($this->options),
+            );
 
-        $decorate = $this->processFactory->decorateExtract($this->options);
-        if (!$windows) {
-            $decorate = \array_values(\array_filter($decorate, static function (string $argument): bool {
-                return !\str_starts_with($argument, '-mcp');
-            }));
+            return;
         }
 
-        $process = $this->processFactory->create('rn', \array_merge($names, $decorate));
+        // On *nix the command-line-name decoding is build dependent: upstream
+        // 7-Zip matches the raw bytes against the archive (so -mcp must be
+        // omitted), while some distro builds (Debian/Ubuntu "7zip") force a
+        // UTF-8 command line (so names stay UTF-8 and -mcp must be kept).
+        // rn exits 0 both when it renames and when nothing matched, so both
+        // forms are issued; the one that does not apply is a harmless no-op.
+        $this->runRename(
+            [$this->nameMapping->encode($pathSrc), $this->nameMapping->encode($pathDest)],
+            $this->withoutCodepage(),
+        );
 
-        $this->processFactory->run($process);
+        // With as-is names both forms are identical.
+        if ($this->nameMapping->isAsIs()) {
+            return;
+        }
+
+        $this->runRename(
+            [$pathSrc, $pathDest],
+            $this->processFactory->decorateExtract($this->options),
+        );
     }
 
     /**

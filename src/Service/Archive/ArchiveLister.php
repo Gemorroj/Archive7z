@@ -29,16 +29,24 @@ final class ArchiveLister
     }
 
     /**
+     * @param bool $exact treat the mask as a single exact name instead of a wildcard pattern
+     *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      *
      * @return array<int, array<string, string|string[]>>
      */
-    public function entries(?string $pathMask = null, ?int $limit = null): array
+    public function entries(?string $pathMask = null, ?int $limit = null, bool $exact = false): array
     {
         $mask = null === $pathMask ? null : $this->nameMapping->encode($pathMask);
 
+        $base = ['-slt'];
+        if ($exact && null !== $mask) {
+            // Single entry by exact name: do not expand wildcards.
+            $base[] = '-spd';
+        }
+
         [$arguments, $maskFile] = $this->processFactory->withMask(
-            \array_merge(['-slt'], $this->processFactory->decorateExtract($this->options)),
+            \array_merge($base, $this->processFactory->decorateExtract($this->options)),
             $this->options,
             $mask,
         );
