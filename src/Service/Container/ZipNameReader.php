@@ -53,20 +53,59 @@ final class ZipNameReader implements NameReaderInterface
         \fseek($handle, $size - $tailLength);
         $tail = (string) \fread($handle, $tailLength);
 
-        $eocdPos = \strrpos($tail, self::EOCD_SIGNATURE);
-        if (false === $eocdPos) {
-            throw new RuntimeException('End of central directory record not found');
+        // The "PK\x05\x06" signature is not unique: it may also occur in the
+        // archive comment, in trailing data appended after the archive, or in
+        // stored file contents. Candidates whose declared comment reaches the
+        // end of the file are the canonical ones and are tried first; the rest
+        // (archives with data after the end) are validated against their
+        // central directory, which also rejects a bogus signature whose fields
+        // would otherwise drive a huge read.
+        $length = \strlen($tail);
+        $exact = [];
+        $fallback = [];
+        foreach ($this->eocdCandidates($tail) as $eocdPos) {
+            if ($eocdPos + 22 + $this->u16($tail, $eocdPos + 20) === $length) {
+                $exact[] = $eocdPos;
+            } else {
+                $fallback[] = $eocdPos;
+            }
         }
 
-        $eocd = \substr($tail, $eocdPos);
-        $total = $this->u16($eocd, 10);
-        $directorySize = $this->u32($eocd, 12);
-        $directoryOffset = $this->u32($eocd, 16);
+        foreach (\array_merge($exact, $fallback) as $eocdPos) {
+            $names = $this->namesFromEocd($handle, $tail, $eocdPos, $size);
+            if (null !== $names) {
+                return $names;
+            }
+        }
+
+        throw new RuntimeException('End of central directory record not found');
+    }
+
+    /**
+     * @param resource $handle
+     *
+     * @return RawName[]|null null when the candidate EOCD is not usable
+     */
+    private function namesFromEocd($handle, string $tail, int $eocdPos, int $size): ?array
+    {
+        $total = $this->u16($tail, $eocdPos + 10);
+        $directorySize = $this->u32($tail, $eocdPos + 12);
+        $directoryOffset = $this->u32($tail, $eocdPos + 16);
 
         [$total, $directorySize, $directoryOffset] = $this->zip64($tail, $eocdPos, $total, $directorySize, $directoryOffset, $handle);
 
+        // The central directory must lie within the file: this rejects a bogus
+        // EOCD whose fields would otherwise drive a huge read.
+        if ($directoryOffset < 0 || $directoryOffset + $directorySize > $size) {
+            return null;
+        }
+
         \fseek($handle, $directoryOffset);
         $directory = $directorySize > 0 ? (string) \fread($handle, $directorySize) : '';
+
+        if ($total > 0 && self::CENTRAL_DIRECTORY_SIGNATURE !== \substr($directory, 0, 4)) {
+            return null;
+        }
 
         $names = [];
         $offset = 0;
@@ -89,6 +128,25 @@ final class ZipNameReader implements NameReaderInterface
         }
 
         return $names;
+    }
+
+    /**
+     * Candidate End Of Central Directory positions, closest to the end first.
+     *
+     * @return int[]
+     */
+    private function eocdCandidates(string $tail): array
+    {
+        $length = \strlen($tail);
+        $positions = [];
+
+        for ($from = 0; false !== ($pos = \strpos($tail, self::EOCD_SIGNATURE, $from)); $from = $pos + 1) {
+            if ($pos + 22 <= $length) {
+                $positions[] = $pos;
+            }
+        }
+
+        return \array_reverse($positions);
     }
 
     private function name(string $raw, string $extra, bool $utf8): RawName
@@ -172,6 +230,10 @@ final class ZipNameReader implements NameReaderInterface
 
     private function u16(string $data, int $offset): int
     {
+        if ($offset < 0 || $offset + 2 > \strlen($data)) {
+            return 0;
+        }
+
         $value = \unpack('v', \substr($data, $offset, 2));
 
         return false === $value ? 0 : (int) $value[1];
@@ -179,6 +241,10 @@ final class ZipNameReader implements NameReaderInterface
 
     private function u32(string $data, int $offset): int
     {
+        if ($offset < 0 || $offset + 4 > \strlen($data)) {
+            return 0;
+        }
+
         $value = \unpack('V', \substr($data, $offset, 4));
 
         return false === $value ? 0 : (int) $value[1];
@@ -186,6 +252,10 @@ final class ZipNameReader implements NameReaderInterface
 
     private function u64(string $data, int $offset): int
     {
+        if ($offset < 0 || $offset + 8 > \strlen($data)) {
+            return 0;
+        }
+
         $value = \unpack('P', \substr($data, $offset, 8));
 
         return false === $value ? 0 : (int) $value[1];

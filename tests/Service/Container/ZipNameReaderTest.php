@@ -38,4 +38,56 @@ class ZipNameReaderTest extends TestCase
         self::assertTrue($last->utf8);
         self::assertSame('чавес.jpg', $last->value);
     }
+
+    public function testEocdSignatureOutsideRecord(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'archive7z_zip_');
+        \file_put_contents($path, $this->zipWithForeignSignature());
+
+        try {
+            $names = (new ZipNameReader())->read($path);
+        } finally {
+            \unlink($path);
+        }
+
+        self::assertCount(1, $names);
+        self::assertSame('a.txt', $names[0]->value);
+    }
+
+    /**
+     * A valid single-entry ZIP that carries a fake "PK\x05\x06" signature with
+     * bogus fields, followed by enough bytes to be a plausible record, plus
+     * data after the archive so the real EOCD is not the canonical one. This
+     * forces the central-directory validation to reject the fake candidate.
+     */
+    private function zipWithForeignSignature(): string
+    {
+        $name = 'a.txt';
+        $data = 'x';
+        $crc = \crc32($data);
+        $size = \strlen($data);
+
+        $local = "PK\x03\x04"
+            .\pack('v', 20).\pack('v', 0).\pack('v', 0).\pack('v', 0).\pack('v', 0)
+            .\pack('V', $crc).\pack('V', $size).\pack('V', $size)
+            .\pack('v', \strlen($name)).\pack('v', 0).$name;
+
+        $central = "PK\x01\x02"
+            .\pack('v', 20).\pack('v', 20).\pack('v', 0).\pack('v', 0).\pack('v', 0).\pack('v', 0)
+            .\pack('V', $crc).\pack('V', $size).\pack('V', $size)
+            .\pack('v', \strlen($name)).\pack('v', 0).\pack('v', 0).\pack('v', 0).\pack('v', 0)
+            .\pack('V', 0).\pack('V', 0).$name;
+
+        // fake EOCD signature + 30 bogus field bytes (total=0xFFFF, sizes=0xFFFFFFFF)
+        $comment = 'AAAPK'."\x05\x06".\str_repeat("\xFF", 30).'ZZ';
+        $eocd = "PK\x05\x06"
+            .\pack('v', 0).\pack('v', 0).\pack('v', 1).\pack('v', 1)
+            .\pack('V', \strlen($central)).\pack('V', \strlen($local) + $size)
+            .\pack('v', \strlen($comment)).$comment;
+
+        // data after the archive: the real EOCD is no longer the canonical one
+        $junk = "\x00\x00\x00\x00";
+
+        return $local.$data.$central.$eocd.$junk;
+    }
 }
