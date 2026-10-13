@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Service\Archive;
 
-use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\Options;
 use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Model\Info;
 use Archive7z\Service\Namer\NameMapping;
@@ -24,7 +24,7 @@ final class ArchiveLister
 
     public function __construct(
         private readonly ProcessFactory $processFactory,
-        private readonly ArchiveOptions $options,
+        private readonly Options $options,
         private readonly NameMapping $nameMapping,
     ) {
     }

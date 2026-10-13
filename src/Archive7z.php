@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z;
 
-use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\Options;
 use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Exception\ProcessRuntimeException;
 use Archive7z\Exception\ProcessTimedOutException;
@@ -21,7 +21,7 @@ use Archive7z\Service\Process\ProcessFactory;
 
 final class Archive7z
 {
-    private ArchiveOptions $options;
+    private Options $options;
 
     private string $filename;
 
@@ -34,20 +34,20 @@ final class Archive7z
     private ArchiveExtractor $extractor;
 
     /**
-     * @param string              $filename 7z archive filename
-     * @param ArchiveOptions|null $options  Archive configuration
-     * @param string|null         $binary7z 7-zip binary path
-     * @param float|null          $timeout  Timeout of system process
+     * @param string       $filename 7z archive filename
+     * @param Options|null $options  Archive configuration
+     * @param string|null  $binary7z 7-zip binary path
+     * @param float|null   $timeout  Timeout of system process
      *
      * @throws RuntimeException
      */
     public function __construct(
         string $filename,
-        ?ArchiveOptions $options = null,
+        ?Options $options = null,
         ?string $binary7z = null,
         ?float $timeout = 60.0,
     ) {
-        $this->options = $options ?? new ArchiveOptions();
+        $this->options = $options ?? new Options();
         $this->filename = $filename;
         $this->processFactory = new ProcessFactory(
             ExecutableFinder::find($binary7z),
@@ -99,7 +99,7 @@ final class Archive7z
         return $process->getOutput();
     }
 
-    public function getOptions(): ArchiveOptions
+    public function getOptions(): Options
     {
         return $this->options;
     }

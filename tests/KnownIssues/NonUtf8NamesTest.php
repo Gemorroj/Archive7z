@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Archive7z\Tests\KnownIssues;
 
 use Archive7z\Archive7z;
-use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  * They describe the behaviour users expect by default: archive names stored in
  * a non-UTF-8 8-bit encoding (CP866, CP1251, ...) should be readable without
  * extra configuration. Today they require an explicit
- * ArchiveOptions::fallbackEncoding hint, see
+ * Options::fallbackEncoding hint, see
  * https://github.com/Gemorroj/Archive7z/issues/15.
  *
  * Run with: vendor/bin/phpunit --testsuite KnownIssues
@@ -83,9 +83,9 @@ final class NonUtf8NamesTest extends TestCase
         self::assertCount(1, $entries);
     }
 
-    private function defaultOptions(): ArchiveOptions
+    private function defaultOptions(): Options
     {
-        return new ArchiveOptions(fallbackEncoding: FallbackEncoding::asIs());
+        return new Options(fallbackEncoding: FallbackEncoding::asIs());
     }
 
     private function removeDir(string $dir): void

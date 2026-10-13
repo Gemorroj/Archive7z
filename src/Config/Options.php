@@ -9,7 +9,7 @@ use Archive7z\Exception\InvalidArgumentException;
 /**
  * Immutable configuration of an {@see \Archive7z\Archive7z} instance.
  */
-final readonly class ArchiveOptions
+final readonly class Options
 {
     /**
      * Overwrite all existing files.

@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace Archive7z\Tests\Config;
 
 use Archive7z\Archive7z;
-use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
 use Archive7z\Exception\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
-class ArchiveOptionsTest extends TestCase
+class OptionsTest extends TestCase
 {
     public function testDefaults(): void
     {
-        $options = new ArchiveOptions();
+        $options = new Options();
 
         self::assertNull($options->getPassword());
         self::assertSame(9, $options->getCompressionLevel());
-        self::assertSame(ArchiveOptions::OVERWRITE_MODE_A, $options->getOverwriteMode());
+        self::assertSame(Options::OVERWRITE_MODE_A, $options->getOverwriteMode());
         self::assertNull($options->getSolidMode());
         self::assertFalse($options->isEncryptFilenames());
         self::assertTrue($options->getFallbackEncoding()->isAsIs());
@@ -29,10 +29,10 @@ class ArchiveOptionsTest extends TestCase
     public function testValues(): void
     {
         $solidMode = SolidMode::off();
-        $options = new ArchiveOptions(
+        $options = new Options(
             password: 'pass',
             compressionLevel: 5,
-            overwriteMode: ArchiveOptions::OVERWRITE_MODE_U,
+            overwriteMode: Options::OVERWRITE_MODE_U,
             solidMode: $solidMode,
             encryptFilenames: true,
             fallbackEncoding: FallbackEncoding::codepage('Windows-1251'),
@@ -41,7 +41,7 @@ class ArchiveOptionsTest extends TestCase
 
         self::assertSame('pass', $options->getPassword());
         self::assertSame(5, $options->getCompressionLevel());
-        self::assertSame(ArchiveOptions::OVERWRITE_MODE_U, $options->getOverwriteMode());
+        self::assertSame(Options::OVERWRITE_MODE_U, $options->getOverwriteMode());
         self::assertSame($solidMode, $options->getSolidMode());
         self::assertTrue($options->isEncryptFilenames());
         self::assertSame('Windows-1251', $options->getFallbackEncoding()->getEncoding());
@@ -51,18 +51,18 @@ class ArchiveOptionsTest extends TestCase
     public function testInvalidOverwriteMode(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ArchiveOptions(overwriteMode: 'invalid');
+        new Options(overwriteMode: 'invalid');
     }
 
     public function testInvalidCompressionLevel(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ArchiveOptions(compressionLevel: 10);
+        new Options(compressionLevel: 10);
     }
 
     public function testGetOptions(): void
     {
-        $options = new ArchiveOptions(password: 'pass');
+        $options = new Options(password: 'pass');
         $obj = new Archive7z('fake.7z', $options);
 
         self::assertSame($options, $obj->getOptions());

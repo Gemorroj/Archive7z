@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Archive7z\Tests;
 
 use Archive7z\Archive7z;
-use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
 use Archive7z\Exception\ExceptionInterface;
 use Archive7z\Exception\RuntimeException;
@@ -89,7 +89,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
 
         $paths = [];
@@ -104,7 +104,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect()),
+            new Options(fallbackEncoding: FallbackEncoding::detect()),
         );
 
         $paths = [];
@@ -119,7 +119,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect(['CP866'])),
+            new Options(fallbackEncoding: FallbackEncoding::detect(['CP866'])),
         );
 
         $paths = [];
@@ -134,7 +134,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::viaCallback(
+            new Options(fallbackEncoding: FallbackEncoding::viaCallback(
                 static function (string $raw): string {
                     return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
                 },
@@ -153,7 +153,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::viaCallback(
+            new Options(fallbackEncoding: FallbackEncoding::viaCallback(
                 static function (string $raw): string {
                     return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
                 },
@@ -174,7 +174,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('CP866')),
         );
 
         $paths = [];
@@ -190,7 +190,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/'.$archiveName,
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('CP866')),
         );
 
         self::assertTrue($obj->isValid());
@@ -217,7 +217,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
         $obj->extract($this->tmpDir);
 
@@ -230,7 +230,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::detect()),
+            new Options(fallbackEncoding: FallbackEncoding::detect()),
         );
         $obj->extract($this->tmpDir);
 
@@ -241,7 +241,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
 
         $entries = $obj->getEntries('чавес.jpg');
@@ -254,7 +254,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
         $obj->extractEntry('чавес.jpg', $this->tmpDir);
 
@@ -265,7 +265,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
         );
 
         $content = $obj->getContent('чавес.jpg');
@@ -415,7 +415,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdProvider')]
     public function testExtractPasswdNonAscii(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: '123'));
         $obj->extract($this->tmpDir);
 
         $nonAsciiFile = 'чавес.jpg';
@@ -437,17 +437,17 @@ class Archive7zTest extends TestCase
         $archiveFile = $this->fixturesDir.'/testArchive.txt';
         $archivePath = $this->fixturesDir.'/'.$archiveName;
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_A));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_A));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileEquals($archiveFile, $targetFile, $archiveName);
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_S));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_S));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileEquals($sourceFile, $targetFile);
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_T));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_T));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -455,7 +455,7 @@ class Archive7zTest extends TestCase
         self::assertFileEquals($sourceFile, $this->tmpDir.'/test/test_1.txt');
         \unlink($this->tmpDir.'/test/test_1.txt');
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_U));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_U));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -485,17 +485,17 @@ class Archive7zTest extends TestCase
         $archiveFile = $this->fixturesDir.'/testArchive.txt';
         $archivePath = $this->fixturesDir.'/'.$archiveName;
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_A));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_A));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileEquals($archiveFile, $targetFile);
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_S));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_S));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileEquals($sourceFile, $targetFile);
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_T));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_T));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -503,7 +503,7 @@ class Archive7zTest extends TestCase
         self::assertFileEquals($sourceFile, $this->tmpDir.'/test/test_1.txt');
         \unlink($this->tmpDir.'/test/test_1.txt');
 
-        $obj = new Archive7z($archivePath, new ArchiveOptions(overwriteMode: ArchiveOptions::OVERWRITE_MODE_U));
+        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_U));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -526,7 +526,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdProvider')]
     public function testExtractEntryPasswd(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: '123'));
         $obj->extractEntry('1.jpg', $this->tmpDir);
 
         self::assertFileExists($this->tmpDir.'/1.jpg');
@@ -535,7 +535,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdProvider')]
     public function testGetContentPasswd(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: '123'));
         $result = $obj->getContent('test/test.txt');
 
         self::assertStringEqualsFile($this->fixturesDir.'/testArchive.txt', $result);
@@ -544,7 +544,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdProvider')]
     public function testGetEntriesPasswd(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: '123'));
         $result = $obj->getEntries();
 
         self::assertCount(5, $result); // 4 file + 1 directory
@@ -554,7 +554,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdProvider')]
     public function testGetEntryPasswd(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: '123'));
         $result = $obj->getEntry('test/test.txt');
 
         self::assertInstanceOf(Entry::class, $result);
@@ -631,7 +631,7 @@ class Archive7zTest extends TestCase
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
         $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
-        $obj = new Archive7z($tempArchive, new ArchiveOptions(password: '111'));
+        $obj = new Archive7z($tempArchive, new Options(password: '111'));
         $obj->addEntry($fullPath);
         $result = $obj->getEntry('file.txt');
         self::assertInstanceOf(Entry::class, $result);
@@ -749,7 +749,7 @@ class Archive7zTest extends TestCase
     public function testDelEntryPasswd(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
-        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName), new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName), new Options(password: '123'));
 
         self::assertInstanceOf(Entry::class, $obj->getEntry('test/test.txt'));
 
@@ -779,7 +779,7 @@ class Archive7zTest extends TestCase
     public function testRenameEntryPasswd(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
-        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName), new ArchiveOptions(password: '123'));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName), new Options(password: '123'));
 
         $resultSrc = $obj->getEntry('test/test.txt');
         self::assertInstanceOf(Entry::class, $resultSrc);
@@ -865,7 +865,7 @@ class Archive7zTest extends TestCase
         $archive = $this->tmpDir.'/rename.zip';
         \copy($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip', $archive);
 
-        $obj = new Archive7z($archive, new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')));
+        $obj = new Archive7z($archive, new Options(fallbackEncoding: FallbackEncoding::codepage('CP866')));
         $obj->renameEntry('чавес.jpg', 'renamed.jpg');
 
         $paths = [];
@@ -906,7 +906,7 @@ class Archive7zTest extends TestCase
     {
         $obj = new Archive7z(
             $this->fixturesDir.'/tar/linux/bsdtar-3.6.2/features.tar',
-            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('UTF-8')),
+            new Options(fallbackEncoding: FallbackEncoding::codepage('UTF-8')),
         );
 
         $longNames = [];
@@ -934,7 +934,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdEncFilesProvider')]
     public function testExtractPasswdEncFiles(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: 'abc123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: 'abc123'));
         $obj->extract($this->tmpDir);
 
         self::assertFileExists($this->tmpDir.'/file.txt');
@@ -944,7 +944,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdEncFilesProvider')]
     public function testGetEntriesPasswdEncFiles(string $archiveName): void
     {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: 'abc123'));
+        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: 'abc123'));
         $result = $obj->getEntries();
 
         self::assertCount(2, $result); // 2 files
@@ -972,7 +972,7 @@ class Archive7zTest extends TestCase
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
         $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
-        $obj = new Archive7z($tempArchive, new ArchiveOptions(password: 'abc123', encryptFilenames: true));
+        $obj = new Archive7z($tempArchive, new Options(password: 'abc123', encryptFilenames: true));
         $obj->addEntry($fullPath);
 
         $result = $obj->getEntry('file.txt');
@@ -988,7 +988,7 @@ class Archive7zTest extends TestCase
     #[DataProvider('extractPasswdEncFilesProvider')]
     public function testIsValidPasswdEncFiles(string $archiveName): void
     {
-        $valid = new Archive7z($this->fixturesDir.'/'.$archiveName, new ArchiveOptions(password: 'abc123'));
+        $valid = new Archive7z($this->fixturesDir.'/'.$archiveName, new Options(password: 'abc123'));
 
         self::assertTrue($valid->isValid());
     }
@@ -1005,7 +1005,7 @@ class Archive7zTest extends TestCase
     public function testDelEntryPasswdEncFiles(string $fixtureArchiveName): void
     {
         \copy($this->fixturesDir.'/'.$fixtureArchiveName, $this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName));
-        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName), new ArchiveOptions(password: 'abc123'));
+        $obj = new Archive7z($this->tmpDir.'/'.\str_replace('/', '_', $fixtureArchiveName), new Options(password: 'abc123'));
 
         self::assertInstanceOf(Entry::class, $obj->getEntry('file1.txt'));
 
@@ -1033,7 +1033,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::on();
 
-        $obj = new Archive7z($tempArchive, new ArchiveOptions(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
         $obj->addEntry($this->tmpDir);
 
         self::assertTrue($obj->getInfo()->isSolid());
@@ -1047,7 +1047,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::off();
 
-        $obj = new Archive7z($tempArchive, new ArchiveOptions(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
         $obj->addEntry($this->tmpDir);
 
         self::assertFalse($obj->getInfo()->isSolid());
@@ -1061,7 +1061,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::limits(2, 1024);
 
-        $obj = new Archive7z($tempArchive, new ArchiveOptions(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
         $obj->addEntry($this->tmpDir);
 
         self::assertTrue($obj->getInfo()->isSolid());
@@ -1075,7 +1075,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::on();
 
-        $obj = new Archive7z($tempArchive, new ArchiveOptions(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
         $obj->addEntry($this->tmpDir);
 
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file3.txt');

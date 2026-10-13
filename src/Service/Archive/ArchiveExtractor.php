@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Service\Archive;
 
-use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\Options;
 use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Service\Namer\NameMapping;
 use Archive7z\Service\Namer\NameRepairer;
@@ -18,7 +18,7 @@ final readonly class ArchiveExtractor
 {
     public function __construct(
         private ProcessFactory $processFactory,
-        private ArchiveOptions $options,
+        private Options $options,
         private NameMapping $nameMapping,
         private NameRepairer $nameRepairer,
     ) {

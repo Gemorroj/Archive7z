@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Service\Namer;
 
-use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\Options;
 
 /**
  * Renames extracted entries to their target names.
@@ -72,13 +72,13 @@ final class NameRepairer
         }
 
         if (\file_exists($to) || \is_link($to)) {
-            if (ArchiveOptions::OVERWRITE_MODE_S === $this->overwriteMode) {
+            if (Options::OVERWRITE_MODE_S === $this->overwriteMode) {
                 return;
             }
 
-            if (ArchiveOptions::OVERWRITE_MODE_U === $this->overwriteMode) {
+            if (Options::OVERWRITE_MODE_U === $this->overwriteMode) {
                 $to = $this->makeUniquePath($to);
-            } elseif (ArchiveOptions::OVERWRITE_MODE_T === $this->overwriteMode) {
+            } elseif (Options::OVERWRITE_MODE_T === $this->overwriteMode) {
                 if (!@\rename($to, $this->makeUniquePath($to))) {
                     return;
                 }

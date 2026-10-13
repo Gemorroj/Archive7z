@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Archive;
 
-use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use Archive7z\Service\Archive\ArchiveExtractor;
 use Archive7z\Service\Container\NameReaderResolver;
 use Archive7z\Service\Namer\NameMapping;
@@ -71,7 +71,7 @@ class ArchiveExtractorTest extends TestCase
     private function extractor(string $file, ?FallbackEncoding $fallbackEncoding = null): ArchiveExtractor
     {
         $filename = $this->fixturesDir.'/'.$file;
-        $options = new ArchiveOptions(fallbackEncoding: $fallbackEncoding);
+        $options = new Options(fallbackEncoding: $fallbackEncoding);
         $factory = new ProcessFactory(
             ExecutableFinder::find(),
             $filename,

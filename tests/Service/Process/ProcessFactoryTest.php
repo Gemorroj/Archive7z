@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Process;
 
-use Archive7z\Config\ArchiveOptions;
 use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
 use Archive7z\Exception\ExceptionInterface;
 use Archive7z\Exception\ProcessRuntimeException;
@@ -33,7 +33,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testDecorateExtractNoPassword(): void
     {
-        $args = $this->factory()->decorateExtract(new ArchiveOptions());
+        $args = $this->factory()->decorateExtract(new Options());
 
         self::assertContains('-y', $args);
         self::assertContains('-p ', $args);
@@ -41,7 +41,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testDecorateExtractPasswordAndCodepage(): void
     {
-        $options = new ArchiveOptions(password: 'pass', fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
+        $options = new Options(password: 'pass', fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
 
         $zip = \tempnam(\sys_get_temp_dir(), 'archive7z_');
         \file_put_contents($zip, "PK\x03\x04");
@@ -60,14 +60,14 @@ class ProcessFactoryTest extends TestCase
     {
         // A handler other than zip/tar rejects "-mcp" and fails to open the
         // archive, so it must not be added.
-        $options = new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
+        $options = new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
 
         self::assertNotContains('-mcp=1251', $this->factory()->decorateExtract($options));
     }
 
     public function testDecorateExtractCodepageForTar(): void
     {
-        $options = new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
+        $options = new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
 
         $tar = \tempnam(\sys_get_temp_dir(), 'archive7z_');
         \file_put_contents($tar, \str_repeat("\0", 257).'ustar'.\str_repeat("\0", 100));
@@ -83,7 +83,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testDecorateExtractWindowsCharset(): void
     {
-        $args = $this->factory()->decorateExtract(new ArchiveOptions());
+        $args = $this->factory()->decorateExtract(new Options());
 
         if ('Windows' === \PHP_OS_FAMILY) {
             self::assertContains('-sccUTF-8', $args);
@@ -94,7 +94,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testDecorateCompressSolidMode(): void
     {
-        $args = $this->factory()->decorateCompress(new ArchiveOptions(solidMode: SolidMode::off()));
+        $args = $this->factory()->decorateCompress(new Options(solidMode: SolidMode::off()));
 
         self::assertContains('-ms=off', $args);
     }
@@ -110,7 +110,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testWithMaskDirectly(): void
     {
-        [$arguments, $file] = $this->factory()->withMask(['-slt'], new ArchiveOptions(), 'mask');
+        [$arguments, $file] = $this->factory()->withMask(['-slt'], new Options(), 'mask');
 
         self::assertSame(['-slt', 'mask'], $arguments);
         self::assertNull($file);
@@ -118,7 +118,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testWithMaskViaListFile(): void
     {
-        $options = new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
+        $options = new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
 
         [$arguments, $file] = $this->factory()
             ->withMask(['-slt', '-scsUTF-8', '-sccUTF-8'], $options, 'mask');

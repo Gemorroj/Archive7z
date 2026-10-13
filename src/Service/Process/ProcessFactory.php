@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Service\Process;
 
-use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\Options;
 use Archive7z\Exception\ProcessFailedException;
 use Archive7z\Exception\ProcessRuntimeException;
 use Archive7z\Exception\ProcessTimedOutException;
@@ -67,7 +67,7 @@ final class ProcessFactory
      *
      * @return array{0: string[], 1: MaskListFile|null}
      */
-    public function withMask(array $arguments, ArchiveOptions $options, ?string $encodedMask): array
+    public function withMask(array $arguments, Options $options, ?string $encodedMask): array
     {
         if (null === $encodedMask) {
             return [$arguments, null];
@@ -152,7 +152,7 @@ final class ProcessFactory
     /**
      * @return string[]
      */
-    public function decorateExtract(ArchiveOptions $options): array
+    public function decorateExtract(Options $options): array
     {
         $out = [];
         $out[] = '-y';
@@ -194,7 +194,7 @@ final class ProcessFactory
     /**
      * @return string[]
      */
-    public function decorateCompress(ArchiveOptions $options): array
+    public function decorateCompress(Options $options): array
     {
         $out = [];
         $out[] = '-y';
