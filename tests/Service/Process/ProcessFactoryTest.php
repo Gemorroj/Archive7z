@@ -39,9 +39,42 @@ class ProcessFactoryTest extends TestCase
     public function testDecorateExtractPasswordAndCodepage(): void
     {
         $options = new ArchiveOptions(password: 'pass', fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
-        $args = $this->factory()->decorateExtract($options);
+
+        $zip = \tempnam(\sys_get_temp_dir(), 'archive7z_');
+        \file_put_contents($zip, "PK\x03\x04");
+
+        try {
+            $args = (new ProcessFactory('/usr/bin/7z', $zip, 30.0, false))->decorateExtract($options);
+        } finally {
+            \unlink($zip);
+        }
 
         self::assertContains('-ppass', $args);
+        self::assertContains('-mcp=1251', $args);
+    }
+
+    public function testDecorateExtractCodepageSkippedForNonZipTar(): void
+    {
+        // A handler other than zip/tar rejects "-mcp" and fails to open the
+        // archive, so it must not be added.
+        $options = new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
+
+        self::assertNotContains('-mcp=1251', $this->factory()->decorateExtract($options));
+    }
+
+    public function testDecorateExtractCodepageForTar(): void
+    {
+        $options = new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('Windows-1251'));
+
+        $tar = \tempnam(\sys_get_temp_dir(), 'archive7z_');
+        \file_put_contents($tar, \str_repeat("\0", 257).'ustar'.\str_repeat("\0", 100));
+
+        try {
+            $args = (new ProcessFactory('/usr/bin/7z', $tar, 30.0, false))->decorateExtract($options);
+        } finally {
+            \unlink($tar);
+        }
+
         self::assertContains('-mcp=1251', $args);
     }
 

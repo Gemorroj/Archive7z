@@ -113,6 +113,34 @@ class Archive7zTest extends TestCase
         self::assertContains('чавес.jpg', $paths);
     }
 
+    #[DataProvider('codepageNonZipProvider')]
+    public function testFallbackEncodingCodepageNonZip(string $archiveName): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/'.$archiveName,
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::codepage('CP866')),
+        );
+
+        self::assertTrue($obj->isValid());
+        self::assertNotEmpty($obj->getEntries());
+    }
+
+    /**
+     * A configured code page must not break formats whose handler rejects the
+     * "-mcp" method property.
+     *
+     * @return string[][]
+     */
+    public static function codepageNonZipProvider(): array
+    {
+        return [
+            ['7z/windows/7zip-18.05/sample.7z'],
+            ['gzip/windows/7zip-18.05/sample.tgz'],
+            ['bz2/linux/gnutar-1.35/sample.tar.bz2'],
+            ['wim/windows/7zip-18.05/sample.wim'],
+        ];
+    }
+
     public function testExtractRepairsNonUtf8Names(): void
     {
         $obj = new Archive7z(

@@ -13,6 +13,8 @@ use Symfony\Component\Process\Process;
  */
 final class ProcessFactory
 {
+    private ?bool $supportsCodePage = null;
+
     /**
      * @param array<string, string> $env additional environment variables for the process
      */
@@ -28,6 +30,28 @@ final class ProcessFactory
     public function isWindows(): bool
     {
         return $this->isWindows;
+    }
+
+    /**
+     * Whether the archive handler accepts the "-mcp" method property.
+     *
+     * Only ZIP and TAR do; for 7z/gzip/bzip2/wim it makes 7-Zip fail to open
+     * the archive. Detected from the container magic bytes.
+     */
+    private function supportsCodePage(): bool
+    {
+        if (null === $this->supportsCodePage) {
+            $header = @\file_get_contents($this->filename, false, null, 0, 262);
+
+            $this->supportsCodePage = \is_string($header) && (
+                \str_starts_with($header, "PK\x03\x04")
+                || \str_starts_with($header, "PK\x05\x06")
+                || \str_starts_with($header, "PK\x06\x06")
+                || 'ustar' === \substr($header, 257, 5)
+            );
+        }
+
+        return $this->supportsCodePage;
     }
 
     /**
@@ -116,11 +140,12 @@ final class ProcessFactory
 
         // '-mcp' is not a switch: it is the method property 'cp' (switch "m",
         // ArchiveCommandLine.cpp), stored by handlers as _forceCodePage/
-        // _specifiedCodePage (TarHandler.cpp, ZipHandlerOut.cpp). ZIP reading
-        // honours it for names without a UTF-8 flag / Info-ZIP Unicode path
-        // (ZipItem.cpp: CItem::GetUnicodeString); other formats ignore it.
+        // _specifiedCodePage and honoured by ZIP/TAR reading for names without
+        // a UTF-8 flag / Info-ZIP Unicode path (ZipItem.cpp:
+        // CItem::GetUnicodeString). Other handlers reject the property and fail
+        // to open the archive, so it is passed only for ZIP/TAR.
         $codepage = $options->getFallbackEncoding()->getCodepage();
-        if (null !== $codepage) {
+        if (null !== $codepage && $this->supportsCodePage()) {
             $out[] = '-mcp='.$codepage;
         }
 
