@@ -35,11 +35,27 @@ final class NameRepairer
                 continue;
             }
 
+            // Defense in depth: never rename outside the target directory. 7-Zip
+            // already strips ".." components on extraction, so such a source does
+            // not exist; but the library must not rely on that.
+            if ($this->hasParentComponent($rename['from']) || $this->hasParentComponent($rename['to'])) {
+                continue;
+            }
+
             $this->renamePath(
                 $this->buildPath($directory, $rename['from']),
                 $this->buildPath($directory, $rename['to']),
             );
         }
+    }
+
+    private function hasParentComponent(string $relativePath): bool
+    {
+        if (\in_array('..', \explode('/', \str_replace('\\', '/', $relativePath)), true)) {
+            return true;
+        }
+
+        return false;
     }
 
     private function buildPath(string $directory, string $relativePath): string

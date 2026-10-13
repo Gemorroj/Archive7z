@@ -65,6 +65,21 @@ class NameRepairerTest extends TestCase
         self::assertFileDoesNotExist($this->directory.'/'.$from);
     }
 
+    public function testRenameRefusesEscapingPath(): void
+    {
+        \file_put_contents($this->directory.'/from.txt', 'content');
+
+        $relative = '../escaped_'.\basename($this->directory).'.txt';
+        $escaped = $this->directory.'/'.$relative;
+        @\unlink($escaped);
+
+        (new NameRepairer(ArchiveOptions::OVERWRITE_MODE_A))
+            ->rename($this->directory, [['from' => 'from.txt', 'to' => $relative]]);
+
+        self::assertFileExists($this->directory.'/from.txt');
+        self::assertFileDoesNotExist($escaped);
+    }
+
     public function testRenameAutoRenameExtracted(): void
     {
         \file_put_contents($this->directory.'/a.txt', 'extracted');
