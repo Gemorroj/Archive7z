@@ -15,17 +15,19 @@ jobs:
         os: ['ubuntu-latest']
         php: ['8.2', '8.3', '8.4', '8.5']
         deps: ['', '--prefer-lowest']
-        p7zip: ['7zip']
+        sevenzip: ['official']
         include:
           - os: 'windows-latest'
             php: '8.5'
+            sevenzip: 'bundled'
           - os: 'macos-latest'
             php: '8.5'
+            sevenzip: 'official'
           - os: 'ubuntu-latest'
             php: '8.5'
-            p7zip: 'p7zip'
+            sevenzip: 'distro'
 
-    name: ${{ matrix.os }}; PHP ${{ matrix.php }}; ${{ matrix.deps && 'lowest' || 'latest' }}-deps; ${{ matrix.p7zip }}
+    name: ${{ matrix.os }}; PHP ${{ matrix.php }}; ${{ matrix.deps && 'lowest' || 'latest' }}-deps; 7-Zip ${{ matrix.sevenzip }}
 
     runs-on: ${{ matrix.os }}
 
@@ -38,20 +40,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Setup p7zip Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.p7zip == 'p7zip' }}
-        run: sudo apt install p7zip-full p7zip-rar
-      - name: Setup 7zip Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.p7zip == '7zip' }}
+      - name: Setup 7-Zip (Ubuntu)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          curl -L https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-linux-x64.tar.xz > 7z-linux-x64.tar.xz
-          tar xJvf 7z-linux-x64.tar.xz
-          sudo cp 7zz /usr/bin/7zz
-      - name: Setup 7zip MacOs
-        if: matrix.os == 'macos-latest'
+          if [ '${{ matrix.sevenzip }}' = 'distro' ]; then
+            sudo apt-get update
+            sudo apt-get install -y 7zip 7zip-rar
+          else
+            curl -L -o 7z.tar.xz https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-linux-x64.tar.xz
+            tar xJf 7z.tar.xz
+            sudo cp 7zz /usr/bin/7zz
+          fi
+      - name: Setup 7-Zip (macOS)
+        if: ${{ matrix.os == 'macos-latest' }}
         run: |
-          curl -L https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-mac.tar.xz > 7z-mac.tar.xz
-          tar xJvf 7z-mac.tar.xz
+          curl -L -o 7z.tar.xz https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-mac.tar.xz
+          tar xJf 7z.tar.xz
           sudo cp 7zz /usr/local/bin/7zz
       # windows-latest already ships 7-Zip at C:\Program Files\7-Zip\7z.exe (the auto-detect path).
 

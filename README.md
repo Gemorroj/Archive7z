@@ -1,4 +1,4 @@
-# Wrapper 7-zip (p7zip)
+# Wrapper 7-zip
 
 [![License](https://poser.pugx.org/gemorroj/archive7z/license)](https://packagist.org/packages/gemorroj/archive7z)
 [![Latest Stable Version](https://poser.pugx.org/gemorroj/archive7z/v/stable)](https://packagist.org/packages/gemorroj/archive7z)
@@ -20,8 +20,10 @@
 
 - PHP >= 8.2
 - allow [proc_open](https://www.php.net/proc_open) function
-- for Windows: 7-zip >= 7.30 (https://www.7-zip.org/)
-- for Linux/MacOs: 7-zip >= 21.01 or p7zip >= 9.38 (https://github.com/p7zip-project/p7zip)
+- for Windows: 7-Zip >= 16.04 (https://www.7-zip.org/)
+- for Linux: 7-Zip >= 21.01 — the official build (`7zz`, https://www.7-zip.org/) or a distribution package (`7z`, e.g. the Debian/Ubuntu `7zip` package)
+- for macOS: 7-Zip >= 21.02 (official `7zz`)
+- p7zip is not supported: the unmaintained 16.02 has no list-file/`-scs`; the maintained fork (17.x) still misses `-aot` and decodes non-ASCII names differently
 
 
 ### Installation:
@@ -31,14 +33,12 @@ composer require gemorroj/archive7z
 
 
 ### Notes:
-- https://sourceforge.net/p/p7zip/discussion/383043/thread/fa143cf2/
-- Filenames are expected to be UTF-8; for non-UTF-8 names pass `fallbackEncoding` to `ArchiveOptions`, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
 - Pass `env` to `ArchiveOptions` to set environment variables for the 7-Zip process (for example `env: ['LC_ALL' => 'ru_RU.UTF-8']`).
 
 
 ### Limitations:
 
-- Filenames are given as UTF-8. Archives whose names use another encoding (CP866, CP1251, ...) need an explicit `ArchiveOptions::fallbackEncoding` — `FallbackEncoding::codepage(...)` (exact) or `detect()` (heuristic); otherwise they are unreadable on Linux and may be mangled on Windows.
+- Filenames are given as UTF-8. Archives whose names use another encoding (CP866, CP1251, ...) need an explicit `ArchiveOptions::fallbackEncoding` — `FallbackEncoding::codepage(...)` (exact) or `detect()` (heuristic); otherwise they are unreadable on Linux and may be mangled on Windows, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
 - For `zip`/`tar`/`gzip` the names are read from the container, so listing, selection and extraction behave the same on every platform; other formats rely on 7-Zip's own decoding.
 
 

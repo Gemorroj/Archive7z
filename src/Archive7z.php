@@ -268,7 +268,7 @@ final class Archive7z
     }
 
     /**
-     * 7-zip >= 7.30 ( http://sourceforge.net/p/p7zip/discussion/383043/thread/f54fe89a/ ).
+     * Renames an entry inside the archive.
      *
      * @throws \Symfony\Component\Process\Exception\ProcessFailedException
      */

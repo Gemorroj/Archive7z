@@ -8,7 +8,7 @@ use Archive7z\Archive7z;
 use Archive7z\Exception\RuntimeException;
 
 /*
-p7zip: 7z
+7-Zip: 7z
 Path = test\test.txt
 Size = 14
 Packed Size =
@@ -19,7 +19,7 @@ Encrypted = -
 Method = LZMA2:192k
 Block = 0
 
-p7zip: tar
+7-Zip: tar
 Path = test\test.txt
 Folder = -
 Size = 14
@@ -32,7 +32,7 @@ Symbolic Link =
 Hard Link =
 Characteristics = ASCII
 
-p7zip: zip
+7-Zip: zip
 Path = test\test.txt
 Folder = -
 Size = 14
@@ -51,14 +51,14 @@ Version = 10
 Volume Index = 0
 Offset = 146577
 
-p7zip: iso
+7-Zip: iso
 Path = folder/subdoc
 Folder = -
 Size = 6
 Packed Size = 6
 Modified = 2018-06-17 19:22:27
 
-p7zip: xz
+7-Zip: xz
 Size = 3
 Packed Size = 60
 Method = LZMA2:23 CRC64

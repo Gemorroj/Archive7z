@@ -969,8 +969,10 @@ class Archive7zTest extends TestCase
         self::assertIsString($info->getType());
         self::assertGreaterThan(0, $info->getPhysicalSize());
 
-        // p7zip: 7-Zip [64] 17.04 : Copyright (c) 1999-2021 Igor Pavlov : 2017-08-28
-        // 7-zip: 7-Zip 23.00 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-05-07
+        // Version line format depends on the build:
+        //   Windows:        7-Zip 26.04 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-05
+        //   Linux official: 7-Zip (z) 26.04 (x64) : Copyright ...
+        //   Linux distro:   7-Zip 25.01 (x64) : Copyright ...
         $versionLine = $info->getData()[1];
 
         self::assertMatchesRegularExpression('/^7\-Zip .+/', $versionLine);

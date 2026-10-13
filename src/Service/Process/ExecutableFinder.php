@@ -9,15 +9,19 @@ use Archive7z\Exception\RuntimeException;
 final class ExecutableFinder
 {
     /**
-     * 7zz  (7-Zip) - standalone full version of 7-Zip that supports all formats.
-     * 7zzs (7-Zip) - standalone full version of 7-Zip that supports all formats (static library linking).
-     * 7z  (p7zip) - 7-Zip that requires 7z.so shared library, and it supports all formats via 7z.so.
-     * 7zr (p7zip) - standalone reduced version of 7-Zip that supports some 7-Zip's formats: 7z, xz, lzma and split.
-     * 7za (p7zip) - standalone version of 7-Zip that supports some main formats: 7z, xz, lzma, zip, bzip2, gzip, tar, cab, ppmd and split.
+     * 7zz - official standalone 7-Zip for Linux/macOS (7-zip.org, Homebrew).
+     * 7z  - distribution package (e.g. the Debian/Ubuntu "7zip" package).
      *
      * @var string[]
      */
-    private const NIX_PATHS = ['/usr/bin/7z', '/usr/bin/7za', '/usr/bin/7zz', '/usr/local/bin/7z', '/usr/local/bin/7za', '/usr/local/bin/7zz'];
+    private const NIX_PATHS = [
+        '/usr/bin/7z',
+        '/usr/bin/7zz',
+        '/usr/local/bin/7z',
+        '/usr/local/bin/7zz',
+        '/opt/homebrew/bin/7z',
+        '/opt/homebrew/bin/7zz',
+    ];
 
     /**
      * @var string[]
