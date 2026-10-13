@@ -78,4 +78,44 @@ class NameEncoderTest extends TestCase
     {
         self::assertTrue(NameEncoder::resolve(FallbackEncoding::detect())->isAsIs());
     }
+
+    public function testCallback(): void
+    {
+        $raw = \mb_convert_encoding('чавес', 'Windows-1251', 'UTF-8');
+        $encoder = NameEncoder::resolve(FallbackEncoding::viaCallback(
+            static function (string $value): string {
+                return \mb_convert_encoding($value, 'UTF-8', 'Windows-1251');
+            },
+            static function (string $value): string {
+                return \mb_convert_encoding($value, 'Windows-1251', 'UTF-8');
+            },
+        ));
+
+        self::assertFalse($encoder->isAsIs());
+        self::assertSame('чавес', $encoder->decode($raw));
+        self::assertSame($raw, $encoder->encode('чавес'));
+    }
+
+    public function testCallbackDecodeWithoutEncoderPassesThrough(): void
+    {
+        $encoder = NameEncoder::resolve(FallbackEncoding::viaCallback(
+            static function (string $value): string {
+                return \mb_convert_encoding($value, 'UTF-8', 'Windows-1251');
+            },
+        ));
+
+        self::assertSame('abc', $encoder->encode('abc'));
+    }
+
+    public function testCallbackIsAppliedAfterUnescape(): void
+    {
+        $encoder = NameEncoder::resolve(FallbackEncoding::viaCallback(
+            static function (string $value): string {
+                return 'x-'.\bin2hex($value);
+            },
+        ));
+
+        // 7-Zip escapes are reversed to bytes (f7 e0 e2 e5 f1) before the callback.
+        self::assertSame('x-f7e0e2e5f1', $encoder->decode("\u{EFF7}\u{EFE0}\u{EFE2}\u{EFE5}\u{EFF1}"));
+    }
 }

@@ -48,4 +48,33 @@ class FallbackEncodingTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         FallbackEncoding::codepage('');
     }
+
+    public function testCallback(): void
+    {
+        $encoding = FallbackEncoding::viaCallback(static function (string $raw): string {
+            return $raw;
+        });
+
+        self::assertTrue($encoding->isCallback());
+        self::assertFalse($encoding->isAsIs());
+        self::assertFalse($encoding->isDetect());
+        self::assertNull($encoding->getEncoding());
+        self::assertNull($encoding->getCodepage());
+        self::assertInstanceOf(\Closure::class, $encoding->getDecodeCallback());
+        self::assertNull($encoding->getEncodeCallback());
+    }
+
+    public function testCallbackWithEncoder(): void
+    {
+        $encoding = FallbackEncoding::viaCallback(
+            static function (string $raw): string {
+                return $raw;
+            },
+            static function (string $value): string {
+                return $value;
+            },
+        );
+
+        self::assertInstanceOf(\Closure::class, $encoding->getEncodeCallback());
+    }
 }

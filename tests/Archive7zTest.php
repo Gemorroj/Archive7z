@@ -115,6 +115,46 @@ class Archive7zTest extends TestCase
         self::assertContains('чавес.jpg', $paths);
     }
 
+    public function testFallbackEncodingCallback(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::viaCallback(
+                static function (string $raw): string {
+                    return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
+                },
+            )),
+        );
+
+        $paths = [];
+        foreach ($obj->getEntries() as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        self::assertContains('чавес.jpg', $paths);
+    }
+
+    public function testFallbackEncodingCallbackExtract(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
+            new ArchiveOptions(fallbackEncoding: FallbackEncoding::viaCallback(
+                static function (string $raw): string {
+                    return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
+                },
+                static function (string $value): string {
+                    return \mb_convert_encoding($value, 'Windows-1251', 'UTF-8');
+                },
+            )),
+        );
+
+        $directory = $this->tmpDir.'/callback';
+        \mkdir($directory);
+        $obj->extract($directory);
+
+        self::assertFileExists($directory.'/чавес.jpg');
+    }
+
     public function testFallbackEncodingCodepageZip(): void
     {
         $obj = new Archive7z(

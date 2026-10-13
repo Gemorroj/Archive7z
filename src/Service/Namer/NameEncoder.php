@@ -7,21 +7,24 @@ namespace Archive7z\Service\Namer;
 use Archive7z\Config\FallbackEncoding;
 
 /**
- * Resolved encoding of the archive entry names.
+ * Resolved name encoder.
  *
- * Values that are not valid UTF-8 are decoded from the resolved source
- * encoding; {@see self::encode()} does the opposite for user supplied names.
+ * Always a pair of callables: one that turns a raw archive value into UTF-8
+ * and one that turns a UTF-8 name back into the archive encoding. The library
+ * presets ({@see FallbackEncoding}) build them from an explicit code page, a
+ * detected encoding, or user supplied callbacks; as-is uses identity.
  */
 final readonly class NameEncoder
 {
+    /**
+     * @param \Closure(string): string $decode raw value -> UTF-8 (7-Zip escapes already reversed)
+     * @param \Closure(string): string $encode UTF-8 -> raw value
+     */
     private function __construct(
-        private ?string $encoding,
+        private \Closure $decode,
+        private \Closure $encode,
+        private bool $asIs,
     ) {
-    }
-
-    public static function asIs(): self
-    {
-        return new self(null);
     }
 
     /**
@@ -30,50 +33,101 @@ final readonly class NameEncoder
     public static function resolve(FallbackEncoding $fallbackEncoding, ?string $sample = null): self
     {
         if ($fallbackEncoding->isAsIs()) {
-            return self::asIs();
+            return self::identity();
+        }
+
+        if ($fallbackEncoding->isCallback()) {
+            return new self(
+                $fallbackEncoding->getDecodeCallback() ?? self::identityCallback(),
+                $fallbackEncoding->getEncodeCallback() ?? self::identityCallback(),
+                false,
+            );
         }
 
         if ($fallbackEncoding->isDetect()) {
-            if (null === $sample) {
-                return self::asIs();
-            }
-
-            $sample = self::unescape($sample);
-
-            if (\mb_check_encoding($sample, 'UTF-8')) {
-                return self::asIs();
-            }
-
-            $encoding = \mb_detect_encoding($sample, FallbackEncoding::DETECT_CANDIDATES, true);
-
-            return \is_string($encoding) ? new self($encoding) : self::asIs();
+            return self::fromDetection($sample);
         }
 
-        return new self($fallbackEncoding->getEncoding());
+        $encoding = $fallbackEncoding->getEncoding();
+
+        return null === $encoding ? self::identity() : self::fromEncoding($encoding);
     }
 
     public function isAsIs(): bool
     {
-        return null === $this->encoding;
+        return $this->asIs;
     }
 
     /**
      * Converts a value from the archive name encoding to UTF-8.
      *
-     * 7-Zip byte escapes (see {@see self::unescape()}) are always reversed,
-     * also for asIs, since they are a lossless transport artifact, not decoding.
+     * 7-Zip byte escapes (see {@see self::unescape()}) are always reversed
+     * first, also for as-is, since they are a lossless transport artifact,
+     * not decoding.
      */
     public function decode(string $value): string
     {
-        $value = self::unescape($value);
+        return ($this->decode)(self::unescape($value));
+    }
 
-        if (null === $this->encoding || \mb_check_encoding($value, 'UTF-8')) {
-            return $value;
+    /**
+     * Converts a UTF-8 value to the archive name encoding.
+     */
+    public function encode(string $value): string
+    {
+        return ($this->encode)($value);
+    }
+
+    private static function identity(): self
+    {
+        return new self(self::identityCallback(), self::identityCallback(), true);
+    }
+
+    private static function fromDetection(?string $sample): self
+    {
+        if (null === $sample) {
+            return self::identity();
         }
 
-        $converted = \mb_convert_encoding($value, 'UTF-8', $this->encoding);
+        $sample = self::unescape($sample);
+        if (\mb_check_encoding($sample, 'UTF-8')) {
+            return self::identity();
+        }
 
-        return false === $converted ? $value : $converted;
+        $encoding = \mb_detect_encoding($sample, FallbackEncoding::DETECT_CANDIDATES, true);
+
+        return \is_string($encoding) ? self::fromEncoding($encoding) : self::identity();
+    }
+
+    private static function fromEncoding(string $encoding): self
+    {
+        $decode = static function (string $value) use ($encoding): string {
+            if (\mb_check_encoding($value, 'UTF-8')) {
+                return $value;
+            }
+
+            $converted = \mb_convert_encoding($value, 'UTF-8', $encoding);
+
+            return false === $converted ? $value : $converted;
+        };
+
+        $encode = static function (string $value) use ($encoding): string {
+            $encoded = \mb_convert_encoding($value, $encoding, 'UTF-8');
+
+            return $encoded ?: $value;
+        };
+
+        return new self($decode, $encode, false);
+    }
+
+    /**
+     * @return \Closure(string): string
+     */
+    private static function identityCallback(): \Closure
+    {
+        return static function (string $value): string {
+            return $value;
+        };
     }
 
     /**
@@ -95,19 +149,5 @@ final readonly class NameEncoder
         }, $value);
 
         return $result ?? $value;
-    }
-
-    /**
-     * Converts a UTF-8 value to the archive name encoding.
-     */
-    public function encode(string $value): string
-    {
-        if (null === $this->encoding) {
-            return $value;
-        }
-
-        $encoded = \mb_convert_encoding($value, $this->encoding, 'UTF-8');
-
-        return $encoded ?: $value;
     }
 }

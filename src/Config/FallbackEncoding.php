@@ -19,6 +19,7 @@ final readonly class FallbackEncoding
     public const MODE_AS_IS = 'asis';
     public const MODE_DETECT = 'detect';
     public const MODE_ENCODING = 'encoding';
+    public const MODE_CALLBACK = 'callback';
 
     /**
      * Candidate encodings tried by {@see self::detect()}, in order.
@@ -67,6 +68,8 @@ final readonly class FallbackEncoding
     private function __construct(
         private readonly string $mode,
         private readonly ?string $encoding = null,
+        private readonly ?\Closure $decodeCallback = null,
+        private readonly ?\Closure $encodeCallback = null,
     ) {
     }
 
@@ -100,6 +103,34 @@ final readonly class FallbackEncoding
         return new self(self::MODE_ENCODING, $encoding);
     }
 
+    /**
+     * Decode (and optionally encode) names with user supplied callbacks.
+     *
+     * Use when neither the container metadata nor {@see self::detect()} can
+     * decide the encoding (for example old ZIP/TAR archives holding raw 8-bit
+     * names): the decoder receives a raw name and returns UTF-8. The optional
+     * encoder does the reverse for masks/paths; without it non-ASCII names
+     * passed to a mask are used unchanged.
+     *
+     * Note: only {@see self::codepage()} passes a non-ASCII mask through a list
+     * file. A callback mask goes on the 7-Zip command line, so it matches only
+     * where 7-Zip compares the raw bytes (official builds on Linux); Windows
+     * and builds that force a UTF-8 command line (some distro packages) may
+     * match nothing. Use a code page when you need non-ASCII masks.
+     *
+     * @param callable(string): string      $decode raw name bytes -> UTF-8
+     * @param callable(string): string|null $encode UTF-8 -> raw name bytes
+     */
+    public static function viaCallback(callable $decode, ?callable $encode = null): self
+    {
+        return new self(
+            self::MODE_CALLBACK,
+            null,
+            \Closure::fromCallable($decode),
+            null === $encode ? null : \Closure::fromCallable($encode),
+        );
+    }
+
     public function isAsIs(): bool
     {
         return self::MODE_AS_IS === $this->mode;
@@ -108,6 +139,27 @@ final readonly class FallbackEncoding
     public function isDetect(): bool
     {
         return self::MODE_DETECT === $this->mode;
+    }
+
+    public function isCallback(): bool
+    {
+        return self::MODE_CALLBACK === $this->mode;
+    }
+
+    /**
+     * @return \Closure(string): string|null
+     */
+    public function getDecodeCallback(): ?\Closure
+    {
+        return $this->decodeCallback;
+    }
+
+    /**
+     * @return \Closure(string): string|null
+     */
+    public function getEncodeCallback(): ?\Closure
+    {
+        return $this->encodeCallback;
     }
 
     public function getEncoding(): ?string

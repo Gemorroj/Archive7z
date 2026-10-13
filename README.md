@@ -32,8 +32,9 @@ composer require gemorroj/archive7z
 
 
 ### Limitations:
-- Filenames are assumed UTF-8. Non-UTF-8 names (CP866, CP1251, ...) need `ArchiveOptions::fallbackEncoding` (`FallbackEncoding::codepage(...)` or `detect()`), otherwise they are unreadable on Linux and may be mangled on Windows, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
+- Filenames are assumed UTF-8. Non-UTF-8 names (CP866, CP1251, ...) need `ArchiveOptions::fallbackEncoding` (`FallbackEncoding::codepage(...)`, `detect()` or a custom `viaCallback(...)`), otherwise they are unreadable on Linux and may be mangled on Windows, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
 - `zip`/`tar`/`gzip` names are read from the container (exact, cross-platform); other formats use the 7-Zip output instead, so Unicode-name formats like `7z`/`rar`/`wim` need no fallback.
+- A non-ASCII name used in a mask/path is portable only with `FallbackEncoding::codepage(...)` (passed via a list file); with `detect()`, `asIs()` or `viaCallback(...)` the mask goes on the 7-Zip command line and matches only on builds comparing the raw bytes (official Linux `7zz`), not on Windows or on builds forcing a UTF-8 command line.
 
 
 ### Example:
@@ -126,4 +127,29 @@ $archive->addEntry(__FILE__); // add file to the archive
 
 $archive->renameEntry(__FILE__, __FILE__.'new'); // rename the file in the archive
 $archive->delEntry(__FILE__.'new'); // remove the file from the archive
+
+
+// Custom name encoding:
+// When an archive stores non-UTF-8 names without encoding metadata (old `zip`/`tar`)
+use Archive7z\Archive7z;
+use Archive7z\Config\ArchiveOptions;
+use Archive7z\Config\FallbackEncoding;
+
+// e.g. an old DOS/Windows archive with CP866 names; a legacy tool with its own
+// scheme, or mixed encodings, is handled the same way.
+$obj = new Archive7z(
+    'path_to_archive.zip',
+    new ArchiveOptions(fallbackEncoding: FallbackEncoding::viaCallback(
+        static function (string $raw): string {     // raw name bytes -> UTF-8
+            return \mb_convert_encoding($raw, 'UTF-8', 'CP866');
+        },
+        static function (string $name): string {    // UTF-8 name -> raw bytes (masks/paths)
+            return \mb_convert_encoding($name, 'CP866', 'UTF-8');
+        },
+    )),
+);
+
+foreach ($obj->getEntries() as $entry) {
+    echo $entry->getPath(), "\n"; // decoded names
+}
 ```
