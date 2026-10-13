@@ -274,8 +274,10 @@ class Archive7zTest extends TestCase
             ['tar/linux/bsdtar-3.6.2/sample.tar'],
             ['zip/linux/bsdtar-3.6.2/sample.zip'],
             ['zip/macos/apple-archive/sample.zip'],
+            ['zip/macos/apple-archive/unicode.zip'],
             ['zip/macos/zip/sample.zip'],
             ['tar/macos/bsdtar/sample.tar'],
+            ['tar/macos/bsdtar/unicode.tar'],
         ];
     }
 
@@ -727,6 +729,31 @@ class Archive7zTest extends TestCase
 
         self::assertContains('renamed.jpg', $paths);
         self::assertNotContains('чавес.jpg', $paths);
+    }
+
+    public function testMacosUnicodeNames(): void
+    {
+        foreach (['tar/macos/bsdtar/unicode.tar', 'zip/macos/apple-archive/unicode.zip'] as $archiveName) {
+            $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
+
+            $paths = [];
+            foreach ($obj->getEntries() as $entry) {
+                $paths[] = $entry->getUnixPath();
+            }
+
+            self::assertContains('café.txt', $paths, $archiveName);
+            self::assertContains('й.txt', $paths, $archiveName);
+            self::assertContains('чавес.jpg', $paths, $archiveName);
+
+            $hasSidecar = false;
+            foreach ($paths as $path) {
+                if (\str_starts_with($path, '__MACOSX/') || \str_starts_with($path, '._')) {
+                    $hasSidecar = true;
+                    break;
+                }
+            }
+            self::assertTrue($hasSidecar, $archiveName);
+        }
     }
 
     /**
