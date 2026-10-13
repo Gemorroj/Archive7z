@@ -92,6 +92,15 @@ class ProcessFactoryTest extends TestCase
         self::assertContains('-ms=off', $args);
     }
 
+    public function testTextOutputNormalizesOnlyCrlf(): void
+    {
+        $process = new Process([\PHP_BINARY, '-r', 'echo "a\r\nb\rc";']);
+        $this->factory()->run($process);
+
+        // CRLF becomes "\n"; a lone "\r" is content and is preserved.
+        self::assertSame("a\nb\rc", $this->factory()->textOutput($process));
+    }
+
     public function testWithMaskDirectly(): void
     {
         [$arguments, $file] = $this->factory()->withMask(['-slt'], new ArchiveOptions(), 'mask');

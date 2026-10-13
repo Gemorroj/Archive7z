@@ -92,7 +92,7 @@ final readonly class ArchiveExtractor
         }
 
         // Raw output: these are the names 7-Zip actually wrote to disk.
-        $parser = new Parser(\explode(\PHP_EOL, $process->getOutput()));
+        $parser = new Parser(\explode("\n", $this->processFactory->textOutput($process)));
 
         $sources = [];
         foreach ($parser->parseEntries() as $entry) {

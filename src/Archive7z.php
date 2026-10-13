@@ -359,14 +359,14 @@ final class Archive7z
     {
         $process = $this->processFactory->create('t', $this->processFactory->decorateExtract($this->options));
 
-        $output = $this->processFactory->run($process)->getOutput();
+        $output = $this->processFactory->textOutput($this->processFactory->run($process));
 
-        $pos = \strpos($output, \PHP_EOL.'--');
+        $pos = \strpos($output, "\n--");
         if (false === $pos) {
             return [];
         }
         $header = \substr($output, 0, $pos);
-        $warningsHeader = \PHP_EOL.'WARNINGS:';
+        $warningsHeader = "\nWARNINGS:";
         $warningsPos = \strrpos($header, $warningsHeader);
         if (false === $warningsPos) {
             return [];
@@ -375,6 +375,6 @@ final class Archive7z
         $warningsStr = \substr($header, $warningsPos + \strlen($warningsHeader));
         $warningsStr = \trim($warningsStr);
 
-        return \explode(\PHP_EOL, $warningsStr);
+        return \explode("\n", $warningsStr);
     }
 }

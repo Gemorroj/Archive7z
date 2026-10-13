@@ -60,7 +60,7 @@ final class ArchiveLister
             $maskFile?->delete();
         }
 
-        $parser = new Parser(\explode(\PHP_EOL, $this->nameMapping->decodeOutput($process->getOutput())));
+        $parser = new Parser(\explode("\n", $this->nameMapping->decodeOutput($this->processFactory->textOutput($process))));
         $entries = $parser->parseEntries($limit);
 
         return null === $pathMask ? $this->withContainerNames($entries) : $entries;
@@ -78,7 +78,7 @@ final class ArchiveLister
         ));
         $this->processFactory->run($process);
 
-        $out = \explode(\PHP_EOL, $this->nameMapping->decodeOutput($process->getOutput()));
+        $out = \explode("\n", $this->nameMapping->decodeOutput($this->processFactory->textOutput($process)));
 
         return new Info(new Parser($out));
     }

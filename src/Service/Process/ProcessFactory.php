@@ -131,6 +131,19 @@ final class ProcessFactory
     }
 
     /**
+     * The process stdout with CRLF line endings normalized to "\n".
+     *
+     * 7-Zip separates lines by "\r\n" on Windows and "\n" elsewhere, which does
+     * not necessarily match {@see PHP_EOL}, so parsing must not rely on it.
+     * Only CRLF is rewritten: a lone "\r" is content (a filename may contain
+     * it) and must be preserved. For text output only — never binary content.
+     */
+    public function textOutput(Process $process): string
+    {
+        return \str_replace("\r\n", "\n", $process->getOutput());
+    }
+
+    /**
      * @return string[]
      */
     public function decorateExtract(ArchiveOptions $options): array
