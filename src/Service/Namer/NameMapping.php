@@ -46,7 +46,11 @@ final readonly class NameMapping
      */
     public function encode(string $name): string
     {
-        return NameEncoder::resolve($this->fallbackEncoding, $this->containerSample())->encode($name);
+        // The sample is only needed to detect the encoding; as-is and an explicit
+        // codepage ignore it, so skip reading the archive in those cases.
+        $sample = $this->fallbackEncoding->isDetect() ? $this->containerSample() : null;
+
+        return NameEncoder::resolve($this->fallbackEncoding, $sample)->encode($name);
     }
 
     /**
