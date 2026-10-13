@@ -147,7 +147,23 @@ final class TarNameReader implements NameReaderInterface
 
     private function size(string $header): int
     {
-        $raw = \trim(\substr($header, self::SIZE_OFFSET, self::SIZE_LENGTH), " \0");
+        $raw = \substr($header, self::SIZE_OFFSET, self::SIZE_LENGTH);
+
+        // GNU/star store values that do not fit 11 octal digits (sizes >= 8 GiB)
+        // in base-256: the top bit of the first byte is set and the remaining
+        // bytes are a big-endian two's complement number (tar-spec, "GNU
+        // extensions"). Octal digits are always < 0x80, so the top bit is a
+        // reliable marker.
+        if ('' !== $raw && 0 !== (\ord($raw[0]) & 0x80)) {
+            $value = \ord($raw[0]) & 0x7F;
+            for ($i = 1, $length = \strlen($raw); $i < $length; ++$i) {
+                $value = ($value << 8) | \ord($raw[$i]);
+            }
+
+            return $value;
+        }
+
+        $raw = \trim($raw, " \0");
         if ('' === $raw) {
             return 0;
         }

@@ -61,4 +61,62 @@ class TarNameReaderTest extends TestCase
         self::assertSame('name with spaces.txt', $names[3]->value);
         self::assertSame('nested', $names[4]->value);
     }
+
+    public function testGnuBase256Size(): void
+    {
+        $tar = $this->tarHeader('base256.txt', $this->base256(5)).'hello'.\str_repeat("\0", 507);
+        $tar .= $this->tarHeader('plain.txt', $this->octal(5, 12)).'world'.\str_repeat("\0", 507);
+        $tar .= \str_repeat("\0", 1024);
+
+        $path = \tempnam(\sys_get_temp_dir(), 'archive7z_tar_');
+        \file_put_contents($path, $tar);
+
+        try {
+            $names = (new TarNameReader())->read($path);
+        } finally {
+            \unlink($path);
+        }
+
+        self::assertCount(2, $names);
+        self::assertSame('base256.txt', $names[0]->value);
+        self::assertSame('plain.txt', $names[1]->value);
+    }
+
+    private function tarHeader(string $name, string $sizeField): string
+    {
+        $header = \str_pad($name, 100, "\0");
+        $header .= $this->octal(0o644, 8);  // mode
+        $header .= $this->octal(0, 8);      // uid
+        $header .= $this->octal(0, 8);      // gid
+        $header .= $sizeField;              // size
+        $header .= $this->octal(0, 12);     // mtime
+        $header .= \str_repeat(' ', 8);     // checksum (spaces while summing)
+        $header .= '0';                     // typeflag: regular file
+        $header .= \str_repeat("\0", 100);  // linkname
+        $header .= "ustar\0";               // magic
+        $header .= '00';                    // version
+        $header = \str_pad($header, 512, "\0");
+
+        $sum = 0;
+        for ($i = 0; $i < 512; ++$i) {
+            $sum += \ord($header[$i]);
+        }
+
+        return \substr_replace($header, \str_pad(\decoct($sum), 6, '0', \STR_PAD_LEFT)."\0 ", 148, 8);
+    }
+
+    private function octal(int $value, int $length): string
+    {
+        return \str_pad(\decoct($value), $length - 1, '0', \STR_PAD_LEFT)."\0";
+    }
+
+    private function base256(int $value): string
+    {
+        $field = "\x80";
+        for ($i = 10; $i >= 0; --$i) {
+            $field .= \chr(($value >> ($i * 8)) & 0xFF);
+        }
+
+        return $field;
+    }
 }
