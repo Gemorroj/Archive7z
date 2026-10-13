@@ -257,14 +257,6 @@ class Entry
         return $this->crc;
     }
 
-    /**
-     * @deprecated use isEncrypted instead
-     */
-    public function getEncrypted(): ?string
-    {
-        return $this->encrypted;
-    }
-
     public function getMethod(): ?string
     {
         return $this->method;
