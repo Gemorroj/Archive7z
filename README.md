@@ -6,7 +6,6 @@
 
 
 ### Features:
-
 - Supported all 7-zip formats:
     - Packing / unpacking: `7z`, `XZ`, `BZIP2`, `GZIP`, `TAR`, `ZIP` and `WIM`.
     - Unpacking only: `APFS`, `AR`, `ARJ`, `Base64`, `CAB`, `CHM`, `CPIO`, `CramFS`, `DMG`, `EXT`, `FAT`, `GPT`, `HFS`, `IHEX`, `ISO`, `LZH`, `LZMA`, `MBR`, `MSI`, `NSIS`, `NTFS`, `QCOW2`, `RAR`, `RPM`, `SquashFS`, `UDF`, `UEFI`, `VDI`, `VHD`, `VHDX`, `VMDK`, `XAR` and `Z`.
@@ -17,13 +16,9 @@
 
 
 ### Requirements:
-
-- PHP >= 8.2
-- allow [proc_open](https://www.php.net/proc_open) function
-- for Windows: 7-Zip >= 16.04 (https://www.7-zip.org/)
-- for Linux: 7-Zip >= 21.01 — the official build (`7zz`, https://www.7-zip.org/) or a distribution package (`7z`, e.g. the Debian/Ubuntu `7zip` package)
-- for macOS: 7-Zip >= 21.02 (official `7zz`)
-- p7zip is not supported: the unmaintained 16.02 has no list-file/`-scs`; the maintained fork (17.x) still misses `-aot` and decodes non-ASCII names differently
+- PHP >= 8.2 with [proc_open](https://www.php.net/proc_open) enabled
+- 7-Zip >= 16.04 (Windows), >= 21.01 (Linux), >= 21.02 (macOS) — [official](https://www.7-zip.org/) or a distribution package (`7zz`/`7z`)
+- p7zip is not supported: no `@listfile`/`-scs`, and the 17.x fork also lacks `-aot`
 
 
 ### Installation:
@@ -33,22 +28,15 @@ composer require gemorroj/archive7z
 
 
 ### Notes:
-- Pass `env` to `ArchiveOptions` to set environment variables for the 7-Zip process (for example `env: ['LC_ALL' => 'ru_RU.UTF-8']`).
+- Pass `env` to `ArchiveOptions` for 7-Zip environment variables, e.g. `env: ['LC_ALL' => 'ru_RU.UTF-8']`.
 
 
 ### Limitations:
-
-- Filenames are given as UTF-8. Archives whose names use another encoding (CP866, CP1251, ...) need an explicit `ArchiveOptions::fallbackEncoding` — `FallbackEncoding::codepage(...)` (exact) or `detect()` (heuristic); otherwise they are unreadable on Linux and may be mangled on Windows, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
-- For `zip`/`tar`/`gzip` the names are read from the container, so listing, selection and extraction behave the same on every platform; other formats rely on 7-Zip's own decoding.
-
-
-### Recommendations:
-Archive7z is `final` and wraps the 7-Zip feature set.
-Reuse it by composition — a higher-level class that *has* an `Archive7z` instance.
+- Filenames are assumed UTF-8. Non-UTF-8 names (CP866, CP1251, ...) need `ArchiveOptions::fallbackEncoding` (`FallbackEncoding::codepage(...)` or `detect()`), otherwise they are unreadable on Linux and may be mangled on Windows, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
+- `zip`/`tar`/`gzip` names are read from the container (exact, cross-platform); other formats use the 7-Zip output instead, so Unicode-name formats like `7z`/`rar`/`wim` need no fallback.
 
 
 ### Example:
-
 ```php
 <?php
 use Archive7z\Archive7z;

@@ -23,6 +23,25 @@ final class ZipNameReader implements NameReaderInterface
     private const UTF8_FLAG = 0x0800;
     private const UNICODE_PATH_EXTRA_FIELD = 0x7075;
 
+    public function matches(string $filename): bool
+    {
+        $header = @\file_get_contents($filename, false, null, 0, 4);
+        if (false === $header) {
+            return false;
+        }
+
+        if (
+            \str_starts_with($header, "PK\x03\x04")
+            || \str_starts_with($header, "PK\x05\x06")
+            || \str_starts_with($header, "PK\x06\x06")
+        ) {
+            return true;
+        }
+
+        // Self-extracting ZIP: an executable stub (MZ) with a ZIP appended.
+        return \str_starts_with($header, 'MZ') && $this->endsWithEocd($filename);
+    }
+
     public function read(string $filename): array
     {
         $handle = @\fopen($filename, 'r');
@@ -35,6 +54,33 @@ final class ZipNameReader implements NameReaderInterface
         } finally {
             \fclose($handle);
         }
+    }
+
+    /**
+     * Whether the file ends with a ZIP End Of Central Directory record, which
+     * is what a self-extracting stub leaves at the end of the file.
+     */
+    private function endsWithEocd(string $filename): bool
+    {
+        $size = @\filesize($filename);
+        if (false === $size || $size < 22) {
+            return false;
+        }
+
+        $handle = @\fopen($filename, 'r');
+        if (false === $handle) {
+            return false;
+        }
+
+        try {
+            $tailLength = \min($size, self::MAX_COMMENT + 22);
+            \fseek($handle, $size - $tailLength);
+            $tail = (string) \fread($handle, $tailLength);
+        } finally {
+            \fclose($handle);
+        }
+
+        return \str_contains($tail, self::EOCD_SIGNATURE);
     }
 
     /**
@@ -94,19 +140,40 @@ final class ZipNameReader implements NameReaderInterface
 
         [$total, $directorySize, $directoryOffset] = $this->zip64($tail, $eocdPos, $total, $directorySize, $directoryOffset, $handle);
 
-        // The central directory must lie within the file: this rejects a bogus
-        // EOCD whose fields would otherwise drive a huge read.
-        if ($directoryOffset < 0 || $directoryOffset + $directorySize > $size) {
-            return null;
+        // A ZIP stores absolute offsets, but a self-extracting stub can leave
+        // the central directory offset relative to the ZIP start; in that case
+        // the directory ends right before the EOCD record. Both candidates are
+        // bounds-checked, so a bogus EOCD cannot drive a huge read.
+        $eocdFilePos = $size - \strlen($tail) + $eocdPos;
+        $offsets = [$directoryOffset];
+        $stubOffset = $eocdFilePos - $directorySize;
+        if ($stubOffset !== $directoryOffset) {
+            $offsets[] = $stubOffset;
         }
 
-        \fseek($handle, $directoryOffset);
-        $directory = $directorySize > 0 ? (string) \fread($handle, $directorySize) : '';
+        foreach ($offsets as $offset) {
+            if ($offset < 0 || $offset + $directorySize > $size) {
+                continue;
+            }
 
-        if ($total > 0 && self::CENTRAL_DIRECTORY_SIGNATURE !== \substr($directory, 0, 4)) {
-            return null;
+            \fseek($handle, $offset);
+            $directory = $directorySize > 0 ? (string) \fread($handle, $directorySize) : '';
+
+            if ($total > 0 && !\str_starts_with($directory, self::CENTRAL_DIRECTORY_SIGNATURE)) {
+                continue;
+            }
+
+            return $this->parseDirectory($directory, $total);
         }
 
+        return null;
+    }
+
+    /**
+     * @return RawName[]
+     */
+    private function parseDirectory(string $directory, int $total): array
+    {
         $names = [];
         $offset = 0;
         for ($i = 0; $i < $total; ++$i) {
@@ -204,7 +271,7 @@ final class ZipNameReader implements NameReaderInterface
         \fseek($handle, $zip64Offset);
         $zip64 = (string) \fread($handle, 56);
 
-        if (self::ZIP64_EOCD_SIGNATURE !== \substr($zip64, 0, 4)) {
+        if (!\str_starts_with($zip64, self::ZIP64_EOCD_SIGNATURE)) {
             return [$total, $directorySize, $directoryOffset];
         }
 

@@ -23,6 +23,14 @@ final class TarNameReader implements NameReaderInterface
     private const PREFIX_OFFSET = 345;
     private const PREFIX_LENGTH = 155;
 
+    public function matches(string $filename): bool
+    {
+        // "ustar" magic lives at offset 257 in the first 512-byte header.
+        $header = @\file_get_contents($filename, false, null, 0, 262);
+
+        return \is_string($header) && 'ustar' === \substr($header, 257, 5);
+    }
+
     public function read(string $filename): array
     {
         $handle = @\fopen($filename, 'r');

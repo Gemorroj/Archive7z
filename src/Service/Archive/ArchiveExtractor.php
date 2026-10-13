@@ -13,13 +13,13 @@ use Archive7z\Service\Process\ProcessFactory;
 /**
  * Extracts the archive through the 7-Zip CLI and repairs the written names.
  */
-final class ArchiveExtractor
+final readonly class ArchiveExtractor
 {
     public function __construct(
-        private readonly ProcessFactory $processFactory,
-        private readonly ArchiveOptions $options,
-        private readonly NameMapping $nameMapping,
-        private readonly NameRepairer $nameRepairer,
+        private ProcessFactory $processFactory,
+        private ArchiveOptions $options,
+        private NameMapping $nameMapping,
+        private NameRepairer $nameRepairer,
     ) {
     }
 
@@ -56,9 +56,7 @@ final class ArchiveExtractor
         try {
             $this->processFactory->run($process);
         } finally {
-            if (null !== $maskFile) {
-                $maskFile->delete();
-            }
+            $maskFile?->delete();
         }
     }
 
@@ -89,9 +87,7 @@ final class ArchiveExtractor
         try {
             $this->processFactory->run($process);
         } finally {
-            if (null !== $maskFile) {
-                $maskFile->delete();
-            }
+            $maskFile?->delete();
         }
 
         // Raw output: these are the names 7-Zip actually wrote to disk.

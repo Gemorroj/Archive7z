@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Container;
 
+use Archive7z\Service\Container\RawName;
 use Archive7z\Service\Container\ZipNameReader;
 use PHPUnit\Framework\TestCase;
 
@@ -37,6 +38,29 @@ class ZipNameReaderTest extends TestCase
         $last = $names[\count($names) - 1];
         self::assertTrue($last->utf8);
         self::assertSame('чавес.jpg', $last->value);
+    }
+
+    public function testSelfExtractingZip(): void
+    {
+        $zip = (string) \file_get_contents($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip');
+
+        // Stub with unadjusted offsets: the stored central-directory offset is
+        // relative to the ZIP start, not to the beginning of the file.
+        $path = \tempnam(\sys_get_temp_dir(), 'archive7z_sfx_');
+        \file_put_contents($path, 'MZ'.\str_repeat("\0", 1000).$zip);
+
+        try {
+            $names = (new ZipNameReader())->read($path);
+        } finally {
+            \unlink($path);
+        }
+
+        $plain = (new ZipNameReader())->read($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip');
+
+        self::assertSame(
+            \array_map(static function (RawName $name): string { return $name->value; }, $plain),
+            \array_map(static function (RawName $name): string { return $name->value; }, $names),
+        );
     }
 
     public function testEocdSignatureOutsideRecord(): void

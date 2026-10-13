@@ -56,9 +56,7 @@ final class ArchiveLister
         try {
             $this->processFactory->run($process);
         } finally {
-            if (null !== $maskFile) {
-                $maskFile->delete();
-            }
+            $maskFile?->delete();
         }
 
         $parser = new Parser(\explode(\PHP_EOL, $this->nameMapping->decodeOutput($process->getOutput())));
@@ -91,7 +89,7 @@ final class ArchiveLister
      */
     private function withContainerNames(array $entries): array
     {
-        if ($this->nameMapping->isAsIs() || [] === $entries) {
+        if ([] === $entries || $this->nameMapping->isAsIs()) {
             return $entries;
         }
 

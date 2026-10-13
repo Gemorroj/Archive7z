@@ -17,6 +17,13 @@ final class GzipNameReader implements NameReaderInterface
     private const FEXTRA = 0x04;
     private const FNAME = 0x08;
 
+    public function matches(string $filename): bool
+    {
+        $header = @\file_get_contents($filename, false, null, 0, 2);
+
+        return \is_string($header) && \str_starts_with($header, "\x1f\x8b");
+    }
+
     public function read(string $filename): array
     {
         $handle = @\fopen($filename, 'r');
@@ -26,7 +33,7 @@ final class GzipNameReader implements NameReaderInterface
 
         try {
             $header = (string) \fread($handle, 10);
-            if (\strlen($header) < 10 || "\x1f\x8b" !== \substr($header, 0, 2)) {
+            if (\strlen($header) < 10 || !\str_starts_with($header, "\x1f\x8b")) {
                 throw new RuntimeException('Not a gzip archive');
             }
 
