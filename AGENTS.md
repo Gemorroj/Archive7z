@@ -9,6 +9,9 @@ PHP >= 8.2 library. 7z CLI wrapper (`Archive7z\Archive7z`) based on `symfony/pro
 - Static analysis: `vendor/bin/phpstan analyse`
 - Code style fix: `PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix`
 
+## Conventions
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+
 ## Rules
 - Follow PSR-12, strict types (`declare(strict_types=1)`).
 - Prefer composition over inheritance; `Archive7z` is `final`.
