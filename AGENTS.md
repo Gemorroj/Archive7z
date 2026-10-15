@@ -4,8 +4,7 @@ PHP >= 8.2 library. 7z CLI wrapper (`Archive7z\Archive7z`) based on `symfony/pro
 
 ## Commands
 - Install: `composer install`
-- Test: `vendor/bin/phpunit` (excludes known issues)
-- Known issues (expected failures): `vendor/bin/phpunit --testsuite KnownIssues`
+- Test: `vendor/bin/phpunit`
 - Static analysis: `vendor/bin/phpstan analyse`
 - Code style fix: `PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix`
 

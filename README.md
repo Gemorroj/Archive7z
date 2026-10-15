@@ -151,13 +151,18 @@ $archive->extract('path_to_folder/');
 ```
 
 #### Legacy (non-UTF-8) names
+Names of old ZIP/TAR archives that carry no encoding metadata are detected by
+default; an explicit code page is only needed to pin the exact one.
 ```php
 <?php
 use Archive7z\Archive7z;
 use Archive7z\Config\Options;
 use Archive7z\Config\FallbackEncoding;
 
-// DOS (CP866) names in an old ZIP
+// detected automatically (default)
+$archive = new Archive7z('old.zip');
+
+// pin the exact code page when the guess must be deterministic
 $archive = new Archive7z('old.zip', new Options(
     fallbackEncoding: FallbackEncoding::codepage('CP866'),
 ));
@@ -173,7 +178,7 @@ foreach ($archive->getEntries() as $entry) {
 use Archive7z\Config\Options;
 use Archive7z\Config\FallbackEncoding;
 
-// let the library guess the code page from the listing (best effort)
+// detection is the default; pass candidates to restrict the guess (best effort)
 new Options(fallbackEncoding: FallbackEncoding::detect());
 
 // or decode the names yourself: $decode maps raw bytes -> UTF-8,
@@ -221,12 +226,15 @@ the metadata it carries:
 | other             | —                                                         | names come from the 7-Zip output                                    |
 
 For the formats without reliable metadata the code page is genuinely unknown, so
-`fallbackEncoding` (default `asIs()` = names are assumed to be UTF-8) is the
-caller's choice:
+`fallbackEncoding` decides how the raw bytes are interpreted (default
+`detect()`):
 
+- `FallbackEncoding::detect()` — guess from the listing (default); best effort,
+  ranks the candidates by plausibility and leaves the bytes untouched when
+  nothing is plausible.
 - `FallbackEncoding::codepage('CP866')` — DOS code page; exact.
 - `FallbackEncoding::codepage('Windows-1251')` — Windows Cyrillic; exact.
-- `FallbackEncoding::detect()` — guess from the listing; best effort.
+- `FallbackEncoding::asIs()` — leave the names untouched (opt out of detection).
 - `FallbackEncoding::viaCallback($decode, $encode)` — your own mapping.
 
 An explicit `codepage(...)` is the only mode that also passes a non-ASCII entry
@@ -238,6 +246,9 @@ matches only on builds comparing the raw bytes (official Linux `7zz`).
 ### Limitations:
 - `zip`/`tar`/`gzip` names are read straight from the container (exact and
   cross-platform); other formats rely on 7-Zip's own output.
-- Legacy archives that store names without any encoding metadata (old `zip`
-  with 8-bit names, plain `tar`) can not be decoded automatically with certainty
-  — provide `fallbackEncoding`, see [#15](https://github.com/Gemorroj/Archive7z/issues/15).
+- Legacy archives that store names without encoding metadata (old `zip` with
+  8-bit names, plain `tar`) are decoded by detecting the code page (default),
+  which is a best effort: only the common code pages are tried, so an ambiguous
+  or unsupported script can still be guessed wrong — pin a `codepage(...)` when
+  the exact encoding is known, see
+  [#15](https://github.com/Gemorroj/Archive7z/issues/15).

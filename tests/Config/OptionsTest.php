@@ -24,7 +24,7 @@ class OptionsTest extends TestCase
         self::assertSame(ExtractOptions::OVERWRITE_MODE_A, $options->getExtract()->getOverwriteMode());
         self::assertNull($options->getCompress()->getSolidMode());
         self::assertFalse($options->getCompress()->isEncryptFilenames());
-        self::assertTrue($options->getFallbackEncoding()->isAsIs());
+        self::assertTrue($options->getFallbackEncoding()->isDetect());
         self::assertSame([], $options->getEnv());
     }
 

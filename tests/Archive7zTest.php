@@ -66,6 +66,21 @@ class Archive7zTest extends TestCase
         return $real;
     }
 
+    /**
+     * @param list<Entry> $entries
+     *
+     * @return list<string|null>
+     */
+    private function paths(array $entries): array
+    {
+        $paths = [];
+        foreach ($entries as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        return $paths;
+    }
+
     public function testGet7zipInformation(): void
     {
         $info = Archive7z::get7zipInformation();
@@ -239,6 +254,40 @@ class Archive7zTest extends TestCase
         self::assertFileExists($this->tmpDir.'/чавес.jpg');
     }
 
+    /**
+     * The default fallback encoding detects the code page of archives whose
+     * names carry no encoding metadata.
+     *
+     * @see https://github.com/Gemorroj/Archive7z/issues/15
+     */
+    public function testDefaultFallbackEncodingDecodesNonUtf8Names(): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar');
+
+        self::assertContains('чавес.jpg', $this->paths($obj->getEntries()));
+    }
+
+    public function testDefaultFallbackEncodingExtractsNonUtf8Names(): void
+    {
+        $obj = new Archive7z($this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar');
+        $obj->extract($this->tmpDir);
+
+        self::assertFileExists($this->tmpDir.'/чавес.jpg');
+    }
+
+    /**
+     * asIs() is the opt-out: the raw 8-bit names are left untouched.
+     */
+    public function testFallbackEncodingAsIsLeavesNonUtf8NamesRaw(): void
+    {
+        $obj = new Archive7z(
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
+            new Options(fallbackEncoding: FallbackEncoding::asIs()),
+        );
+
+        self::assertNotContains('чавес.jpg', $this->paths($obj->getEntries()));
+    }
+
     public function testFallbackEncodingCodepageMask(): void
     {
         $obj = new Archive7z(
@@ -319,9 +368,8 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * Archives whose non-ASCII names are decodable with the default (UTF-8)
-     * encoding. Archives whose names use a non-UTF-8 8-bit encoding live in the
-     * KnownIssues suite, see tests/KnownIssues/NonUtf8NamesTest.php.
+     * Archives whose non-ASCII names are UTF-8 or carry encoding metadata.
+     * Non-UTF-8 8-bit names are covered by NonUtf8NamesTest.
      *
      * @return list<list<string>>
      */

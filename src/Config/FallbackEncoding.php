@@ -99,7 +99,7 @@ final readonly class FallbackEncoding
     }
 
     /**
-     * Leave the value untouched (default).
+     * Leave the value untouched.
      */
     public static function asIs(): self
     {
@@ -108,7 +108,7 @@ final readonly class FallbackEncoding
 
     /**
      * Guess the encoding from the listing, ranking the candidates by how
-     * plausible the decoded text is (see {@see NameEncoder}).
+     * plausible the decoded text is (see {@see NameEncoder}). The default.
      *
      * @param list<string>|null $candidates encodings to try, in preference order
      *

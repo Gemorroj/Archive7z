@@ -15,10 +15,6 @@
     <testsuites>
         <testsuite name="Archive7z">
             <directory>tests</directory>
-            <exclude>tests/KnownIssues</exclude>
-        </testsuite>
-        <testsuite name="KnownIssues">
-            <directory>tests/KnownIssues</directory>
         </testsuite>
     </testsuites>
 </phpunit>

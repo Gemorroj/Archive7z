@@ -22,7 +22,8 @@ final readonly class Options
     /**
      * How entry names are handled when read from an archive and when a caller
      * addresses an entry by name. It does not affect how newly added entries
-     * are named.
+     * are named. Defaults to detection (see {@see FallbackEncoding::detect()});
+     * pass {@see FallbackEncoding::asIs()} to leave the names untouched.
      */
     private FallbackEncoding $fallbackEncoding;
 
@@ -48,7 +49,7 @@ final readonly class Options
         CompressOptions $compress = new CompressOptions(),
     ) {
         $this->password = $password;
-        $this->fallbackEncoding = $fallbackEncoding ?? FallbackEncoding::asIs();
+        $this->fallbackEncoding = $fallbackEncoding ?? FallbackEncoding::detect();
         $this->env = $env;
         $this->extract = $extract;
         $this->compress = $compress;
