@@ -63,7 +63,7 @@ final readonly class NameMapping
     }
 
     /**
-     * @return RawName[]|null
+     * @return list<RawName>|null
      */
     private function containerNames(): ?array
     {

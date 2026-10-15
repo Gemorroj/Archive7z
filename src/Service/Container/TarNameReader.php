@@ -48,7 +48,7 @@ final class TarNameReader implements NameReaderInterface
     /**
      * @param resource $handle
      *
-     * @return RawName[]
+     * @return list<RawName>
      */
     private function readEntries($handle): array
     {

@@ -19,7 +19,7 @@ use Archive7z\Service\Container\RawName;
 final readonly class ContainerNames
 {
     /**
-     * @param RawName[]|null $names null when the format has no container reader
+     * @param list<RawName>|null $names null when the format has no container reader
      */
     public function __construct(
         private FallbackEncoding $fallbackEncoding,
@@ -56,9 +56,9 @@ final readonly class ContainerNames
     /**
      * Decodes the entry names, taking them from the container when possible.
      *
-     * @param string[] $sourceNames names as 7-Zip produced them
+     * @param list<string> $sourceNames names as 7-Zip produced them
      *
-     * @return string[]
+     * @return list<string>
      */
     public function names(array $sourceNames): array
     {
@@ -84,9 +84,9 @@ final readonly class ContainerNames
     }
 
     /**
-     * @param string[] $sourceNames
+     * @param list<string> $sourceNames
      *
-     * @return array<int, array{from: string, to: string}>
+     * @return list<array{from: string, to: string}>
      */
     public function targets(array $sourceNames): array
     {

@@ -18,7 +18,7 @@ interface NameReaderInterface
      *
      * @throws RuntimeException
      *
-     * @return RawName[]
+     * @return list<RawName>
      */
     public function read(string $filename): array;
 }

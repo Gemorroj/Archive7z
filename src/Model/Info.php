@@ -35,7 +35,7 @@ class Info
     /**
      * Raw data.
      *
-     * @var string[]
+     * @var list<string>
      */
     private array $data;
     private ?string $path = null;
@@ -111,7 +111,7 @@ class Info
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getData(): array
     {

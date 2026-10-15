@@ -7,7 +7,7 @@ namespace Archive7z\Service\Container;
 final class NameReaderResolver
 {
     /**
-     * @return NameReaderInterface[]
+     * @return list<NameReaderInterface>
      */
     private function readers(): array
     {

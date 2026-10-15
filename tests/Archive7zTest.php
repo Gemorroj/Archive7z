@@ -201,7 +201,7 @@ class Archive7zTest extends TestCase
      * A configured code page must not break formats whose handler rejects the
      * "-mcp" method property.
      *
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function codepageNonZipProvider(): array
     {
@@ -289,7 +289,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function extractProvider(): array
     {
@@ -321,7 +321,7 @@ class Archive7zTest extends TestCase
      * encoding. Archives whose names use a non-UTF-8 8-bit encoding live in the
      * KnownIssues suite, see tests/KnownIssues/NonUtf8NamesTest.php.
      *
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function utf8Provider(): array
     {
@@ -346,7 +346,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function basicProvider(): array
     {
@@ -400,7 +400,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function extractPasswdProvider(): array
     {
@@ -561,7 +561,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function entryProvider(): array
     {
@@ -697,7 +697,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function delProvider(): array
     {
@@ -735,7 +735,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function delPasswdProvider(): array
     {
@@ -922,7 +922,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function extractPasswdEncFilesProvider(): array
     {
@@ -1168,7 +1168,7 @@ class Archive7zTest extends TestCase
     }
 
     /**
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function featureProvider(): array
     {

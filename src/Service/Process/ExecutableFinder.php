@@ -16,7 +16,7 @@ final class ExecutableFinder
      * support). 7z covers distribution packages and Windows, where 7zz does
      * not exist.
      *
-     * @var string[]
+     * @var list<string>
      */
     private const NAMES = ['7zz', '7z'];
 
@@ -72,7 +72,7 @@ final class ExecutableFinder
      * non-interactive processes often lack the Homebrew or Windows "Program
      * Files" directories in PATH.
      *
-     * @return string[]
+     * @return list<string>
      */
     private static function extraDirs(): array
     {

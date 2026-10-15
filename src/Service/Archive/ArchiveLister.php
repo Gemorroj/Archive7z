@@ -34,7 +34,7 @@ final class ArchiveLister
      *
      * @throws ProcessFailedException
      *
-     * @return array<int, array<string, string|string[]>>
+     * @return array<int, array<string, string|list<string>>>
      */
     public function entries(?string $pathMask = null, ?int $limit = null, bool $exact = false): array
     {
@@ -84,9 +84,9 @@ final class ArchiveLister
     }
 
     /**
-     * @param array<int, array<string, string|string[]>> $entries
+     * @param array<int, array<string, string|list<string>>> $entries
      *
-     * @return array<int, array<string, string|string[]>>
+     * @return array<int, array<string, string|list<string>>>
      */
     private function withContainerNames(array $entries): array
     {

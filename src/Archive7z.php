@@ -181,7 +181,7 @@ final class Archive7z
     /**
      * @throws ProcessFailedException
      *
-     * @return Entry[]
+     * @return list<Entry>
      */
     public function getEntries(?string $pathMask = null, ?int $limit = null): array
     {
@@ -257,8 +257,8 @@ final class Archive7z
     }
 
     /**
-     * @param string[] $names
-     * @param string[] $decorate
+     * @param list<string> $names
+     * @param list<string> $decorate
      *
      * @throws ProcessFailedException
      */
@@ -272,7 +272,7 @@ final class Archive7z
     /**
      * Extract switches with the archive code page (-mcp) removed.
      *
-     * @return string[]
+     * @return list<string>
      */
     private function withoutCodepage(): array
     {
@@ -360,7 +360,7 @@ final class Archive7z
      *
      * @throws ProcessFailedException
      *
-     * @return string[]
+     * @return list<string>
      */
     public function getWarnings(): array
     {

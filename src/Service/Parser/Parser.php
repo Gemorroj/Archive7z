@@ -14,12 +14,12 @@ final class Parser
     /**
      * raw cli output.
      *
-     * @var string[]
+     * @var list<string>
      */
     private array $data;
 
     /**
-     * @param string[] $data raw cli output
+     * @param list<string> $data raw cli output
      */
     public function __construct(array $data)
     {
@@ -27,7 +27,7 @@ final class Parser
     }
 
     /**
-     * @return string[] raw cli output
+     * @return list<string> raw cli output
      */
     public function getData(): array
     {
@@ -83,7 +83,7 @@ final class Parser
     }
 
     /**
-     * @return array<int, array<string, string|string[]>>
+     * @return array<int, array<string, string|list<string>>>
      */
     public function parseEntries(?int $limit = null): array
     {

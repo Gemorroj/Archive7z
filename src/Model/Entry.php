@@ -69,7 +69,7 @@ class Entry
     /**
      * Raw data.
      *
-     * @var string[]
+     * @var list<string>
      */
     private array $data = [];
     private ?string $path = null;
@@ -111,7 +111,7 @@ class Entry
     private Archive7z $archive;
 
     /**
-     * @param array<string, string|string[]> $data
+     * @param array<string, string|list<string>> $data
      */
     public function __construct(Archive7z $archive, array $data)
     {
@@ -120,7 +120,7 @@ class Entry
     }
 
     /**
-     * @param array<string, string|string[]> $data
+     * @param array<string, string|list<string>> $data
      */
     private function parseData(array $data): void
     {
@@ -197,7 +197,7 @@ class Entry
     }
 
     /**
-     * @return string[] raw data
+     * @return list<string> raw data
      */
     public function getData(): array
     {

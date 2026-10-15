@@ -86,7 +86,7 @@ final class ZipNameReader implements NameReaderInterface
     /**
      * @param resource $handle
      *
-     * @return RawName[]
+     * @return list<RawName>
      */
     private function readCentralDirectory($handle): array
     {
@@ -130,7 +130,7 @@ final class ZipNameReader implements NameReaderInterface
     /**
      * @param resource $handle
      *
-     * @return RawName[]|null null when the candidate EOCD is not usable
+     * @return list<RawName>|null null when the candidate EOCD is not usable
      */
     private function namesFromEocd($handle, string $tail, int $eocdPos, int $size): ?array
     {
@@ -170,7 +170,7 @@ final class ZipNameReader implements NameReaderInterface
     }
 
     /**
-     * @return RawName[]
+     * @return list<RawName>
      */
     private function parseDirectory(string $directory, int $total): array
     {
@@ -200,7 +200,7 @@ final class ZipNameReader implements NameReaderInterface
     /**
      * Candidate End Of Central Directory positions, closest to the end first.
      *
-     * @return int[]
+     * @return list<int>
      */
     private function eocdCandidates(string $tail): array
     {

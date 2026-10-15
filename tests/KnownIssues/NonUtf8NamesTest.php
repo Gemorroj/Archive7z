@@ -45,7 +45,7 @@ final class NonUtf8NamesTest extends TestCase
     /**
      * Archives whose names are stored in a non-UTF-8 8-bit encoding (CP866/CP1251).
      *
-     * @return string[][]
+     * @return list<list<string>>
      */
     public static function nonUtf8Provider(): array
     {

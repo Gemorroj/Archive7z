@@ -65,6 +65,40 @@ class NameEncoderTest extends TestCase
         self::assertSame('чавес', $encoder->decode($raw));
     }
 
+    public function testDetectDistinguishesCyrillicEncodings(): void
+    {
+        // The old letter-ratio scorer could not tell these apart: all of them
+        // decode to Cyrillic letters, so it fell back to the candidate order.
+        $name = 'съешь-же-ещё-этих-мягких-булок.txt';
+
+        foreach (['Windows-1251', 'KOI8-R', 'CP866', 'ISO-8859-5'] as $encoding) {
+            $raw = \mb_convert_encoding($name, $encoding, 'UTF-8');
+            $encoder = NameEncoder::resolve(FallbackEncoding::detect(), $raw);
+
+            self::assertSame($name, $encoder->decode($raw), $encoding);
+        }
+    }
+
+    public function testDetectRoundTripsEncode(): void
+    {
+        $name = 'съешь-же-ещё-этих-мягких-булок.txt';
+
+        foreach (['Windows-1251', 'KOI8-U', 'CP866', 'ISO-8859-5'] as $encoding) {
+            $raw = \mb_convert_encoding($name, $encoding, 'UTF-8');
+            $encoder = NameEncoder::resolve(FallbackEncoding::detect(), $raw);
+
+            self::assertSame($name, $encoder->decode($raw), $encoding);
+            self::assertSame($raw, $encoder->encode($name), $encoding);
+        }
+    }
+
+    public function testDetectLeavesValidUtf8SampleAsIs(): void
+    {
+        $encoder = NameEncoder::resolve(FallbackEncoding::detect(), 'чавес.jpg');
+
+        self::assertTrue($encoder->isAsIs());
+    }
+
     public function testDetectEscapedBytes(): void
     {
         $escaped = "\u{EFF7}\u{EFE0}\u{EFE2}\u{EFE5}\u{EFF1}.jpg";

@@ -63,9 +63,9 @@ final class ProcessFactory
      * (ArchiveCommandLine.cpp: FindCharset, kListfileCharSet); it does not apply
      * to positional names, which is why a list file is used here.
      *
-     * @param string[] $arguments
+     * @param list<string> $arguments
      *
-     * @return array{0: string[], 1: MaskListFile|null}
+     * @return array{0: list<string>, 1: MaskListFile|null}
      */
     public function withMask(array $arguments, Options $options, ?string $encodedMask): array
     {
@@ -95,7 +95,7 @@ final class ProcessFactory
     }
 
     /**
-     * @param string[] $arguments
+     * @param list<string> $arguments
      */
     public function create(string $command, array $arguments): Process
     {
@@ -150,7 +150,7 @@ final class ProcessFactory
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function decorateExtract(Options $options): array
     {
@@ -192,7 +192,7 @@ final class ProcessFactory
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function decorateCompress(Options $options): array
     {

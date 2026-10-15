@@ -20,7 +20,7 @@ final class NameRepairer
     }
 
     /**
-     * @param array<int, array{from: string, to: string}> $renames relative paths
+     * @param list<array{from: string, to: string}> $renames relative paths
      */
     public function rename(string $directory, array $renames): void
     {

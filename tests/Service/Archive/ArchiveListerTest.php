@@ -66,9 +66,9 @@ class ArchiveListerTest extends TestCase
     }
 
     /**
-     * @param array<int, array<string, string|string[]>> $entries
+     * @param array<int, array<string, string|list<string>>> $entries
      *
-     * @return string[]
+     * @return array<int, string>
      */
     private function paths(array $entries): array
     {

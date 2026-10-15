@@ -24,14 +24,35 @@ final readonly class FallbackEncoding
     /**
      * Candidate encodings tried by {@see self::detect()}, in order.
      *
-     * @var string[]
+     * The plausibility score of {@see \Archive7z\Encoding\EncodingDetector}
+     * discriminates them, so the order only breaks same-script ties. The list
+     * covers the code pages the scorer can actually tell apart, in both the
+     * Cyrillic family (ranked by letter frequencies) and the Latin family,
+     * plus the GB18030 CJK super-set. Encodings a given mbstring build does not
+     * know are skipped during detection.
+     *
+     * Other single-byte scripts (Greek, Hebrew, Arabic, Baltic, ...) are
+     * deliberately absent: their bytes decode to a plausible, frequency-matched
+     * Cyrillic/Latin text under a wrong candidate, so the heuristic mis-ranks
+     * them. Pass them explicitly through {@see self::codepage()} when an archive
+     * stores such names, or use a dedicated charset-detection library.
+     *
+     * @var list<string>
      */
     public const DETECT_CANDIDATES = [
+        // Cyrillic: KOI8-U first, it covers Ukrainian while mapping the shared
+        // Cyrillic letters exactly like KOI8-R, so it loses nothing for Russian.
         'Windows-1251',
-        'CP866',
+        'KOI8-U',
         'KOI8-R',
+        'CP866',
         'ISO-8859-5',
+        // Western European
         'Windows-1252',
+        'ISO-8859-1',
+        'ISO-8859-15',
+        // CJK multi-byte super-set
+        'GB18030',
     ];
 
     /**
@@ -66,7 +87,7 @@ final readonly class FallbackEncoding
     ];
 
     /**
-     * @param string[]|null $detectCandidates candidate encodings for detect()
+     * @param list<string>|null $detectCandidates candidate encodings for detect()
      */
     private function __construct(
         private readonly string $mode,
@@ -89,7 +110,7 @@ final readonly class FallbackEncoding
      * Guess the encoding from the listing, ranking the candidates by how
      * plausible the decoded text is (see {@see NameEncoder}).
      *
-     * @param string[]|null $candidates encodings to try, in preference order
+     * @param list<string>|null $candidates encodings to try, in preference order
      *
      * @throws InvalidArgumentException when a candidate is not a known encoding
      */
@@ -106,7 +127,7 @@ final readonly class FallbackEncoding
      *
      * @throws InvalidArgumentException
      *
-     * @return string[]
+     * @return list<string>
      */
     private static function validateCandidates(array $candidates): array
     {
@@ -192,7 +213,7 @@ final readonly class FallbackEncoding
     /**
      * Candidate encodings used by detect(), in preference order.
      *
-     * @return string[]
+     * @return list<string>
      */
     public function getDetectCandidates(): array
     {
