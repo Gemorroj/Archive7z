@@ -83,7 +83,7 @@ class ArchiveExtractorTest extends TestCase
             $factory,
             $options,
             new NameMapping($options->getFallbackEncoding(), new NameReaderResolver(), $filename),
-            new NameRepairer($options->getOverwriteMode()),
+            new NameRepairer($options->getExtract()->getOverwriteMode()),
         );
     }
 

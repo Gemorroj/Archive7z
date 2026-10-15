@@ -211,12 +211,12 @@ final class ProcessFactory
             $out[] = '-p'.$password;
 
             // Encrypt archive header if 7z archive
-            if ($options->isEncryptFilenames() && '7z' === \pathinfo($this->filename, \PATHINFO_EXTENSION)) {
+            if ($options->getCompress()->isEncryptFilenames() && '7z' === \pathinfo($this->filename, \PATHINFO_EXTENSION)) {
                 $out[] = '-mhe=on';
             }
         }
 
-        $solidMode = $options->getSolidMode();
+        $solidMode = $options->getCompress()->getSolidMode();
         if (null !== $solidMode) {
             $out[] = '-ms='.((string) $solidMode);
         }

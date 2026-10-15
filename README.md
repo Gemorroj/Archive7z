@@ -77,20 +77,23 @@ $archive->extract('path_to_folder/');
 ```php
 <?php
 use Archive7z\Archive7z;
+use Archive7z\Config\CompressOptions;
 use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
 
 // the format comes from the extension; the file is created if it does not exist yet
 $archive = new Archive7z('new.7z', new Options(
-    compressionLevel: 9,
-    solidMode: SolidMode::on(),
+    compress: new CompressOptions(
+        compressionLevel: 9,
+        solidMode: SolidMode::on(),
+    ),
 ));
 
 $archive->addEntry(__FILE__); // a single file (stored by basename)
 $archive->addEntry(__DIR__);  // a directory, recursively
 
 // zip / tar / tar.gz / xz / bz2 / wim are created the same way
-$zip = new Archive7z('new.zip', new Options(compressionLevel: 6));
+$zip = new Archive7z('new.zip', new Options(compress: new CompressOptions(compressionLevel: 6)));
 $zip->addEntry('path_to_file.txt');
 ```
 
@@ -110,12 +113,13 @@ $archive->delEntry('renamed.txt');
 ```php
 <?php
 use Archive7z\Archive7z;
+use Archive7z\Config\CompressOptions;
 use Archive7z\Config\Options;
 
 // create an encrypted archive, encrypting the file names too (7z format only)
 $archive = new Archive7z('secret.7z', new Options(
     password: 'pass',
-    encryptFilenames: true,
+    compress: new CompressOptions(encryptFilenames: true),
 ));
 $archive->addEntry(__FILE__);
 
@@ -128,13 +132,19 @@ echo $read->getContent(basename(__FILE__));
 ```php
 <?php
 use Archive7z\Archive7z;
+use Archive7z\Config\CompressOptions;
+use Archive7z\Config\ExtractOptions;
 use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
 
 $archive = new Archive7z('backup.7z', new Options(
-    compressionLevel: 9,
-    solidMode: SolidMode::on(),
-    overwriteMode: Options::OVERWRITE_MODE_S, // skip existing files when extracting
+    extract: new ExtractOptions(
+        overwriteMode: ExtractOptions::OVERWRITE_MODE_S, // skip existing files when extracting
+    ),
+    compress: new CompressOptions(
+        compressionLevel: 9,
+        solidMode: SolidMode::on(),
+    ),
 ));
 $archive->addEntry(__DIR__);
 $archive->extract('path_to_folder/');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Namer;
 
-use Archive7z\Config\Options;
+use Archive7z\Config\ExtractOptions;
 use Archive7z\Service\Namer\NameRepairer;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +34,7 @@ class NameRepairerTest extends TestCase
     {
         \file_put_contents($this->directory.'/старое.txt', 'content');
 
-        (new NameRepairer(Options::OVERWRITE_MODE_A))
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_A))
             ->rename($this->directory, [['from' => 'старое.txt', 'to' => 'новое.txt']]);
 
         self::assertFileExists($this->directory.'/новое.txt');
@@ -46,7 +46,7 @@ class NameRepairerTest extends TestCase
         \file_put_contents($this->directory.'/старое.txt', 'extracted');
         \file_put_contents($this->directory.'/новое.txt', 'existing');
 
-        (new NameRepairer(Options::OVERWRITE_MODE_S))
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_S))
             ->rename($this->directory, [['from' => 'старое.txt', 'to' => 'новое.txt']]);
 
         self::assertFileExists($this->directory.'/старое.txt');
@@ -58,7 +58,7 @@ class NameRepairerTest extends TestCase
         $from = $this->rawName('чавес.jpg');
         \file_put_contents($this->directory.'/'.$from, 'content');
 
-        (new NameRepairer(Options::OVERWRITE_MODE_A))
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_A))
             ->rename($this->directory, [['from' => $from, 'to' => 'чавес.jpg']]);
 
         self::assertFileExists($this->directory.'/чавес.jpg');
@@ -73,7 +73,7 @@ class NameRepairerTest extends TestCase
         $escaped = $this->directory.'/'.$relative;
         @\unlink($escaped);
 
-        (new NameRepairer(Options::OVERWRITE_MODE_A))
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_A))
             ->rename($this->directory, [['from' => 'from.txt', 'to' => $relative]]);
 
         self::assertFileExists($this->directory.'/from.txt');
@@ -85,7 +85,7 @@ class NameRepairerTest extends TestCase
         \file_put_contents($this->directory.'/a.txt', 'extracted');
         \file_put_contents($this->directory.'/b.txt', 'existing');
 
-        (new NameRepairer(Options::OVERWRITE_MODE_U))
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_U))
             ->rename($this->directory, [['from' => 'a.txt', 'to' => 'b.txt']]);
 
         self::assertSame('existing', \file_get_contents($this->directory.'/b.txt'));
@@ -97,7 +97,7 @@ class NameRepairerTest extends TestCase
         \file_put_contents($this->directory.'/a.txt', 'extracted');
         \file_put_contents($this->directory.'/b.txt', 'existing');
 
-        (new NameRepairer(Options::OVERWRITE_MODE_T))
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_T))
             ->rename($this->directory, [['from' => 'a.txt', 'to' => 'b.txt']]);
 
         self::assertSame('extracted', \file_get_contents($this->directory.'/b.txt'));
@@ -108,7 +108,7 @@ class NameRepairerTest extends TestCase
     {
         \file_put_contents($this->directory.'/file.txt', 'content');
 
-        (new NameRepairer(Options::OVERWRITE_MODE_A))->rename($this->directory, []);
+        (new NameRepairer(ExtractOptions::OVERWRITE_MODE_A))->rename($this->directory, []);
 
         self::assertFileExists($this->directory.'/file.txt');
     }

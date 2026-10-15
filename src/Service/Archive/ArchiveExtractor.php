@@ -40,7 +40,7 @@ final readonly class ArchiveExtractor
      */
     private function run(string $directory, ?string $mask): void
     {
-        $base = [$this->options->getOverwriteMode(), '-o'.$directory];
+        $base = [$this->options->getExtract()->getOverwriteMode(), '-o'.$directory];
         if (null !== $mask) {
             // Extract a single entry by its exact name: do not expand wildcards.
             $base[] = '-spd';

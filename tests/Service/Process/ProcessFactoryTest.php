@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Process;
 
+use Archive7z\Config\CompressOptions;
 use Archive7z\Config\FallbackEncoding;
 use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
@@ -94,7 +95,7 @@ class ProcessFactoryTest extends TestCase
 
     public function testDecorateCompressSolidMode(): void
     {
-        $args = $this->factory()->decorateCompress(new Options(solidMode: SolidMode::off()));
+        $args = $this->factory()->decorateCompress(new Options(compress: new CompressOptions(solidMode: SolidMode::off())));
 
         self::assertContains('-ms=off', $args);
     }

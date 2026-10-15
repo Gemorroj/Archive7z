@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Archive7z\Tests;
 
 use Archive7z\Archive7z;
+use Archive7z\Config\CompressOptions;
+use Archive7z\Config\ExtractOptions;
 use Archive7z\Config\FallbackEncoding;
 use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
@@ -437,17 +439,17 @@ class Archive7zTest extends TestCase
         $archiveFile = $this->fixturesDir.'/testArchive.txt';
         $archivePath = $this->fixturesDir.'/'.$archiveName;
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_A));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_A)));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileEquals($archiveFile, $targetFile, $archiveName);
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_S));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_S)));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileEquals($sourceFile, $targetFile);
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_T));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_T)));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -455,7 +457,7 @@ class Archive7zTest extends TestCase
         self::assertFileEquals($sourceFile, $this->tmpDir.'/test/test_1.txt');
         \unlink($this->tmpDir.'/test/test_1.txt');
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_U));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_U)));
         \copy($sourceFile, $targetFile);
         $obj->extract($this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -485,17 +487,17 @@ class Archive7zTest extends TestCase
         $archiveFile = $this->fixturesDir.'/testArchive.txt';
         $archivePath = $this->fixturesDir.'/'.$archiveName;
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_A));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_A)));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileEquals($archiveFile, $targetFile);
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_S));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_S)));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileEquals($sourceFile, $targetFile);
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_T));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_T)));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -503,7 +505,7 @@ class Archive7zTest extends TestCase
         self::assertFileEquals($sourceFile, $this->tmpDir.'/test/test_1.txt');
         \unlink($this->tmpDir.'/test/test_1.txt');
 
-        $obj = new Archive7z($archivePath, new Options(overwriteMode: Options::OVERWRITE_MODE_U));
+        $obj = new Archive7z($archivePath, new Options(extract: new ExtractOptions(overwriteMode: ExtractOptions::OVERWRITE_MODE_U)));
         \copy($sourceFile, $targetFile);
         $obj->extractEntry('test/test.txt', $this->tmpDir);
         self::assertFileExists($this->tmpDir.'/test/test_1.txt');
@@ -972,7 +974,7 @@ class Archive7zTest extends TestCase
         $tempArchive = \tempnam($this->tmpDir, 'archive7z_').'.7z';
         $fullPath = self::resolvePath($this->tmpDir.'/file.txt');
 
-        $obj = new Archive7z($tempArchive, new Options(password: 'abc123', encryptFilenames: true));
+        $obj = new Archive7z($tempArchive, new Options(password: 'abc123', compress: new CompressOptions(encryptFilenames: true)));
         $obj->addEntry($fullPath);
 
         $result = $obj->getEntry('file.txt');
@@ -1033,7 +1035,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::on();
 
-        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(compress: new CompressOptions(solidMode: $solidMode)));
         $obj->addEntry($this->tmpDir);
 
         self::assertTrue($obj->getInfo()->isSolid());
@@ -1047,7 +1049,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::off();
 
-        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(compress: new CompressOptions(solidMode: $solidMode)));
         $obj->addEntry($this->tmpDir);
 
         self::assertFalse($obj->getInfo()->isSolid());
@@ -1061,7 +1063,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::limits(2, 1024);
 
-        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(compress: new CompressOptions(solidMode: $solidMode)));
         $obj->addEntry($this->tmpDir);
 
         self::assertTrue($obj->getInfo()->isSolid());
@@ -1075,7 +1077,7 @@ class Archive7zTest extends TestCase
 
         $solidMode = SolidMode::on();
 
-        $obj = new Archive7z($tempArchive, new Options(solidMode: $solidMode));
+        $obj = new Archive7z($tempArchive, new Options(compress: new CompressOptions(solidMode: $solidMode)));
         $obj->addEntry($this->tmpDir);
 
         \copy($this->fixturesDir.'/test.txt', $this->tmpDir.'/file3.txt');

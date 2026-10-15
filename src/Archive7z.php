@@ -65,7 +65,7 @@ final class Archive7z
             $this->processFactory,
             $this->options,
             $this->nameMapping,
-            new NameRepairer($this->options->getOverwriteMode()),
+            new NameRepairer($this->options->getExtract()->getOverwriteMode()),
         );
     }
 
@@ -211,7 +211,7 @@ final class Archive7z
     public function addEntry(string $path, bool $storePath = false): void
     {
         $args = [];
-        $args[] = '-mx='.$this->options->getCompressionLevel();
+        $args[] = '-mx='.$this->options->getCompress()->getCompressionLevel();
 
         if ($storePath) {
             $args[] = '-spf';
