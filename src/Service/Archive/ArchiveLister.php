@@ -63,7 +63,11 @@ final class ArchiveLister
         $parser = new Parser(\explode("\n", $this->nameMapping->decodeOutput($this->processFactory->textOutput($process))));
         $entries = $parser->parseEntries($limit);
 
-        return null === $pathMask ? $this->withContainerNames($entries) : $entries;
+        if (null === $pathMask) {
+            $entries = $this->withContainerNames($entries);
+        }
+
+        return $this->withSyntheticName($entries);
     }
 
     /**
@@ -108,6 +112,35 @@ final class ArchiveLister
         foreach ($entries as $index => $entry) {
             $entries[$index]['Path'] = $names[$index];
         }
+
+        return $entries;
+    }
+
+    /**
+     * Names the single entry of a bare compression stream (xz/bzip2/lzma/zstd).
+     *
+     * For those containers 7-Zip prints no "Path" at all, so the entry name is
+     * the archive file name without its final extension, exactly the name
+     * 7-Zip itself uses for matching and extraction (see
+     * {@see NameMapping::syntheticName()}).
+     *
+     * @param array<int, array<string, string|list<string>>> $entries
+     *
+     * @return array<int, array<string, string|list<string>>>
+     */
+    private function withSyntheticName(array $entries): array
+    {
+        if (1 !== \count($entries)) {
+            return $entries;
+        }
+
+        $index = \array_key_first($entries);
+        $path = $entries[$index]['Path'] ?? null;
+        if (\is_string($path) && '' !== $path) {
+            return $entries;
+        }
+
+        $entries[$index]['Path'] = $this->nameMapping->syntheticName();
 
         return $entries;
     }

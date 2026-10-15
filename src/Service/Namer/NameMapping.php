@@ -42,6 +42,23 @@ final readonly class NameMapping
     }
 
     /**
+     * The name 7-Zip assigns to the only entry of a bare compression stream
+     * (xz/bzip2/lzma/zstd): the archive file name without its final extension.
+     *
+     * Such containers store no name at all, and 7-Zip omits "Path" from the
+     * listing, but it still matches that single entry by this synthesized name
+     * ("7z x onefile.xz onefile" works, "7z x onefile.xz other" does not), so
+     * the library must expose the same name to stay consistent with it.
+     */
+    public function syntheticName(): string
+    {
+        $basename = \basename($this->filename);
+        $name = \pathinfo($basename, \PATHINFO_FILENAME);
+
+        return '' === $name ? $basename : $name;
+    }
+
+    /**
      * Encodes a user supplied UTF-8 name/path into the archive name encoding.
      */
     public function encode(string $name): string

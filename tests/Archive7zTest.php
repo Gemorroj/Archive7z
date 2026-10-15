@@ -1218,4 +1218,45 @@ class Archive7zTest extends TestCase
 
         self::assertCount(1, $entries);
     }
+
+    /**
+     * @return list<list<string>>
+     */
+    public static function bareCompressedStreamProvider(): array
+    {
+        return [
+            ['xz'],
+            ['bz2'],
+        ];
+    }
+
+    /**
+     * Bare xz/bzip2 streams store no name and 7-Zip prints no "Path" for them.
+     * The library must expose the name 7-Zip itself uses for matching and
+     * extraction: the archive file name without its final extension.
+     *
+     * @see https://github.com/Gemorroj/Archive7z/issues/30
+     */
+    #[DataProvider('bareCompressedStreamProvider')]
+    public function testBareCompressedStreamEntryName(string $extension): void
+    {
+        $source = $this->tmpDir.'/payload.txt';
+        \file_put_contents($source, 'payload content');
+
+        $archive = $this->tmpDir.'/payload.'.$extension;
+        (new Archive7z($archive))->addEntry($source);
+
+        $obj = new Archive7z($archive);
+        $entries = $obj->getEntries();
+
+        self::assertCount(1, $entries);
+        self::assertSame('payload', $entries[0]->getPath());
+        self::assertInstanceOf(Entry::class, $obj->getEntry('payload'));
+        self::assertSame('payload content', $obj->getContent('payload'));
+
+        $extractDir = $this->tmpDir.'/extract-'.$extension;
+        \mkdir($extractDir);
+        $obj->extractEntry('payload', $extractDir);
+        self::assertFileExists($extractDir.'/payload');
+    }
 }
