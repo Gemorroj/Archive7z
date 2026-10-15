@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Container;
 
+use Archive7z\Archive7z;
+use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use Archive7z\Service\Container\TarNameReader;
 use PHPUnit\Framework\TestCase;
 
@@ -80,6 +83,57 @@ class TarNameReaderTest extends TestCase
         self::assertCount(2, $names);
         self::assertSame('base256.txt', $names[0]->value);
         self::assertSame('plain.txt', $names[1]->value);
+    }
+
+    /**
+     * A PAX long path must survive a configured fallback encoding.
+     */
+    public function testPaxLongPathWithFallbackEncoding(): void
+    {
+        $archive = new Archive7z(
+            $this->fixturesDir.'/tar/linux/bsdtar-3.6.2/features.tar',
+            new Options(fallbackEncoding: FallbackEncoding::codepage('UTF-8')),
+        );
+
+        $longNames = [];
+        foreach ($archive->getEntries() as $entry) {
+            $path = (string) $entry->getUnixPath();
+            if (\str_starts_with($path, 'long-')) {
+                $longNames[] = $path;
+            }
+        }
+
+        self::assertCount(1, $longNames);
+        self::assertGreaterThan(100, \strlen($longNames[0]));
+    }
+
+    public function testMacosUnicodeNames(): void
+    {
+        $archive = new Archive7z($this->fixturesDir.'/tar/macos/bsdtar/unicode.tar');
+
+        $paths = [];
+        foreach ($archive->getEntries() as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        self::assertContains('café.txt', $paths);
+        self::assertContains('й.txt', $paths);
+        self::assertContains('чавес.jpg', $paths);
+        self::assertTrue($this->hasMacosSidecar($paths));
+    }
+
+    /**
+     * @param list<string|null> $paths
+     */
+    private function hasMacosSidecar(array $paths): bool
+    {
+        foreach ($paths as $path) {
+            if (\str_starts_with((string) $path, '__MACOSX/') || \str_starts_with((string) $path, '._')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function tarHeader(string $name, string $sizeField): string

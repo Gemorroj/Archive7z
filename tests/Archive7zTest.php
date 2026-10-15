@@ -7,7 +7,6 @@ namespace Archive7z\Tests;
 use Archive7z\Archive7z;
 use Archive7z\Config\CompressOptions;
 use Archive7z\Config\ExtractOptions;
-use Archive7z\Config\FallbackEncoding;
 use Archive7z\Config\Options;
 use Archive7z\Config\SolidMode;
 use Archive7z\Exception\ExceptionInterface;
@@ -66,21 +65,6 @@ class Archive7zTest extends TestCase
         return $real;
     }
 
-    /**
-     * @param list<Entry> $entries
-     *
-     * @return list<string|null>
-     */
-    private function paths(array $entries): array
-    {
-        $paths = [];
-        foreach ($entries as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        return $paths;
-    }
-
     public function testGet7zipInformation(): void
     {
         $info = Archive7z::get7zipInformation();
@@ -100,228 +84,6 @@ class Archive7zTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         Archive7z::get7zipInformation('/nonexistent/7z');
-    }
-
-    public function testFallbackEncodingCodepage(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
-        );
-
-        $paths = [];
-        foreach ($obj->getEntries() as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        self::assertContains('чавес.jpg', $paths);
-    }
-
-    public function testFallbackEncodingDetect(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::detect()),
-        );
-
-        $paths = [];
-        foreach ($obj->getEntries() as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        self::assertContains('чавес.jpg', $paths);
-    }
-
-    public function testFallbackEncodingDetectCustomCandidates(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip',
-            new Options(fallbackEncoding: FallbackEncoding::detect(['CP866'])),
-        );
-
-        $paths = [];
-        foreach ($obj->getEntries() as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        self::assertContains('чавес.jpg', $paths);
-    }
-
-    public function testFallbackEncodingCallback(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::viaCallback(
-                static function (string $raw): string {
-                    return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
-                },
-            )),
-        );
-
-        $paths = [];
-        foreach ($obj->getEntries() as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        self::assertContains('чавес.jpg', $paths);
-    }
-
-    public function testFallbackEncodingCallbackExtract(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::viaCallback(
-                static function (string $raw): string {
-                    return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
-                },
-                static function (string $value): string {
-                    return \mb_convert_encoding($value, 'Windows-1251', 'UTF-8');
-                },
-            )),
-        );
-
-        $directory = $this->tmpDir.'/callback';
-        \mkdir($directory);
-        $obj->extract($directory);
-
-        self::assertFileExists($directory.'/чавес.jpg');
-    }
-
-    public function testFallbackEncodingCodepageZip(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('CP866')),
-        );
-
-        $paths = [];
-        foreach ($obj->getEntries() as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        self::assertContains('чавес.jpg', $paths);
-    }
-
-    #[DataProvider('codepageNonZipProvider')]
-    public function testFallbackEncodingCodepageNonZip(string $archiveName): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/'.$archiveName,
-            new Options(fallbackEncoding: FallbackEncoding::codepage('CP866')),
-        );
-
-        self::assertTrue($obj->isValid());
-        self::assertNotEmpty($obj->getEntries());
-    }
-
-    /**
-     * A configured code page must not break formats whose handler rejects the
-     * "-mcp" method property.
-     *
-     * @return list<list<string>>
-     */
-    public static function codepageNonZipProvider(): array
-    {
-        return [
-            ['7z/windows/7zip-18.05/sample.7z'],
-            ['gzip/windows/7zip-18.05/sample.tgz'],
-            ['bz2/linux/gnutar-1.35/sample.tar.bz2'],
-            ['wim/windows/7zip-18.05/sample.wim'],
-        ];
-    }
-
-    public function testExtractRepairsNonUtf8Names(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
-        );
-        $obj->extract($this->tmpDir);
-
-        self::assertFileExists($this->tmpDir.'/чавес.jpg');
-        self::assertFileExists($this->tmpDir.'/1.jpg');
-        self::assertFileExists($this->tmpDir.'/test/test.txt');
-    }
-
-    public function testExtractDetectNonUtf8Names(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::detect()),
-        );
-        $obj->extract($this->tmpDir);
-
-        self::assertFileExists($this->tmpDir.'/чавес.jpg');
-    }
-
-    /**
-     * The default fallback encoding detects the code page of archives whose
-     * names carry no encoding metadata.
-     *
-     * @see https://github.com/Gemorroj/Archive7z/issues/15
-     */
-    public function testDefaultFallbackEncodingDecodesNonUtf8Names(): void
-    {
-        $obj = new Archive7z($this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar');
-
-        self::assertContains('чавес.jpg', $this->paths($obj->getEntries()));
-    }
-
-    public function testDefaultFallbackEncodingExtractsNonUtf8Names(): void
-    {
-        $obj = new Archive7z($this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar');
-        $obj->extract($this->tmpDir);
-
-        self::assertFileExists($this->tmpDir.'/чавес.jpg');
-    }
-
-    /**
-     * asIs() is the opt-out: the raw 8-bit names are left untouched.
-     */
-    public function testFallbackEncodingAsIsLeavesNonUtf8NamesRaw(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::asIs()),
-        );
-
-        self::assertNotContains('чавес.jpg', $this->paths($obj->getEntries()));
-    }
-
-    public function testFallbackEncodingCodepageMask(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
-        );
-
-        $entries = $obj->getEntries('чавес.jpg');
-
-        self::assertCount(1, $entries);
-        self::assertSame('чавес.jpg', $entries[0]->getUnixPath());
-    }
-
-    public function testFallbackEncodingCodepageExtractEntry(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
-        );
-        $obj->extractEntry('чавес.jpg', $this->tmpDir);
-
-        self::assertFileExists($this->tmpDir.'/чавес.jpg');
-    }
-
-    public function testFallbackEncodingCodepageGetContent(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
-        );
-
-        $content = $obj->getContent('чавес.jpg');
-
-        self::assertStringStartsWith("\xFF\xD8", $content);
     }
 
     public function testGetContentDoesNotExpandWildcards(): void
@@ -910,67 +672,6 @@ class Archive7zTest extends TestCase
         self::assertEmpty($noWarnings);
     }
 
-    public function testRenameNonUtf8Entry(): void
-    {
-        $archive = $this->tmpDir.'/rename.zip';
-        \copy($this->fixturesDir.'/zip/windows/7zip-18.05/sample.zip', $archive);
-
-        $obj = new Archive7z($archive, new Options(fallbackEncoding: FallbackEncoding::codepage('CP866')));
-        $obj->renameEntry('чавес.jpg', 'renamed.jpg');
-
-        $paths = [];
-        foreach ($obj->getEntries() as $entry) {
-            $paths[] = $entry->getUnixPath();
-        }
-
-        self::assertContains('renamed.jpg', $paths);
-        self::assertNotContains('чавес.jpg', $paths);
-    }
-
-    public function testMacosUnicodeNames(): void
-    {
-        foreach (['tar/macos/bsdtar/unicode.tar', 'zip/macos/apple-archive/unicode.zip'] as $archiveName) {
-            $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
-
-            $paths = [];
-            foreach ($obj->getEntries() as $entry) {
-                $paths[] = $entry->getUnixPath();
-            }
-
-            self::assertContains('café.txt', $paths, $archiveName);
-            self::assertContains('й.txt', $paths, $archiveName);
-            self::assertContains('чавес.jpg', $paths, $archiveName);
-
-            $hasSidecar = false;
-            foreach ($paths as $path) {
-                if (\str_starts_with($path, '__MACOSX/') || \str_starts_with($path, '._')) {
-                    $hasSidecar = true;
-                    break;
-                }
-            }
-            self::assertTrue($hasSidecar, $archiveName);
-        }
-    }
-
-    public function testPaxLongNameWithFallbackEncoding(): void
-    {
-        $obj = new Archive7z(
-            $this->fixturesDir.'/tar/linux/bsdtar-3.6.2/features.tar',
-            new Options(fallbackEncoding: FallbackEncoding::codepage('UTF-8')),
-        );
-
-        $longNames = [];
-        foreach ($obj->getEntries() as $entry) {
-            $path = (string) $entry->getUnixPath();
-            if (\str_starts_with($path, 'long-')) {
-                $longNames[] = $path;
-            }
-        }
-
-        self::assertCount(1, $longNames);
-        self::assertGreaterThan(100, \strlen($longNames[0]));
-    }
-
     /**
      * @return list<list<string>>
      */
@@ -1135,25 +836,6 @@ class Archive7zTest extends TestCase
         self::assertTrue($obj->getInfo()->isSolid());
     }
 
-    #[DataProvider('basicProvider')]
-    public function testInfo(string $archiveName): void
-    {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
-        $info = $obj->getInfo();
-
-        self::assertIsString($info->getPath());
-        self::assertIsString($info->getType());
-        self::assertGreaterThan(0, $info->getPhysicalSize());
-
-        // Version line format depends on the build:
-        //   Windows:        7-Zip 26.04 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-05
-        //   Linux official: 7-Zip (z) 26.04 (x64) : Copyright ...
-        //   Linux distro:   7-Zip 25.01 (x64) : Copyright ...
-        $versionLine = $info->getData()[1];
-
-        self::assertMatchesRegularExpression('/^7\-Zip .+/', $versionLine);
-    }
-
     #[DataProvider('extractProvider')]
     public function testGetEntriesLimit(string $archiveName): void
     {
@@ -1217,96 +899,11 @@ class Archive7zTest extends TestCase
         self::assertSame('q?name.txt', $entry->getPath());
     }
 
-    /**
-     * @return list<list<string>>
-     */
-    public static function featureProvider(): array
-    {
-        return [
-            ['7z/windows/7zip-26.04/features.7z'],
-            ['zip/windows/7zip-26.04/features.zip'],
-            ['tar/linux/gnutar-1.34/features.tar'],
-            ['tar/linux/bsdtar-3.6.2/features.tar'],
-            ['zip/linux/bsdtar-3.6.2/features.zip'],
-        ];
-    }
-
-    #[DataProvider('featureProvider')]
-    public function testContentFeatures(string $archiveName): void
-    {
-        $obj = new Archive7z($this->fixturesDir.'/'.$archiveName);
-
-        $entries = [];
-        foreach ($obj->getEntries() as $entry) {
-            $entries[(string) $entry->getUnixPath()] = $entry;
-        }
-
-        self::assertArrayHasKey('name with spaces.txt', $entries);
-        self::assertArrayHasKey('noextension', $entries);
-        self::assertArrayHasKey('UPPER.TXT', $entries);
-        self::assertArrayHasKey('zero.txt', $entries);
-        self::assertSame('0', $entries['zero.txt']->getSize());
-        self::assertArrayHasKey('nested/one/two/deep.txt', $entries);
-
-        self::assertTrue($entries['empty']->isDirectory());
-        self::assertTrue($entries['nested/one']->isDirectory());
-
-        $longNames = [];
-        foreach (\array_keys($entries) as $path) {
-            if (\str_starts_with($path, 'long-')) {
-                $longNames[] = $path;
-            }
-        }
-        self::assertCount(1, $longNames);
-        self::assertGreaterThan(100, \strlen((string) \current($longNames)));
-    }
-
     public function testPartialRar(): void
     {
         $obj = new Archive7z($this->fixturesDir.'/rar/windows/winrar-7.0/multivolume.part1.rar');
         $entries = $obj->getEntries();
 
         self::assertCount(1, $entries);
-    }
-
-    /**
-     * @return list<list<string>>
-     */
-    public static function bareCompressedStreamProvider(): array
-    {
-        return [
-            ['xz'],
-            ['bz2'],
-        ];
-    }
-
-    /**
-     * Bare xz/bzip2 streams store no name and 7-Zip prints no "Path" for them.
-     * The library must expose the name 7-Zip itself uses for matching and
-     * extraction: the archive file name without its final extension.
-     *
-     * @see https://github.com/Gemorroj/Archive7z/issues/30
-     */
-    #[DataProvider('bareCompressedStreamProvider')]
-    public function testBareCompressedStreamEntryName(string $extension): void
-    {
-        $source = $this->tmpDir.'/payload.txt';
-        \file_put_contents($source, 'payload content');
-
-        $archive = $this->tmpDir.'/payload.'.$extension;
-        (new Archive7z($archive))->addEntry($source);
-
-        $obj = new Archive7z($archive);
-        $entries = $obj->getEntries();
-
-        self::assertCount(1, $entries);
-        self::assertSame('payload', $entries[0]->getPath());
-        self::assertInstanceOf(Entry::class, $obj->getEntry('payload'));
-        self::assertSame('payload content', $obj->getContent('payload'));
-
-        $extractDir = $this->tmpDir.'/extract-'.$extension;
-        \mkdir($extractDir);
-        $obj->extractEntry('payload', $extractDir);
-        self::assertFileExists($extractDir.'/payload');
     }
 }

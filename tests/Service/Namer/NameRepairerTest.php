@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Namer;
 
+use Archive7z\Archive7z;
 use Archive7z\Config\ExtractOptions;
+use Archive7z\Config\FallbackEncoding;
+use Archive7z\Config\Options;
 use Archive7z\Service\Namer\NameRepairer;
 use PHPUnit\Framework\TestCase;
 
 class NameRepairerTest extends TestCase
 {
     private string $directory;
+    private string $fixturesDir;
 
     protected function setUp(): void
     {
+        $this->fixturesDir = \dirname(__DIR__, 2).'/fixtures';
         $this->directory = \sys_get_temp_dir().'/'.\uniqid('Archive7z-name-', false);
         \mkdir($this->directory);
     }
@@ -24,10 +29,7 @@ class NameRepairerTest extends TestCase
             return;
         }
 
-        foreach (\glob($this->directory.'/*') ?: [] as $file) {
-            \unlink($file);
-        }
-        \rmdir($this->directory);
+        $this->removeDir($this->directory);
     }
 
     public function testRenameOverwrite(): void
@@ -111,6 +113,84 @@ class NameRepairerTest extends TestCase
         (new NameRepairer(ExtractOptions::OVERWRITE_MODE_A))->rename($this->directory, []);
 
         self::assertFileExists($this->directory.'/file.txt');
+    }
+
+    public function testExtractRepairsNonUtf8Names(): void
+    {
+        $archive = new Archive7z(
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
+            new Options(fallbackEncoding: FallbackEncoding::codepage('Windows-1251')),
+        );
+        $archive->extract($this->directory);
+
+        self::assertFileExists($this->directory.'/чавес.jpg');
+        self::assertFileExists($this->directory.'/1.jpg');
+        self::assertFileExists($this->directory.'/test/test.txt');
+    }
+
+    public function testExtractDetectRepairsNonUtf8Names(): void
+    {
+        $archive = new Archive7z(
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
+            new Options(fallbackEncoding: FallbackEncoding::detect()),
+        );
+        $archive->extract($this->directory);
+
+        self::assertFileExists($this->directory.'/чавес.jpg');
+    }
+
+    /**
+     * The default fallback encoding detects the code page, so legacy names are
+     * repaired without extra configuration.
+     *
+     * @see https://github.com/Gemorroj/Archive7z/issues/15
+     */
+    public function testExtractRepairsWithDefaultEncoding(): void
+    {
+        $archive = new Archive7z($this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar');
+        $archive->extract($this->directory);
+
+        self::assertFileExists($this->directory.'/чавес.jpg');
+    }
+
+    public function testExtractRepairsWithCallbackEncoding(): void
+    {
+        $archive = new Archive7z(
+            $this->fixturesDir.'/tar/windows/totalcommander-9.21a/sample.tar',
+            new Options(fallbackEncoding: FallbackEncoding::viaCallback(
+                static function (string $raw): string {
+                    return \mb_convert_encoding($raw, 'UTF-8', 'Windows-1251');
+                },
+                static function (string $value): string {
+                    return \mb_convert_encoding($value, 'Windows-1251', 'UTF-8');
+                },
+            )),
+        );
+        $archive->extract($this->directory);
+
+        self::assertFileExists($this->directory.'/чавес.jpg');
+    }
+
+    private function removeDir(string $dir): void
+    {
+        if (!\is_dir($dir)) {
+            return;
+        }
+
+        foreach (\scandir($dir) ?: [] as $entry) {
+            if ('.' === $entry || '..' === $entry) {
+                continue;
+            }
+
+            $path = $dir.'/'.$entry;
+            if (\is_dir($path) && !\is_link($path)) {
+                $this->removeDir($path);
+            } else {
+                @\unlink($path);
+            }
+        }
+
+        \rmdir($dir);
     }
 
     /**

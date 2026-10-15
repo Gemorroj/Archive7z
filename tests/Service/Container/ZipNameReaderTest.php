@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Container;
 
+use Archive7z\Archive7z;
 use Archive7z\Service\Container\RawName;
 use Archive7z\Service\Container\ZipNameReader;
 use PHPUnit\Framework\TestCase;
@@ -76,6 +77,35 @@ class ZipNameReaderTest extends TestCase
 
         self::assertCount(1, $names);
         self::assertSame('a.txt', $names[0]->value);
+    }
+
+    public function testMacosUnicodeNames(): void
+    {
+        $archive = new Archive7z($this->fixturesDir.'/zip/macos/apple-archive/unicode.zip');
+
+        $paths = [];
+        foreach ($archive->getEntries() as $entry) {
+            $paths[] = $entry->getUnixPath();
+        }
+
+        self::assertContains('café.txt', $paths);
+        self::assertContains('й.txt', $paths);
+        self::assertContains('чавес.jpg', $paths);
+        self::assertTrue($this->hasMacosSidecar($paths));
+    }
+
+    /**
+     * @param list<string|null> $paths
+     */
+    private function hasMacosSidecar(array $paths): bool
+    {
+        foreach ($paths as $path) {
+            if (\str_starts_with((string) $path, '__MACOSX/') || \str_starts_with((string) $path, '._')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

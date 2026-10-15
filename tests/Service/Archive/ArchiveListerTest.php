@@ -4,23 +4,34 @@ declare(strict_types=1);
 
 namespace Archive7z\Tests\Service\Archive;
 
+use Archive7z\Archive7z;
 use Archive7z\Config\FallbackEncoding;
 use Archive7z\Config\Options;
+use Archive7z\Model\Entry;
 use Archive7z\Model\Info;
 use Archive7z\Service\Archive\ArchiveLister;
 use Archive7z\Service\Container\NameReaderResolver;
 use Archive7z\Service\Namer\NameMapping;
 use Archive7z\Service\Process\ExecutableFinder;
 use Archive7z\Service\Process\ProcessFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class ArchiveListerTest extends TestCase
 {
+    private string $tmpDir;
     private string $fixturesDir;
 
     protected function setUp(): void
     {
         $this->fixturesDir = \dirname(__DIR__, 2).'/fixtures';
+        $this->tmpDir = \sys_get_temp_dir().'/'.\uniqid('Archive7z-lister-', false);
+        \mkdir($this->tmpDir);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->removeDir($this->tmpDir);
     }
 
     public function testEntries(): void
@@ -77,6 +88,69 @@ class ArchiveListerTest extends TestCase
 
             return \str_replace('\\', '/', \is_string($path) ? $path : '');
         }, $entries);
+    }
+
+    /**
+     * @return list<list<string>>
+     */
+    public static function bareCompressedStreamProvider(): array
+    {
+        return [
+            ['xz'],
+            ['bz2'],
+        ];
+    }
+
+    /**
+     * Bare xz/bzip2 streams store no name and 7-Zip prints no "Path" for them.
+     * The lister exposes the name 7-Zip uses for matching and extraction: the
+     * archive file name without its final extension.
+     *
+     * @see https://github.com/Gemorroj/Archive7z/issues/30
+     */
+    #[DataProvider('bareCompressedStreamProvider')]
+    public function testBareCompressedStreamEntryName(string $extension): void
+    {
+        $source = $this->tmpDir.'/payload.txt';
+        \file_put_contents($source, 'payload content');
+
+        $archive = $this->tmpDir.'/payload.'.$extension;
+        (new Archive7z($archive))->addEntry($source);
+
+        $obj = new Archive7z($archive);
+        $entries = $obj->getEntries();
+
+        self::assertCount(1, $entries);
+        self::assertSame('payload', $entries[0]->getPath());
+        self::assertInstanceOf(Entry::class, $obj->getEntry('payload'));
+        self::assertSame('payload content', $obj->getContent('payload'));
+
+        $extractDir = $this->tmpDir.'/extract-'.$extension;
+        \mkdir($extractDir);
+        $obj->extractEntry('payload', $extractDir);
+        self::assertFileExists($extractDir.'/payload');
+    }
+
+    private function removeDir(string $dir): void
+    {
+        if (!\is_dir($dir)) {
+            return;
+        }
+
+        foreach (\scandir($dir) ?: [] as $entry) {
+            if ('.' === $entry || '..' === $entry) {
+                continue;
+            }
+
+            $path = $dir.'/'.$entry;
+            if (\is_dir($path) && !\is_link($path)) {
+                $this->removeDir($path);
+            } else {
+                @\unlink($path);
+            }
+        }
+
+        \rmdir($dir);
     }
 
     private function lister(string $file, ?FallbackEncoding $fallbackEncoding = null): ArchiveLister

@@ -6,6 +6,7 @@ namespace Archive7z\Tests\Model;
 
 use Archive7z\Archive7z;
 use Archive7z\Model\Entry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class EntryTest extends TestCase
@@ -62,6 +63,50 @@ class EntryTest extends TestCase
         $property = new \ReflectionProperty(Entry::class, 'folder');
 
         self::assertSame('+', $property->getValue($folder));
+    }
+
+    /**
+     * @return list<list<string>>
+     */
+    public static function featureProvider(): array
+    {
+        return [
+            ['7z/windows/7zip-26.04/features.7z'],
+            ['zip/windows/7zip-26.04/features.zip'],
+            ['tar/linux/gnutar-1.34/features.tar'],
+            ['tar/linux/bsdtar-3.6.2/features.tar'],
+            ['zip/linux/bsdtar-3.6.2/features.zip'],
+        ];
+    }
+
+    #[DataProvider('featureProvider')]
+    public function testContentFeatures(string $archiveName): void
+    {
+        $archive = new Archive7z($this->fixturesDir.'/'.$archiveName);
+
+        $entries = [];
+        foreach ($archive->getEntries() as $entry) {
+            $entries[(string) $entry->getUnixPath()] = $entry;
+        }
+
+        self::assertArrayHasKey('name with spaces.txt', $entries);
+        self::assertArrayHasKey('noextension', $entries);
+        self::assertArrayHasKey('UPPER.TXT', $entries);
+        self::assertArrayHasKey('zero.txt', $entries);
+        self::assertSame('0', $entries['zero.txt']->getSize());
+        self::assertArrayHasKey('nested/one/two/deep.txt', $entries);
+
+        self::assertTrue($entries['empty']->isDirectory());
+        self::assertTrue($entries['nested/one']->isDirectory());
+
+        $longNames = [];
+        foreach (\array_keys($entries) as $path) {
+            if (\str_starts_with($path, 'long-')) {
+                $longNames[] = $path;
+            }
+        }
+        self::assertCount(1, $longNames);
+        self::assertGreaterThan(100, \strlen((string) \current($longNames)));
     }
 
     public function testData(): void
