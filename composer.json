@@ -21,7 +21,7 @@
         "phpstan/phpstan": "^2.3"
     },
     "suggest": {
-        "ext-mbstring": "Recommended for the filename fallback encoding: the native mb_detect_encoding recognizes Cyrillic code pages, unlike the polyfill"
+        "ext-mbstring": "Recommended for more reliable filename encoding detection and conversion"
     },
     "autoload": {
         "psr-4": {

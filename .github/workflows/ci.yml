@@ -5,7 +5,7 @@ on:
   - pull_request
 
 env:
-  SEVENZIP_VERSION: '2604'
+  SEVENZIP_VERSION: '2605'
 
 jobs:
   tests:
