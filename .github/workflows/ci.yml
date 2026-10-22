@@ -5,7 +5,7 @@ on:
   - pull_request
 
 env:
-  SEVENZIP_VERSION: '2605'
+  SEVENZIP_URL: 'https://github.com/ip7z/7zip/releases/download/26.05/7z2605'
 
 jobs:
   tests:
@@ -47,14 +47,14 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y 7zip 7zip-rar
           else
-            curl -L -o 7z.tar.xz https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-linux-x64.tar.xz
+            curl -fL -o 7z.tar.xz "${{ env.SEVENZIP_URL }}-linux-x64.tar.xz"
             tar xJf 7z.tar.xz
             sudo cp 7zz /usr/bin/7zz
           fi
       - name: Setup 7-Zip (macOS)
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
-          curl -L -o 7z.tar.xz https://7-zip.org/a/7z${{ env.SEVENZIP_VERSION }}-mac.tar.xz
+          curl -fL -o 7z.tar.xz "${{ env.SEVENZIP_URL }}-mac.tar.xz"
           tar xJf 7z.tar.xz
           sudo cp 7zz /usr/local/bin/7zz
       # windows-latest already ships 7-Zip at C:\Program Files\7-Zip\7z.exe (the auto-detect path).
